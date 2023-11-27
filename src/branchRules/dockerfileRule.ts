@@ -1,7 +1,7 @@
 import { Octokit } from '@octokit/rest'
 import JSZip from 'jszip'
-import { logger } from '../util/logger'
 import { type BranchRule, Dockerfile, FileTypeEnum, type RepoInfo } from '../types'
+import { errorHandler } from '../util'
 
 export const dockerfileRule: BranchRule = async (octokit: Octokit, repo: RepoInfo, downloaded: JSZip, branchName: string, fileName: string): Promise<void> => {
   try {
@@ -10,11 +10,7 @@ export const dockerfileRule: BranchRule = async (octokit: Octokit, repo: RepoInf
       repo.branches[branchName].deps.push(parseDockerfile(content, fileName))
     }
   } catch (error) {
-    if (error instanceof Error) {
-      logger.error(`Error getting dockerfile for repo: ${repo.name}, branch: ${branchName}, error: ${error.message}`)
-    } else {
-      logger.error(`Error getting dockerfile for repo: ${repo.name}, branch: ${branchName}, error: ${error as string}`)
-    }
+    errorHandler(error, dockerfileRule.name, repo.name, branchName)
   }
 }
 

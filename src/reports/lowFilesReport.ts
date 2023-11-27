@@ -2,7 +2,7 @@ import {
   type RepoInfo,
   type ReportFunction
 } from '../types'
-import { logger } from '../util/logger'
+import { errorHandler } from '../util'
 import ReportDataWriter from '../util/reportDataWriter'
 
 export const lowFilesReport: ReportFunction = async (repos: RepoInfo[]): Promise<void> => {
@@ -13,9 +13,9 @@ export const lowFilesReport: ReportFunction = async (repos: RepoInfo[]): Promise
     [{ id: 'repoName', title: 'Repo' }, { id: 'branchName', title: 'Branch' }, { id: 'fileCount', title: 'FileCount' }])
 
   for (const repo of repos) {
-    try {
-      let someBranchHasFiles = false
-      for (const branchName in repo.branches) {
+    let someBranchHasFiles = false
+    for (const branchName in repo.branches) {
+      try {
         if (repo.branches[branchName].fileCount < 5 && !repo.branches[branchName].dependabot) {
           lowFileBranchWriter.data.push({
             repoName: repo.name,
@@ -25,19 +25,15 @@ export const lowFilesReport: ReportFunction = async (repos: RepoInfo[]): Promise
         } else {
           someBranchHasFiles = true
         }
+      } catch (error) {
+        errorHandler(error, lowFilesReport.name, repo.name, branchName)
       }
-      if (!someBranchHasFiles && Object.keys(repo.branches).length !== 0) {
-        lowFileRepoWriter.data.push({
-          repoName: repo.name,
-          fileCount: repo.branches[repo.defaultBranch].fileCount
-        })
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        logger.error(`Error getting filecount report for repo: ${repo.name}, error: ${error.message}`)
-      } else {
-        logger.error(`Error getting filecount report for repo: ${repo.name}, error: ${error as string}`)
-      }
+    }
+    if (!someBranchHasFiles && Object.keys(repo.branches).length !== 0) {
+      lowFileRepoWriter.data.push({
+        repoName: repo.name,
+        fileCount: repo.branches[repo.defaultBranch].fileCount
+      })
     }
   }
 

@@ -5,6 +5,7 @@ import {
   FileTypeEnum, CSVWriterHeader
 } from '../types'
 import ReportDataWriter from '../util/reportDataWriter'
+import { errorHandler } from '../util'
 
 export const dockerfileImageReport: ReportFunction = async (repos: RepoInfo[]): Promise<void> => {
   const header: CSVWriterHeader = [
@@ -17,16 +18,20 @@ export const dockerfileImageReport: ReportFunction = async (repos: RepoInfo[]): 
 
   for (const repo of repos) {
     for (const branchName in repo.branches) {
-      for (const dep of repo.branches[branchName].deps) {
-        if (validDockerfile.Check(dep) && dep.fileType === FileTypeEnum.DOCKERFILE) {
-          const image = dep.image.replace(/\//g, '_') // slashes in image name will mess with file structure
-          if (imageReportWriters[dep.image] == null) {
-            imageReportWriters[dep.image] = new ReportDataWriter(`./src/data/reports/dockerfileImages/${image}.csv`, header)
+      try {
+        for (const dep of repo.branches[branchName].deps) {
+          if (validDockerfile.Check(dep) && dep.fileType === FileTypeEnum.DOCKERFILE) {
+            const image = dep.image.replace(/\//g, '_') // slashes in image name will mess with file structure
+            if (imageReportWriters[dep.image] == null) {
+              imageReportWriters[dep.image] = new ReportDataWriter(`./src/data/reports/dockerfileImages/${image}.csv`, header)
+            }
+            imageReportWriters[dep.image].data.push({
+              repoName: repo.name, image
+            })
           }
-          imageReportWriters[dep.image].data.push({
-            repoName: repo.name, image
-          })
         }
+      } catch (error) {
+        errorHandler(error, dockerfileImageReport.name, repo.name, branchName)
       }
     }
   }

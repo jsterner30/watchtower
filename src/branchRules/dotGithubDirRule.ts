@@ -3,6 +3,7 @@ import { Octokit } from '@octokit/rest'
 import JSZip from 'jszip'
 import { load } from 'js-yaml'
 import { logger } from '../util/logger'
+import { errorHandler } from '../util'
 
 export const dotGithubDirRule: BranchRule = async (octokit: Octokit, repo: RepoInfo, downloaded: JSZip, branchName: string, fileName: string): Promise<void> => {
   try {
@@ -17,11 +18,7 @@ export const dotGithubDirRule: BranchRule = async (octokit: Octokit, repo: RepoI
       }
     }
   } catch (error) {
-    if (error instanceof Error) {
-      logger.error(`Error getting /.github/ dir files for repo: ${repo.name}, branch: ${branchName}, error: ${error.message}`)
-    } else {
-      logger.error(`Error getting .github/ dir files for repo: ${repo.name}, branch: ${branchName}, error: ${error as string}`)
-    }
+    errorHandler(error, dotGithubDirRule.name, repo.name, branchName)
   }
 }
 

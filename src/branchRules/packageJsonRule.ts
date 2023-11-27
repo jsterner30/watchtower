@@ -1,7 +1,7 @@
 import { type BranchRule, FileTypeEnum, PackageJsonFile, type RepoInfo } from '../types'
 import { Octokit } from '@octokit/rest'
 import JSZip from 'jszip'
-import { logger } from '../util/logger'
+import { errorHandler } from '../util'
 
 export const packageJsonRule: BranchRule = async (octokit: Octokit, repo: RepoInfo, downloaded: JSZip, branchName: string, fileName: string): Promise<void> => {
   try {
@@ -9,11 +9,7 @@ export const packageJsonRule: BranchRule = async (octokit: Octokit, repo: RepoIn
       repo.branches[branchName].deps.push(parsePackageJson(await downloaded.files[fileName].async('string'), fileName))
     }
   } catch (error) {
-    if (error instanceof Error) {
-      logger.error(`Error getting package.json file for repo: ${repo.name}, branch: ${branchName}, error: ${error.message}`)
-    } else {
-      logger.error(`Error getting package.json file for repo: ${repo.name}, branch: ${branchName}, error: ${error as string}`)
-    }
+    errorHandler(error, packageJsonRule.name, repo.name, branchName)
   }
 }
 

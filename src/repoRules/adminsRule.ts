@@ -1,6 +1,6 @@
 import { Octokit } from '@octokit/rest'
-import { getEnv } from '../util'
-import { logger } from '../util/logger'
+import { getEnv, errorHandler } from '../util'
+
 import type { RepoInfo, RepoRule } from '../types'
 
 export const adminsRule: RepoRule = async (octokit: Octokit, repo: RepoInfo): Promise<void> => {
@@ -17,10 +17,6 @@ export const adminsRule: RepoRule = async (octokit: Octokit, repo: RepoInfo): Pr
       repo.admins = admins.map((admin) => admin.login)
     }
   } catch (error) {
-    if (error instanceof Error) {
-      logger.error(`Error getting admins for repo: ${repo.name}: ${error.message}`)
-    } else {
-      logger.error(`Error getting admins for repo: ${repo.name}: ${error as string}`)
-    }
+    errorHandler(error, adminsRule.name, repo.name)
   }
 }

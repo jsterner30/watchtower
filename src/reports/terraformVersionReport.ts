@@ -5,6 +5,7 @@ import {
 } from '../types'
 import { compare, validate } from 'compare-versions'
 import ReportDataWriter from '../util/reportDataWriter'
+import { errorHandler } from '../util'
 
 export const terraformVersionReport: ReportFunction = async (repos: RepoInfo[]): Promise<void> => {
   const startingLowestVersion = '100.0.0'
@@ -48,73 +49,77 @@ export const terraformVersionReport: ReportFunction = async (repos: RepoInfo[]):
     }
 
     for (const branchName in repo.branches) {
-      const branchTerraformFiles: Array<Record<string, any>> = []
+      try {
+        const branchTerraformFiles: Array<Record<string, any>> = []
 
-      for (const dep of repo.branches[branchName].deps) {
-        if (validTerraformFile.Check(dep) && dep.fileType === FileTypeEnum.TERRAFORM) {
-          // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
-          if (dep.contents.terraform?.[0]?.required_version != null) {
-            branchTerraformFiles.push({
-              fileName: dep.fileName,
-              version: removeComparatorsInVersion(dep.contents.terraform?.[0].required_version)
-            })
-          }
-        } else if (validGHAFile.Check(dep) && dep.fileType === FileTypeEnum.GITHUB_ACTION) {
-          if (dep.contents.env?.tf_version != null) {
-            branchTerraformFiles.push({ fileName: dep.fileName, version: removeComparatorsInVersion(dep.contents.env.tf_version) })
-          }
-        }
-      }
-
-      if (branchTerraformFiles.length === 0) {
-        // no node files in repo branch
-        continue
-      }
-
-      let lowestVersion = startingLowestVersion
-      let highestVersion = startingHighestVersion
-      const terraformBranchReport: Record<string, any> = {
-        repoName: repo.name,
-        branchName
-      }
-
-      for (const versionFile of branchTerraformFiles) {
-        if (validate(versionFile.version)) {
-          if (compare(lowestVersion, versionFile.version, '>')) {
-            lowestVersion = versionFile.version
-          }
-          if (compare(highestVersion, versionFile.version, '<')) {
-            highestVersion = versionFile.version
+        for (const dep of repo.branches[branchName].deps) {
+          if (validTerraformFile.Check(dep) && dep.fileType === FileTypeEnum.TERRAFORM) {
+            // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+            if (dep.contents.terraform?.[0]?.required_version != null) {
+              branchTerraformFiles.push({
+                fileName: dep.fileName,
+                version: removeComparatorsInVersion(dep.contents.terraform?.[0].required_version)
+              })
+            }
+          } else if (validGHAFile.Check(dep) && dep.fileType === FileTypeEnum.GITHUB_ACTION) {
+            if (dep.contents.env?.tf_version != null) {
+              branchTerraformFiles.push({ fileName: dep.fileName, version: removeComparatorsInVersion(dep.contents.env.tf_version) })
+            }
           }
         }
-      }
-      terraformBranchReport.lowestVersion = lowestVersion
-      terraformBranchReport.highestVersion = highestVersion
 
-      if (lowestVersion !== startingLowestVersion && highestVersion !== startingHighestVersion) {
-        if (!repo.branches[branchName].staleBranch) {
-          nonStaleBranchesWriter.data.push(terraformBranchReport)
-          if (compare(terraformBranchReport.lowestVersion, repoNonStaleBranchesNodeReport.lowestVersion, '<')) {
-            repoNonStaleBranchesNodeReport.lowestVersion = terraformBranchReport.lowestVersion
-          }
-          if (compare(terraformBranchReport.highestVersion, repoNonStaleBranchesNodeReport.highestVersion, '>')) {
-            repoNonStaleBranchesNodeReport.highestVersion = terraformBranchReport.highestVersion
-          }
+        if (branchTerraformFiles.length === 0) {
+          // no node files in repo branch
+          continue
         }
-        if (compare(terraformBranchReport.lowestVersion, repoAllBranchesNodeReport.lowestVersion, '<')) {
-          repoAllBranchesNodeReport.lowestVersion = terraformBranchReport.lowestVersion
-        }
-        if (compare(terraformBranchReport.highestVersion, repoAllBranchesNodeReport.highestVersion, '>')) {
-          repoAllBranchesNodeReport.highestVersion = terraformBranchReport.highestVersion
-        }
-        allBranchesWriter.data.push(terraformBranchReport)
-      }
 
-      if (repoNonStaleBranchesNodeReport.highestVersion !== startingHighestVersion && repoNonStaleBranchesNodeReport.lowestVersion !== startingLowestVersion) {
-        nonStaleReposWriter.data.push(repoNonStaleBranchesNodeReport)
-      }
-      if (repoAllBranchesNodeReport.highestVersion !== startingHighestVersion && repoAllBranchesNodeReport.lowestVersion !== startingLowestVersion) {
-        allReposWriter.data.push(repoAllBranchesNodeReport)
+        let lowestVersion = startingLowestVersion
+        let highestVersion = startingHighestVersion
+        const terraformBranchReport: Record<string, any> = {
+          repoName: repo.name,
+          branchName
+        }
+
+        for (const versionFile of branchTerraformFiles) {
+          if (validate(versionFile.version)) {
+            if (compare(lowestVersion, versionFile.version, '>')) {
+              lowestVersion = versionFile.version
+            }
+            if (compare(highestVersion, versionFile.version, '<')) {
+              highestVersion = versionFile.version
+            }
+          }
+        }
+        terraformBranchReport.lowestVersion = lowestVersion
+        terraformBranchReport.highestVersion = highestVersion
+
+        if (lowestVersion !== startingLowestVersion && highestVersion !== startingHighestVersion) {
+          if (!repo.branches[branchName].staleBranch) {
+            nonStaleBranchesWriter.data.push(terraformBranchReport)
+            if (compare(terraformBranchReport.lowestVersion, repoNonStaleBranchesNodeReport.lowestVersion, '<')) {
+              repoNonStaleBranchesNodeReport.lowestVersion = terraformBranchReport.lowestVersion
+            }
+            if (compare(terraformBranchReport.highestVersion, repoNonStaleBranchesNodeReport.highestVersion, '>')) {
+              repoNonStaleBranchesNodeReport.highestVersion = terraformBranchReport.highestVersion
+            }
+          }
+          if (compare(terraformBranchReport.lowestVersion, repoAllBranchesNodeReport.lowestVersion, '<')) {
+            repoAllBranchesNodeReport.lowestVersion = terraformBranchReport.lowestVersion
+          }
+          if (compare(terraformBranchReport.highestVersion, repoAllBranchesNodeReport.highestVersion, '>')) {
+            repoAllBranchesNodeReport.highestVersion = terraformBranchReport.highestVersion
+          }
+          allBranchesWriter.data.push(terraformBranchReport)
+        }
+
+        if (repoNonStaleBranchesNodeReport.highestVersion !== startingHighestVersion && repoNonStaleBranchesNodeReport.lowestVersion !== startingLowestVersion) {
+          nonStaleReposWriter.data.push(repoNonStaleBranchesNodeReport)
+        }
+        if (repoAllBranchesNodeReport.highestVersion !== startingHighestVersion && repoAllBranchesNodeReport.lowestVersion !== startingLowestVersion) {
+          allReposWriter.data.push(repoAllBranchesNodeReport)
+        }
+      } catch (error) {
+        errorHandler(error, terraformVersionReport.name, repo.name, branchName)
       }
     }
   }

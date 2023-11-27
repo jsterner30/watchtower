@@ -5,6 +5,7 @@ import {
   FileTypeEnum, CSVWriterHeader
 } from '../types'
 import ReportDataWriter from '../util/reportDataWriter'
+import { errorHandler } from '../util'
 
 export const ghActionModuleReport: ReportFunction = async (repos: RepoInfo[]): Promise<void> => {
   const header: CSVWriterHeader = [
@@ -17,26 +18,28 @@ export const ghActionModuleReport: ReportFunction = async (repos: RepoInfo[]): P
 
   for (const repo of repos) {
     for (const branchName in repo.branches) {
-      for (const dep of repo.branches[branchName].deps) {
-        if (validGHAFile.Check(dep) && dep.fileType === FileTypeEnum.GITHUB_ACTION) {
-          if (dep.contents.jobs != null) {
-            for (const jobName in dep.contents.jobs) {
-              if (dep.contents.jobs[jobName].steps != null) {
-                for (const step of dep.contents.jobs[jobName].steps) {
-                  if (step.uses != null) {
-                    const moduleString = step.uses.split('@')
-                    if (moduleString[1] != null) {
-                      const moduleName: string = moduleString[1]
-                      const version = moduleString[0]
-                      if (actionModuleWriters[moduleName] == null) {
-                        actionModuleWriters[moduleName] = new ReportDataWriter(`./src/data/reports/GHAModules/${moduleName}.csv`, header)
-                      }
+      try {
+        for (const dep of repo.branches[branchName].deps) {
+          if (validGHAFile.Check(dep) && dep.fileType === FileTypeEnum.GITHUB_ACTION) {
+            if (dep.contents.jobs != null) {
+              for (const jobName in dep.contents.jobs) {
+                if (dep.contents.jobs[jobName].steps != null) {
+                  for (const step of dep.contents.jobs[jobName].steps) {
+                    if (step.uses != null) {
+                      const moduleString = step.uses.split('@')
+                      if (moduleString[1] != null) {
+                        const moduleName: string = moduleString[1]
+                        const version = moduleString[0]
+                        if (actionModuleWriters[moduleName] == null) {
+                          actionModuleWriters[moduleName] = new ReportDataWriter(`./src/data/reports/GHAModules/${moduleName}.csv`, header)
+                        }
 
-                      actionModuleWriters[moduleName].data.push({
-                        repoName: repo.name,
-                        branchName,
-                        version
-                      })
+                        actionModuleWriters[moduleName].data.push({
+                          repoName: repo.name,
+                          branchName,
+                          version
+                        })
+                      }
                     }
                   }
                 }
@@ -44,6 +47,8 @@ export const ghActionModuleReport: ReportFunction = async (repos: RepoInfo[]): P
             }
           }
         }
+      } catch (error) {
+        errorHandler(error, ghActionModuleReport.name, repo.name, branchName)
       }
     }
   }

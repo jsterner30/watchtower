@@ -80,3 +80,21 @@ export async function createDataDirectoriesIfNonexistent (): Promise<void> {
     await createDirectoryIfNotExist(dirPath)
   }
 }
+
+export function errorHandler (error: unknown, functionName: string, repoName: string = '', branchName: string = ''): void {
+  let errorMessage = ''
+  if (error instanceof Error) {
+    errorMessage = error.message
+  } else {
+    errorMessage = error as string
+  }
+  if (repoName !== '') {
+    if (branchName !== '') {
+      logger.error(`Error in ${functionName} for repo: ${repoName}, for branch: ${branchName}, error: ${errorMessage}`)
+    } else {
+      logger.error(`Error in ${functionName} for repo: ${repoName}, error: ${errorMessage}`)
+    }
+  } else {
+    logger.error(`Error in ${functionName}, error: ${errorMessage}`)
+  }
+}

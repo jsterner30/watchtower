@@ -6,6 +6,7 @@ import {
 } from '../types'
 import { compare, validate } from 'compare-versions'
 import ReportDataWriter from '../util/reportDataWriter'
+import { errorHandler } from '../util'
 
 export const nodeVersionReport: ReportFunction = async (repos: RepoInfo[]): Promise<void> => {
   const startingLowestVersion = '100.0.0'
@@ -49,73 +50,77 @@ export const nodeVersionReport: ReportFunction = async (repos: RepoInfo[]): Prom
       highestVersion: startingHighestVersion
     }
     for (const branchName in repo.branches) {
-      const branchNodeFiles: Array<Record<string, any>> = []
+      try {
+        const branchNodeFiles: Array<Record<string, any>> = []
 
-      for (const dep of repo.branches[branchName].deps) {
-        if (validDockerfile.Check(dep) && dep.fileType === FileTypeEnum.DOCKERFILE) {
-          if (dep.image.includes('node')) {
-            // The code below will return "-1" if the node version is simply "node". Else, it will return "18.13.18-slim" if the image is "node:18.13.18-slim"
-            const version = dep.image.split('node')[1] === '' ? '-1' : dep.image.split('node')[1].slice(1, dep.image.split('node')[1].length)
-            branchNodeFiles.push({ fileName: dep.fileName, version })
-          }
-        } else if (validGHAFile.Check(dep) && dep.fileType === FileTypeEnum.GITHUB_ACTION) {
-          if (dep.contents.env?.node_version != null) {
-            branchNodeFiles.push({ fileName: dep.fileName, version: dep.contents.env.node_version })
+        for (const dep of repo.branches[branchName].deps) {
+          if (validDockerfile.Check(dep) && dep.fileType === FileTypeEnum.DOCKERFILE) {
+            if (dep.image.includes('node')) {
+              // The code below will return "-1" if the node version is simply "node". Else, it will return "18.13.18-slim" if the image is "node:18.13.18-slim"
+              const version = dep.image.split('node')[1] === '' ? '-1' : dep.image.split('node')[1].slice(1, dep.image.split('node')[1].length)
+              branchNodeFiles.push({ fileName: dep.fileName, version })
+            }
+          } else if (validGHAFile.Check(dep) && dep.fileType === FileTypeEnum.GITHUB_ACTION) {
+            if (dep.contents.env?.node_version != null) {
+              branchNodeFiles.push({ fileName: dep.fileName, version: dep.contents.env.node_version })
+            }
           }
         }
-      }
-      if (branchNodeFiles.length === 0) {
-        // no node files in repo branch
-        continue
-      }
-
-      let lowestVersion = startingLowestVersion
-      let highestVersion = startingHighestVersion
-      const nodeBranchReport: Record<string, any> = {
-        repoName: repo.name,
-        branchName,
-        unspecifiedVersion: false
-      }
-
-      for (const versionFile of branchNodeFiles) {
-        if (versionFile.version === '-1') {
-          nodeBranchReport.unspecifiedVersion = true
-        } else if (validate(versionFile.version)) {
-          if (compare(lowestVersion, versionFile.version, '>')) {
-            lowestVersion = versionFile.version
-          }
-          if (compare(highestVersion, versionFile.version, '<')) {
-            highestVersion = versionFile.version
-          }
+        if (branchNodeFiles.length === 0) {
+          // no node files in repo branch
+          continue
         }
-      }
-      nodeBranchReport.lowestVersion = lowestVersion
-      nodeBranchReport.highestVersion = highestVersion
 
-      if (lowestVersion !== startingLowestVersion && highestVersion !== startingHighestVersion) {
-        if (!repo.branches[branchName].staleBranch) {
-          nonStaleBranchesWriter.data.push(nodeBranchReport)
-          if (compare(nodeBranchReport.lowestVersion, repoNonStaleBranchesNodeReport.lowestVersion, '<')) {
-            repoNonStaleBranchesNodeReport.lowestVersion = nodeBranchReport.lowestVersion
-          }
-          if (compare(nodeBranchReport.highestVersion, repoNonStaleBranchesNodeReport.highestVersion, '>')) {
-            repoNonStaleBranchesNodeReport.highestVersion = nodeBranchReport.highestVersion
+        let lowestVersion = startingLowestVersion
+        let highestVersion = startingHighestVersion
+        const nodeBranchReport: Record<string, any> = {
+          repoName: repo.name,
+          branchName,
+          unspecifiedVersion: false
+        }
+
+        for (const versionFile of branchNodeFiles) {
+          if (versionFile.version === '-1') {
+            nodeBranchReport.unspecifiedVersion = true
+          } else if (validate(versionFile.version)) {
+            if (compare(lowestVersion, versionFile.version, '>')) {
+              lowestVersion = versionFile.version
+            }
+            if (compare(highestVersion, versionFile.version, '<')) {
+              highestVersion = versionFile.version
+            }
           }
         }
-        if (compare(nodeBranchReport.lowestVersion, repoAllBranchesNodeReport.lowestVersion, '<')) {
-          repoAllBranchesNodeReport.lowestVersion = nodeBranchReport.lowestVersion
-        }
-        if (compare(nodeBranchReport.highestVersion, repoAllBranchesNodeReport.highestVersion, '>')) {
-          repoAllBranchesNodeReport.highestVersion = nodeBranchReport.highestVersion
-        }
-        allBranchesWriter.data.push(nodeBranchReport)
-      }
+        nodeBranchReport.lowestVersion = lowestVersion
+        nodeBranchReport.highestVersion = highestVersion
 
-      if (repoNonStaleBranchesNodeReport.highestVersion !== startingHighestVersion && repoNonStaleBranchesNodeReport.lowestVersion !== startingLowestVersion) {
-        nonStaleReposWriter.data.push(repoNonStaleBranchesNodeReport)
-      }
-      if (repoAllBranchesNodeReport.highestVersion !== startingHighestVersion && repoAllBranchesNodeReport.lowestVersion !== startingLowestVersion) {
-        allReposWriter.data.push(repoAllBranchesNodeReport)
+        if (lowestVersion !== startingLowestVersion && highestVersion !== startingHighestVersion) {
+          if (!repo.branches[branchName].staleBranch) {
+            nonStaleBranchesWriter.data.push(nodeBranchReport)
+            if (compare(nodeBranchReport.lowestVersion, repoNonStaleBranchesNodeReport.lowestVersion, '<')) {
+              repoNonStaleBranchesNodeReport.lowestVersion = nodeBranchReport.lowestVersion
+            }
+            if (compare(nodeBranchReport.highestVersion, repoNonStaleBranchesNodeReport.highestVersion, '>')) {
+              repoNonStaleBranchesNodeReport.highestVersion = nodeBranchReport.highestVersion
+            }
+          }
+          if (compare(nodeBranchReport.lowestVersion, repoAllBranchesNodeReport.lowestVersion, '<')) {
+            repoAllBranchesNodeReport.lowestVersion = nodeBranchReport.lowestVersion
+          }
+          if (compare(nodeBranchReport.highestVersion, repoAllBranchesNodeReport.highestVersion, '>')) {
+            repoAllBranchesNodeReport.highestVersion = nodeBranchReport.highestVersion
+          }
+          allBranchesWriter.data.push(nodeBranchReport)
+        }
+
+        if (repoNonStaleBranchesNodeReport.highestVersion !== startingHighestVersion && repoNonStaleBranchesNodeReport.lowestVersion !== startingLowestVersion) {
+          nonStaleReposWriter.data.push(repoNonStaleBranchesNodeReport)
+        }
+        if (repoAllBranchesNodeReport.highestVersion !== startingHighestVersion && repoAllBranchesNodeReport.lowestVersion !== startingLowestVersion) {
+          allReposWriter.data.push(repoAllBranchesNodeReport)
+        }
+      } catch (error) {
+        errorHandler(error, nodeVersionReport.name, repo.name, branchName)
       }
     }
   }

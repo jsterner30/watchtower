@@ -1,6 +1,5 @@
 import { Octokit } from '@octokit/rest'
-import { getEnv } from '../util'
-import { logger } from '../util/logger'
+import { errorHandler, getEnv } from '../util'
 import type { RepoInfo, RepoRule } from '../types'
 
 export const openIssueRule: RepoRule = async (octokit: Octokit, repo: RepoInfo): Promise<void> => {
@@ -24,10 +23,6 @@ export const openIssueRule: RepoRule = async (octokit: Octokit, repo: RepoInfo):
       }))
     }
   } catch (error) {
-    if (error instanceof Error) {
-      logger.error(`Error getting issues for repo: ${repo.name}: ${error.message}`)
-    } else {
-      logger.error(`Error getting issues for repo: ${repo.name}: ${error as string}`)
-    }
+    errorHandler(error, openIssueRule.name, repo.name)
   }
 }

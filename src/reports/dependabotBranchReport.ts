@@ -3,6 +3,7 @@ import {
   type ReportFunction
 } from '../types'
 import ReportDataWriter from '../util/reportDataWriter'
+import { errorHandler } from '../util'
 
 export const dependabotBranchReport: ReportFunction = async (repos: RepoInfo[]): Promise<void> => {
   const header = [
@@ -14,8 +15,12 @@ export const dependabotBranchReport: ReportFunction = async (repos: RepoInfo[]):
   for (const repo of repos) {
     let count = 0
     for (const branchName in repo.branches) {
-      if (repo.branches[branchName].dependabot) {
-        count++
+      try {
+        if (repo.branches[branchName].dependabot) {
+          count++
+        }
+      } catch (error) {
+        errorHandler(error, dependabotBranchReport.name, repo.name, branchName)
       }
     }
 

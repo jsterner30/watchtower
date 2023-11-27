@@ -1,6 +1,5 @@
 import { Octokit } from '@octokit/rest'
-import { getEnv } from '../util'
-import { logger } from '../util/logger'
+import { errorHandler, getEnv } from '../util'
 import type { RepoInfo, RepoRule } from '../types'
 
 export const openPullRequestsRule: RepoRule = async (octokit: Octokit, repo: RepoInfo): Promise<void> => {
@@ -27,10 +26,6 @@ export const openPullRequestsRule: RepoRule = async (octokit: Octokit, repo: Rep
       }))
     }
   } catch (error) {
-    if (error instanceof Error) {
-      logger.error(`Error getting open PRs for repo: ${repo.name}: ${error.message}`)
-    } else {
-      logger.error(`Error getting open PRs for repo: ${repo.name}: ${error as string}`)
-    }
+    errorHandler(error, openPullRequestsRule.name, repo.name)
   }
 }

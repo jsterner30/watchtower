@@ -1,8 +1,8 @@
 import { Octokit } from '@octokit/rest'
 import JSZip from 'jszip'
-import { logger } from '../util/logger'
 import { type BranchRule, DockerComposeFile, type RepoInfo, FileTypeEnum } from '../types'
 import { load } from 'js-yaml'
+import { errorHandler } from '../util'
 
 export const dockerComposeRule: BranchRule = async (octokit: Octokit, repo: RepoInfo, downloaded: JSZip, branchName: string, fileName: string): Promise<void> => {
   try {
@@ -11,11 +11,7 @@ export const dockerComposeRule: BranchRule = async (octokit: Octokit, repo: Repo
       repo.branches[branchName].deps.push(parseDockerCompose(content, fileName))
     }
   } catch (error) {
-    if (error instanceof Error) {
-      logger.error(`Error getting docker-compose file for repo: ${repo.name}, branch: ${branchName}, error: ${error.message}`)
-    } else {
-      logger.error(`Error getting docker-compose file for repo: ${repo.name}, branch: ${branchName}, error: ${error as string}`)
-    }
+    errorHandler(error, dockerComposeRule.name, repo.name, branchName)
   }
 }
 

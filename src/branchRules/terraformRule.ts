@@ -1,8 +1,8 @@
 import { Octokit } from '@octokit/rest'
 import JSZip from 'jszip'
-import { logger } from '../util/logger'
 import { parse } from '@cdktf/hcl2json'
 import { type BranchRule, FileTypeEnum, type RepoInfo, TerraformFile } from '../types'
+import { errorHandler } from '../util'
 
 export const terraformRule: BranchRule = async (octokit: Octokit, repo: RepoInfo, downloaded: JSZip, branchName: string, fileName: string): Promise<void> => {
   try {
@@ -10,14 +10,10 @@ export const terraformRule: BranchRule = async (octokit: Octokit, repo: RepoInfo
       const content = await downloaded.files[fileName].async('string')
       repo.branches[branchName].deps.push(await parseTerraformFile(fileName, content))
     } else if (fileName.endsWith('.tfvars')) {
-      // TODO parse tfvars file for secrets?
+      // TODO parse tfvars file to ensure there are no secrets?
     }
   } catch (error) {
-    if (error instanceof Error) {
-      logger.error(`Error getting terraform files for repo: ${repo.name}, branch: ${branchName}, error: ${error.message}`)
-    } else {
-      logger.error(`Error getting terraform files for repo: ${repo.name}, branch: ${branchName}, error: ${error as string}`)
-    }
+    errorHandler(error, terraformRule.name, repo.name, branchName)
   }
 }
 

@@ -1,6 +1,5 @@
 import { Octokit } from '@octokit/rest'
-import { getEnv } from '../util'
-import { logger } from '../util/logger'
+import { errorHandler, getEnv } from '../util'
 import type { RepoInfo, RepoRule } from '../types'
 
 export const teamsRule: RepoRule = async (octokit: Octokit, repo: RepoInfo): Promise<void> => {
@@ -18,10 +17,6 @@ export const teamsRule: RepoRule = async (octokit: Octokit, repo: RepoInfo): Pro
       repo.teams = teams.map((team) => team.slug)
     }
   } catch (error) {
-    if (error instanceof Error) {
-      logger.error(`Error getting teams for repo: ${repo.name}: ${error.message}`)
-    } else {
-      logger.error(`Error getting teams for repo: ${repo.name}: ${error as string}`)
-    }
+    errorHandler(error, teamsRule.name, repo.name)
   }
 }

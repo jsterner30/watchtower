@@ -1,7 +1,7 @@
 import { type BranchRule, FileTypeEnum, GitignoreFile, type RepoInfo } from '../types'
 import { Octokit } from '@octokit/rest'
 import JSZip from 'jszip'
-import { logger } from '../util/logger'
+import { errorHandler } from '../util'
 
 export const gitignoreRule: BranchRule = async (octokit: Octokit, repo: RepoInfo, downloaded: JSZip, branchName: string, fileName: string): Promise<void> => {
   try {
@@ -10,11 +10,7 @@ export const gitignoreRule: BranchRule = async (octokit: Octokit, repo: RepoInfo
       repo.branches[branchName].deps.push(parseGitignore(content, fileName))
     }
   } catch (error) {
-    if (error instanceof Error) {
-      logger.error(`Error getting .gitignore for repo: ${repo.name}, branch: ${branchName}, error: ${error.message}`)
-    } else {
-      logger.error(`Error getting .gitignore for repo: ${repo.name}, branch: ${branchName}, error: ${error as string}`)
-    }
+    errorHandler(error, gitignoreRule.name, repo.name, branchName)
   }
 }
 

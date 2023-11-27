@@ -1,6 +1,5 @@
 import { Octokit } from '@octokit/rest'
-import { getEnv } from '../util'
-import { logger } from '../util/logger'
+import { errorHandler, getEnv } from '../util'
 import type { RepoInfo, RepoRule } from '../types'
 
 export const latestCommitRule: RepoRule = async (octokit: Octokit, repo: RepoInfo): Promise<void> => {
@@ -16,10 +15,6 @@ export const latestCommitRule: RepoRule = async (octokit: Octokit, repo: RepoInf
       repo.lastCommit.author = commits[0].commit.author?.name ?? ''
     }
   } catch (error) {
-    if (error instanceof Error) {
-      logger.error(`Error getting last commit for repo: ${repo.name}: ${error.message}`)
-    } else {
-      logger.error(`Error getting last commit info for repo: ${repo.name}: ${error as string}`)
-    }
+    errorHandler(error, latestCommitRule.name, repo.name)
   }
 }

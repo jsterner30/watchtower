@@ -3,6 +3,7 @@ import {
   type ReportFunction
 } from '../types'
 import ReportDataWriter from '../util/reportDataWriter'
+import { errorHandler } from '../util'
 
 export const staleBranchReport: ReportFunction = async (repos: RepoInfo[]): Promise<void> => {
   const header = [
@@ -13,17 +14,21 @@ export const staleBranchReport: ReportFunction = async (repos: RepoInfo[]): Prom
   const dependabotWriter = new ReportDataWriter('./src/data/reports/StaleBranchReport.csv', header)
 
   for (const repo of repos) {
-    let count = 0
-    for (const branchName in repo.branches) {
-      if (repo.branches[branchName].staleBranch) {
-        count++
+    try {
+      let count = 0
+      for (const branchName in repo.branches) {
+        if (repo.branches[branchName].staleBranch) {
+          count++
+        }
       }
-    }
 
-    dependabotWriter.data.push({
-      repoName: repo.name,
-      count
-    })
+      dependabotWriter.data.push({
+        repoName: repo.name,
+        count
+      })
+    } catch (error) {
+      errorHandler(error, staleBranchReport.name, repo.name)
+    }
   }
 
   await dependabotWriter.write()
