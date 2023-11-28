@@ -30,7 +30,7 @@ export const dockerfileImageReport: ReportFunction = async (repos: RepoInfo[]): 
             imageReportWriters[image].data.push({
               repoName: repo.name,
               branchName,
-              image: image,
+              image,
               version: versionImageArray[1] ?? '?'
             })
           }

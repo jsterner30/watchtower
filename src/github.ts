@@ -1,8 +1,8 @@
 import {
   readJsonFromFile,
   writeJsonToFile,
-  getEnv,
-  ProgressBarManager
+  getEnv
+  // ProgressBarManager
 } from './util'
 import { logger } from './util/logger'
 import { Octokit } from '@octokit/rest'
@@ -126,12 +126,12 @@ export async function downloadReposAndApplyRules (reposWithBranchesFile: CacheFi
   const reposWithBranches = reposWithBranchesFile.info
   const repoNames = Object.keys(reposWithBranches)
 
-  const totalOperations = parseInt(reposWithBranchesFile.metadata.branchCount) + parseInt(reposWithBranchesFile.metadata.repoCount)
-  const progress = new ProgressBarManager(totalOperations, 'Running rules on', [{ displayName: 'Current Repo', token: 'currentRepo' }, { displayName: 'Current Branch', token: 'currentBranch' }])
-  progress.start()
+  // const totalOperations = parseInt(reposWithBranchesFile.metadata.branchCount) + parseInt(reposWithBranchesFile.metadata.repoCount)
+  // const progress = new ProgressBarManager(totalOperations, 'Running rules on', [{ displayName: 'Current Repo', token: 'currentRepo' }, { displayName: 'Current Branch', token: 'currentBranch' }])
+  // progress.start()
 
   for (const repoName of repoNames) {
-    progress.update([{ displayName: 'Current Repo', token: 'currentRepo', value: repoName }, { displayName: 'Current Branch', token: 'currentBranch', value: '---' }])
+    // progress.update([{ displayName: 'Current Repo', token: 'currentRepo', value: repoName }, { displayName: 'Current Branch', token: 'currentBranch', value: '---' }])
 
     const repo = reposWithBranches[repoName]
     await latestCommitRule(octokit, repo)
@@ -139,7 +139,7 @@ export async function downloadReposAndApplyRules (reposWithBranchesFile: CacheFi
     if (repo.lastCommit.date > lastRunDate) {
       await runRepoRules(octokit, repo)
       for (const branchName of Object.keys(repo.branches)) {
-        progress.update([{ displayName: 'Current Repo', token: 'currentRepo', value: repoName }, { displayName: 'Current Branch', token: 'currentBranch', value: branchName }])
+        // progress.update([{ displayName: 'Current Repo', token: 'currentRepo', value: repoName }, { displayName: 'Current Branch', token: 'currentBranch', value: branchName }])
         if (!repo.branches[branchName].dependabot) {
           if (repo.branches[branchName].lastCommit.date > lastRunDate) {
             const downloaded = await downloadRepoToMemory(octokit, repoName, branchName)
@@ -250,13 +250,13 @@ export async function getBranches (octokit: Octokit, repos: RepoInfo[]): Promise
   if (filteredWithBranchesWithMeta == null || (Object.keys(filteredWithBranchesWithMeta.info)).length === 0 || !readFromFile) {
     logger.info('Getting all repos in org and writing them to allRepos.json file')
     const filteredWithBranches: Record<string, any> = {}
-    const progress = new ProgressBarManager(repos.length, 'Getting branch info for repos', [{ displayName: 'Current Repo', token: 'currentRepo' }])
-    progress.start()
+    // const progress = new ProgressBarManager(repos.length, 'Getting branch info for repos', [{ displayName: 'Current Repo', token: 'currentRepo' }])
+    // progress.start()
     let branchCount = 0
 
     for (const repo of repos) {
       try {
-        progress.update([{ displayName: 'Current Repo', token: 'currentRepo', value: repo.name }])
+        // progress.update([{ displayName: 'Current Repo', token: 'currentRepo', value: repo.name }])
 
         let page = 1
         let branches: any[] = []

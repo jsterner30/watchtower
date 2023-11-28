@@ -17,7 +17,9 @@ export async function getLastRunDate (): Promise<Info> {
 
 export async function setLastRunDate (): Promise<void> {
   try {
-    await writeJsonToFile({ lastRunDate: new Date().toISOString() }, './lastRunDate.json')
+    const currentDate = new Date()
+    const fourHoursAgo = new Date(currentDate.setHours(currentDate.getHours() - 4))
+    await writeJsonToFile({ lastRunDate: fourHoursAgo.toISOString() }, './lastRunDate.json') // set to four hours ago just to be safe
   } catch (error) {
     if (error instanceof Error) {
       logger.error(`Error writing lastRunDate to lastRunDate.json file: ${error.message}`)
