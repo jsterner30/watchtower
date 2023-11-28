@@ -12,7 +12,7 @@ export const reposWithoutNewCommitsReport: ReportFunction = async (repos: RepoIn
     { id: 'lastCommitUser', title: 'Last Commit User' }
   ]
 
-  const oldRepoWriter = new ReportDataWriter('./src/data/reports/ReposWithoutNewCommits.csv', header)
+  const oldRepoWriter = new ReportDataWriter('./data/reports/ReposWithoutNewCommits.csv', header)
 
   for (const repo of repos) {
     try {

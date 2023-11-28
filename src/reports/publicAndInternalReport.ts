@@ -11,7 +11,7 @@ export const publicAndInternalReport: ReportFunction = async (repos: RepoInfo[])
     { id: 'visibility', title: 'Visibility' }
   ]
 
-  const publicAndInternalWriter = new ReportDataWriter('./src/data/reports/PublicAndInternalReport.csv', header)
+  const publicAndInternalWriter = new ReportDataWriter('./data/reports/PublicAndInternalReport.csv', header)
 
   for (const repo of repos) {
     try {

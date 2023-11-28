@@ -25,16 +25,16 @@ export const terraformVersionReport: ReportFunction = async (repos: RepoInfo[]):
   ]
 
   // this report lists every branch that has terraform on it as a single row
-  const allBranchesWriter = new ReportDataWriter('./src/data/reports/terraform/TerraformVersionReport-AllBranches.csv', branchHeader)
+  const allBranchesWriter = new ReportDataWriter('./data/reports/terraform/TerraformVersionReport-AllBranches.csv', branchHeader)
 
   // this report lists every non-stale branch that has terraform on it as a single row
-  const nonStaleBranchesWriter = new ReportDataWriter('./src/data/reports/terraform/TerraformVersionReport-NonStaleBranches.csv', branchHeader)
+  const nonStaleBranchesWriter = new ReportDataWriter('./data/reports/terraform/TerraformVersionReport-NonStaleBranches.csv', branchHeader)
 
   // this report lists every repo that has terraform on it as a single row, giving the lowest/highest version on any branch of the repo
-  const allReposWriter = new ReportDataWriter('./src/data/reports/terraform/TerraformVersionReport-Repos-AllBranches.csv', repoHeader)
+  const allReposWriter = new ReportDataWriter('./data/reports/terraform/TerraformVersionReport-Repos-AllBranches.csv', repoHeader)
 
   // this report lists every repo that has terraform on it as a single row, giving the lowest/highest version on any non-stale branch of the repo
-  const nonStaleReposWriter = new ReportDataWriter('./src/data/reports/terraform/TerraformVersionReport-Repos-NonStaleBranches.csv', repoHeader)
+  const nonStaleReposWriter = new ReportDataWriter('./data/reports/terraform/TerraformVersionReport-Repos-NonStaleBranches.csv', repoHeader)
 
   for (const repo of repos) {
     const repoAllBranchesNodeReport = {

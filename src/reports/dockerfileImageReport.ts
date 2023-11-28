@@ -11,7 +11,8 @@ export const dockerfileImageReport: ReportFunction = async (repos: RepoInfo[]): 
   const header: CSVWriterHeader = [
     { id: 'repoName', title: 'Repo' },
     { id: 'branchName', title: 'Branch' },
-    { id: 'image', title: 'Image' }
+    { id: 'image', title: 'Image' },
+    { id: 'version', title: 'Version' }
   ]
 
   const imageReportWriters: Record<string, ReportDataWriter> = {}
@@ -21,12 +22,16 @@ export const dockerfileImageReport: ReportFunction = async (repos: RepoInfo[]): 
       try {
         for (const dep of repo.branches[branchName].deps) {
           if (validDockerfile.Check(dep) && dep.fileType === FileTypeEnum.DOCKERFILE) {
-            const image = dep.image.replace(/\//g, '_') // slashes in image name will mess with file structure
-            if (imageReportWriters[dep.image] == null) {
-              imageReportWriters[dep.image] = new ReportDataWriter(`./src/data/reports/dockerfileImages/${image}.csv`, header)
+            const versionImageArray = dep.image.split(':')
+            const image = versionImageArray[0].replace(/\//g, '_') // slashes in image name will mess with file structure
+            if (imageReportWriters[image] == null) {
+              imageReportWriters[image] = new ReportDataWriter(`./data/reports/dockerfileImages/${image}.csv`, header)
             }
-            imageReportWriters[dep.image].data.push({
-              repoName: repo.name, image
+            imageReportWriters[image].data.push({
+              repoName: repo.name,
+              branchName,
+              image: image,
+              version: versionImageArray[1] ?? '?'
             })
           }
         }

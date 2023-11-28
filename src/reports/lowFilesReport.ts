@@ -6,10 +6,10 @@ import { errorHandler } from '../util'
 import ReportDataWriter from '../util/reportDataWriter'
 
 export const lowFilesReport: ReportFunction = async (repos: RepoInfo[]): Promise<void> => {
-  const lowFileRepoWriter = new ReportDataWriter('./src/data/reports/LowFileCountInRepoReport.csv',
+  const lowFileRepoWriter = new ReportDataWriter('./data/reports/LowFileCountInRepoReport.csv',
     [{ id: 'repoName', title: 'Repo' }, { id: 'fileCount', title: 'FileCount' }])
 
-  const lowFileBranchWriter = new ReportDataWriter('./src/data/reports/LowFileCountOnBranchReport.csv',
+  const lowFileBranchWriter = new ReportDataWriter('./data/reports/LowFileCountOnBranchReport.csv',
     [{ id: 'repoName', title: 'Repo' }, { id: 'branchName', title: 'Branch' }, { id: 'fileCount', title: 'FileCount' }])
 
   for (const repo of repos) {

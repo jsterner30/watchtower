@@ -28,10 +28,10 @@ export const ghActionModuleReport: ReportFunction = async (repos: RepoInfo[]): P
                     if (step.uses != null) {
                       const moduleString = step.uses.split('@')
                       if (moduleString[1] != null) {
-                        const moduleName: string = moduleString[1]
-                        const version = moduleString[0]
+                        const moduleName: string = moduleString[0].replace(/\//g, '_') // slashes or action name will mess with file structure
+                        const version = moduleString[1]
                         if (actionModuleWriters[moduleName] == null) {
-                          actionModuleWriters[moduleName] = new ReportDataWriter(`./src/data/reports/GHAModules/${moduleName}.csv`, header)
+                          actionModuleWriters[moduleName] = new ReportDataWriter(`./data/reports/GHAModules/${moduleName}.csv`, header)
                         }
 
                         actionModuleWriters[moduleName].data.push({

@@ -5,7 +5,7 @@ import { errorHandler } from '../util'
 
 export const dockerfileRule: BranchRule = async (octokit: Octokit, repo: RepoInfo, downloaded: JSZip, branchName: string, fileName: string): Promise<void> => {
   try {
-    if (downloaded.files[fileName].name.includes('Dockerfile')) {
+    if (downloaded.files[fileName].name.endsWith('Dockerfile')) {
       const content = await downloaded.files[fileName].async('string')
       repo.branches[branchName].deps.push(parseDockerfile(content, fileName))
     }

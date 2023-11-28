@@ -11,7 +11,7 @@ export const staleBranchReport: ReportFunction = async (repos: RepoInfo[]): Prom
     { id: 'count', title: 'Count' }
   ]
 
-  const dependabotWriter = new ReportDataWriter('./src/data/reports/StaleBranchReport.csv', header)
+  const dependabotWriter = new ReportDataWriter('./data/reports/StaleBranchReport.csv', header)
 
   for (const repo of repos) {
     try {

@@ -7,7 +7,7 @@ import { errorHandler } from '../util'
 
 export const teamlessRepoReport: ReportFunction = async (repos: RepoInfo[]): Promise<void> => {
   const header = [{ id: 'repoName', title: 'Repo' }]
-  const teamlessReportWriter = new ReportDataWriter('./src/data/reports/TeamlessRepoReport.csv', header)
+  const teamlessReportWriter = new ReportDataWriter('./data/reports/TeamlessRepoReport.csv', header)
 
   for (const repo of repos) {
     try {

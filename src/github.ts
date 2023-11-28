@@ -51,7 +51,7 @@ import {
 
 export async function getAllReposInOrg (orgName: string, octokit: Octokit): Promise<CacheFile> {
   const readFromAllReposFile = true
-  let allReposWithMeta: CacheFile = await readJsonFromFile('./src/data/allRepos.json') as CacheFile
+  let allReposWithMeta: CacheFile = await readJsonFromFile(path.resolve('./data/allRepos.json')) as CacheFile
   if (allReposWithMeta == null || (Object.keys(allReposWithMeta.info)).length === 0 || !readFromAllReposFile) {
     logger.info('Getting all repos in org and writing them to allRepos.json file')
     const allRepos: Record<string, any> = {}
@@ -89,7 +89,7 @@ export async function getAllReposInOrg (orgName: string, octokit: Octokit): Prom
         info: repoInfoObj
       }
 
-      await writeJsonToFile(allReposWithMeta, './src/data/allRepos.json')
+      await writeJsonToFile(allReposWithMeta, path.resolve('./data/allRepos.json'))
     } catch (error) {
       console.error('Error occurred while fetching repositories:', error)
       throw error // Optionally rethrow the error for handling at a higher level
@@ -123,11 +123,6 @@ function createRepoInfo (rawRepo: Record<string, any>): RepoInfo {
 }
 
 export async function downloadReposAndApplyRules (reposWithBranchesFile: CacheFile, octokit: Octokit, lastRunDate: string): Promise<void> {
-  let finalFile = await readJsonFromFile('./src/data/repoInfo.json') as Record<string, any>
-  if (finalFile == null) {
-    finalFile = {}
-  }
-
   const reposWithBranches = reposWithBranchesFile.info
   const repoNames = Object.keys(reposWithBranches)
 
@@ -139,9 +134,10 @@ export async function downloadReposAndApplyRules (reposWithBranchesFile: CacheFi
     progress.update([{ displayName: 'Current Repo', token: 'currentRepo', value: repoName }, { displayName: 'Current Branch', token: 'currentBranch', value: '---' }])
 
     const repo = reposWithBranches[repoName]
+    await latestCommitRule(octokit, repo)
 
-    await runRepoRules(octokit, repo)
-    if (repo.lastCommit.date > lastRunDate || finalFile[repoName] == null) {
+    if (repo.lastCommit.date > lastRunDate) {
+      await runRepoRules(octokit, repo)
       for (const branchName of Object.keys(repo.branches)) {
         progress.update([{ displayName: 'Current Repo', token: 'currentRepo', value: repoName }, { displayName: 'Current Branch', token: 'currentBranch', value: branchName }])
         if (!repo.branches[branchName].dependabot) {
@@ -159,8 +155,7 @@ export async function downloadReposAndApplyRules (reposWithBranchesFile: CacheFi
           }
         }
       }
-      finalFile[repoName] = repo
-      await writeJsonToFile(repo, `./src/data/repoInfo/${repoName}.json`)
+      await writeJsonToFile(repo, `./data/repoInfo/${repoName}.json`)
     }
   }
 }
@@ -182,7 +177,6 @@ async function runSecondaryBranchRules (repo: RepoInfo, branchName: string): Pro
 }
 
 async function runRepoRules (octokit: Octokit, repo: RepoInfo): Promise<void> {
-  await latestCommitRule(octokit, repo)
   await adminsRule(octokit, repo)
   await teamsRule(octokit, repo)
   await openPullRequestsRule(octokit, repo)
@@ -191,11 +185,11 @@ async function runRepoRules (octokit: Octokit, repo: RepoInfo): Promise<void> {
 }
 
 export async function runReports (): Promise<void> {
-  const files = await fs.readdir('./src/data/repoInfo')
+  const files = await fs.readdir('./data/repoInfo')
   const repos: RepoInfo[] = []
 
   for (const file of files) {
-    const filePath = path.join('./src/data/repoInfo', file)
+    const filePath = path.join('./data/repoInfo', file)
     const repoInfo = await readJsonFromFile(filePath)
 
     if (repoInfo != null && validRepoInfo.Check(repoInfo)) {
@@ -251,7 +245,7 @@ export async function getProtectionRules (octokit: Octokit, repoName: string, br
 
 export async function getBranches (octokit: Octokit, repos: RepoInfo[]): Promise<CacheFile> {
   const readFromFile = true
-  let filteredWithBranchesWithMeta: CacheFile = await readJsonFromFile('./src/data/filteredWithBranches.json') as CacheFile
+  let filteredWithBranchesWithMeta: CacheFile = await readJsonFromFile('./data/filteredWithBranches.json') as CacheFile
 
   if (filteredWithBranchesWithMeta == null || (Object.keys(filteredWithBranchesWithMeta.info)).length === 0 || !readFromFile) {
     logger.info('Getting all repos in org and writing them to allRepos.json file')
@@ -320,7 +314,7 @@ export async function getBranches (octokit: Octokit, repos: RepoInfo[]): Promise
       info: filteredWithBranches
     }
 
-    await writeJsonToFile(filteredWithBranchesWithMeta, './src/data/filteredWithBranches.json')
+    await writeJsonToFile(filteredWithBranchesWithMeta, './data/filteredWithBranches.json')
   }
   return filteredWithBranchesWithMeta
 }
@@ -414,7 +408,7 @@ export async function searchOrganizationForStrings (octokit: Octokit, searchTerm
       reposWithTerms.push(termSubArray)
     }
     console.log(reposWithTerms)
-    await writeJsonToFile(reposWithTerms, './src/data/personsRepos.json')
+    await writeJsonToFile(reposWithTerms, './data/personsRepos.json')
   } catch (error) {
     console.error('Error occurred:', error)
   }

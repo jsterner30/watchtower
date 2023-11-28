@@ -10,7 +10,7 @@ export const dependabotBranchReport: ReportFunction = async (repos: RepoInfo[]):
     { id: 'repoName', title: 'Repo' },
     { id: 'count', title: 'Count' }
   ]
-  const dependabotReportWriter = new ReportDataWriter('./src/data/reports/DependabotBranchReport.csv', header)
+  const dependabotReportWriter = new ReportDataWriter('./data/reports/DependabotBranchReport.csv', header)
 
   for (const repo of repos) {
     let count = 0

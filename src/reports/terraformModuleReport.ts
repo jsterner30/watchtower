@@ -33,7 +33,7 @@ export const terraformModuleReport: ReportFunction = async (repos: RepoInfo[]): 
                   const version = splitUrl[1]
                   if (moduleName !== 'terraform-aws-<module_name>') {
                     if (moduleReportWriters[moduleName] == null) {
-                      moduleReportWriters[moduleName] = new ReportDataWriter(`./src/data/reports/TerraformModules/${moduleName}.csv`, header)
+                      moduleReportWriters[moduleName] = new ReportDataWriter(`./data/reports/TerraformModules/${moduleName}.csv`, header)
                     }
                     moduleReportWriters[moduleName].data.push({
                       repoName: repo.name,

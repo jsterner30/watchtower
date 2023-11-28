@@ -1,17 +1,15 @@
 import { readJsonFromFile, writeJsonToFile } from './util'
 import { logger } from './logger'
-import path from 'path'
 
 export interface Info {
   lastRunDate: string
 }
 
 export async function getLastRunDate (): Promise<Info> {
-  const filePath = path.join('../data/lastRunDate.json')
-  const info = await readJsonFromFile(filePath) as Info
+  const info = await readJsonFromFile('./lastRunDate.json') as Info
   if (info == null) {
     const newInfo = { lastRunDate: '1970-01-01T00:00:00Z' }
-    await writeJsonToFile(newInfo, filePath)
+    await writeJsonToFile(newInfo, './lastRunDate.json')
     return newInfo
   }
   return info
@@ -19,8 +17,7 @@ export async function getLastRunDate (): Promise<Info> {
 
 export async function setLastRunDate (): Promise<void> {
   try {
-    const filePath = path.join('../data/lastRunDate.json')
-    await writeJsonToFile({ lastRunDate: new Date().toISOString() }, filePath)
+    await writeJsonToFile({ lastRunDate: new Date().toISOString() }, './lastRunDate.json')
   } catch (error) {
     if (error instanceof Error) {
       logger.error(`Error writing lastRunDate to lastRunDate.json file: ${error.message}`)

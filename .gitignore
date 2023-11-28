@@ -51,3 +51,5 @@ gen
 !/examples/**/gen
 
 **/data/
+
+lastRunDate.json

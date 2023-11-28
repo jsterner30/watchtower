@@ -20,14 +20,15 @@ export const npmDependencyReport: ReportFunction = async (repos: RepoInfo[]): Pr
       try {
         for (const dep of repo.branches[branchName].deps) {
           if (validPackageJsonFile.Check(dep) && dep.fileType === FileTypeEnum.PACKAGE_JSON) {
-            for (const dependencyName in dep.dependencies) {
+            for (const name in dep.dependencies) {
+              const dependencyName = name.replace(/\//g, '_') // slashes in dep name will mess with file structure
               if (dependencyReportWriters[dependencyName] == null) {
-                dependencyReportWriters[dependencyName] = new ReportDataWriter(`./src/data/reports/NPMDependencies/${dependencyName}.csv`, header)
+                dependencyReportWriters[dependencyName] = new ReportDataWriter(`./data/reports/NPMDependencies/${dependencyName}.csv`, header)
               }
               dependencyReportWriters[dependencyName].data.push({
                 repoName: repo.name,
                 branchName,
-                version: dep.dependencies[dependencyName].version
+                version: dep.dependencies[name]
               })
             }
           }
