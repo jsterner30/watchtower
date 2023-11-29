@@ -1,4 +1,5 @@
 import {
+  GradeEnum,
   type RepoInfo,
   type ReportFunction
 } from '../types'
@@ -13,6 +14,7 @@ export const lowFilesReport: ReportFunction = async (repos: RepoInfo[]): Promise
     [{ id: 'repoName', title: 'Repo' }, { id: 'branchName', title: 'Branch' }, { id: 'fileCount', title: 'FileCount' }])
 
   for (const repo of repos) {
+    repo.healthScores.lowFilesReportGrade = GradeEnum.A
     let someBranchHasFiles = false
     for (const branchName in repo.branches) {
       try {
@@ -30,6 +32,7 @@ export const lowFilesReport: ReportFunction = async (repos: RepoInfo[]): Promise
       }
     }
     if (!someBranchHasFiles && Object.keys(repo.branches).length !== 0) {
+      repo.healthScores.lowFilesReportGrade = GradeEnum.F
       lowFileRepoWriter.data.push({
         repoName: repo.name,
         fileCount: repo.branches[repo.defaultBranch].fileCount

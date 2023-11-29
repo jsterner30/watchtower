@@ -1,8 +1,8 @@
 import {
   readJsonFromFile,
   writeJsonToFile,
-  getEnv
-  // ProgressBarManager
+  getEnv,
+  ProgressBarManager
 } from './util'
 import { logger } from './util/logger'
 import { Octokit } from '@octokit/rest'
@@ -29,7 +29,7 @@ import {
 import type { CacheFile, RepoInfo, Commit, BranchProtection } from './types'
 import { promises as fs } from 'node:fs'
 import * as path from 'path'
-import { validRepoInfo } from './types'
+import { GradeEnum, validRepoInfo } from './types'
 import {
   deployedBranchRule,
   staleBranchRule
@@ -48,6 +48,7 @@ import {
   publicAndInternalReport,
   npmDependencyReport
 } from './reports'
+import ReportDataWriter from './util/reportDataWriter'
 
 export async function getAllReposInOrg (orgName: string, octokit: Octokit): Promise<CacheFile> {
   const readFromAllReposFile = true
@@ -118,7 +119,8 @@ function createRepoInfo (rawRepo: Record<string, any>): RepoInfo {
     openPullRequests: [],
     openIssues: [],
     teams: [],
-    admins: []
+    admins: [],
+    healthScores: {}
   }
 }
 
@@ -126,20 +128,18 @@ export async function downloadReposAndApplyRules (reposWithBranchesFile: CacheFi
   const reposWithBranches = reposWithBranchesFile.info
   const repoNames = Object.keys(reposWithBranches)
 
-  // const totalOperations = parseInt(reposWithBranchesFile.metadata.branchCount) + parseInt(reposWithBranchesFile.metadata.repoCount)
-  // const progress = new ProgressBarManager(totalOperations, 'Running rules on', [{ displayName: 'Current Repo', token: 'currentRepo' }, { displayName: 'Current Branch', token: 'currentBranch' }])
-  // progress.start()
+  const totalOperations = parseInt(reposWithBranchesFile.metadata.repoCount)
+  const progress = new ProgressBarManager(totalOperations, 'Running rules on', [{ displayName: 'Current Repo', token: 'currentRepo' }])
+  progress.start()
 
   for (const repoName of repoNames) {
-    // progress.update([{ displayName: 'Current Repo', token: 'currentRepo', value: repoName }, { displayName: 'Current Branch', token: 'currentBranch', value: '---' }])
-
+    progress.update([{ displayName: 'Current Repo', token: 'currentRepo', value: repoName }])
     const repo = reposWithBranches[repoName]
     await latestCommitRule(octokit, repo)
 
     if (repo.lastCommit.date > lastRunDate) {
       await runRepoRules(octokit, repo)
       for (const branchName of Object.keys(repo.branches)) {
-        // progress.update([{ displayName: 'Current Repo', token: 'currentRepo', value: repoName }, { displayName: 'Current Branch', token: 'currentBranch', value: branchName }])
         if (!repo.branches[branchName].dependabot) {
           if (repo.branches[branchName].lastCommit.date > lastRunDate) {
             const downloaded = await downloadRepoToMemory(octokit, repoName, branchName)
@@ -210,6 +210,9 @@ export async function runReports (): Promise<void> {
   await terraformModuleReport(repos)
   await ghActionModuleReport(repos)
   await npmDependencyReport(repos)
+
+  // this has to be run last
+  await generateOverallReport(repos)
 }
 
 export async function getProtectionRules (octokit: Octokit, repoName: string, branchName: string): Promise<BranchProtection | null> {
@@ -412,4 +415,30 @@ export async function searchOrganizationForStrings (octokit: Octokit, searchTerm
   } catch (error) {
     console.error('Error occurred:', error)
   }
+}
+
+export async function generateOverallReport (repos: RepoInfo[]): Promise<void> {
+  const header = [
+    { id: 'repoName', title: 'Repo' },
+    { id: 'teams', title: 'Admin Teams' },
+    { id: 'lastCommitDate', title: 'Last Commit Date' },
+    { id: 'lastCommitAuthor', title: 'Last Commit User' },
+    { id: 'dependabotBranchReportGrade', title: 'Dependabot Branch Report Grade' },
+    { id: 'nodeVersionReportGrade', title: 'Node Version Report Grade' }
+  ]
+
+  const overallHealthReportWriter = new ReportDataWriter('./data/overallHealthReport.csv', header)
+
+  for (const repo of repos) {
+    overallHealthReportWriter.data.push({
+      repoName: repo.name,
+      teams: repo.teams,
+      lastCommitDate: repo.lastCommit.date,
+      lastCommitAuthor: repo.lastCommit.author,
+      dependabotBranchReportGrade: repo.healthScores.dependabotBranchReportGrade ?? GradeEnum.NotApplicable,
+      nodeVersionReport: repo.healthScores.nodeVersionReport ?? GradeEnum.NotApplicable
+    })
+  }
+
+  await overallHealthReportWriter.write()
 }

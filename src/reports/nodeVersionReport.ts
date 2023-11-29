@@ -2,11 +2,31 @@ import {
   type RepoInfo,
   type ReportFunction,
   validDockerfile,
-  validGHAFile, FileTypeEnum
+  validGHAFile, FileTypeEnum, ReportGradeFunction, Grade, GradeEnum
 } from '../types'
 import { compare, validate } from 'compare-versions'
 import ReportDataWriter from '../util/reportDataWriter'
 import { errorHandler } from '../util'
+
+export const nodeVersionReportGrade: ReportGradeFunction = (input: string): Grade => {
+  if (!validate(input)) {
+    return GradeEnum.NotApplicable
+  }
+  const gradeMinValues: Record<string, Grade> = {
+    '18.0.0': GradeEnum.A,
+    '16.0.0': GradeEnum.B,
+    '14.0.0': GradeEnum.C,
+    '12.0.0': GradeEnum.D,
+    '0.0.0': GradeEnum.F
+  }
+
+  for (const minValue in gradeMinValues) {
+    if (compare(input, minValue, '>=')) {
+      return gradeMinValues[minValue]
+    }
+  }
+  return GradeEnum.NotApplicable
+}
 
 export const nodeVersionReport: ReportFunction = async (repos: RepoInfo[]): Promise<void> => {
   const startingLowestVersion = '100.0.0'
@@ -123,6 +143,7 @@ export const nodeVersionReport: ReportFunction = async (repos: RepoInfo[]): Prom
         errorHandler(error, nodeVersionReport.name, repo.name, branchName)
       }
     }
+    repo.healthScores.nodeVersionReportGrade = nodeVersionReportGrade(repoNonStaleBranchesNodeReport.lowestVersion)
   }
 
   await allBranchesWriter.write()

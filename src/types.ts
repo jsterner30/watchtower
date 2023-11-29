@@ -10,6 +10,22 @@ export type RepoRule = (octokit: Octokit, repo: RepoInfo) => Promise<void>
 
 export type ReportFunction = (repos: RepoInfo[]) => Promise<void>
 
+export enum GradeEnum {
+  A = 'A',
+  B = 'B',
+  C = 'C',
+  D = 'D',
+  F = 'F',
+  NotApplicable = 'N/A'
+}
+const GradeSchema = Type.Enum(GradeEnum)
+export type Grade = Static<typeof GradeSchema>
+
+const ReportGradeFunctionSchema = Type.Function([
+  Type.String()
+], GradeSchema)
+export type ReportGradeFunction = Static<typeof ReportGradeFunctionSchema>
+
 export enum FileTypeEnum {
   PACKAGE_JSON = 'PACKAGE_LOCK',
   PACKAGE_LOCK = 'PACKAGE_JSON',
@@ -121,7 +137,8 @@ export const RepoInfoSchema = Type.Object({
   openPullRequests: Type.Array(PullRequestSchema),
   openIssues: Type.Array(IssueSchema),
   teams: Type.Array(Type.String()),
-  admins: Type.Array(Type.String())
+  admins: Type.Array(Type.String()),
+  healthScores: Type.Record(Type.String(), Type.Any())
 })
 export type RepoInfo = Static<typeof RepoInfoSchema>
 export const validRepoInfo = TypeCompiler.Compile(RepoInfoSchema)
