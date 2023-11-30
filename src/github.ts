@@ -2,7 +2,7 @@ import {
   readJsonFromFile,
   writeJsonToFile,
   getEnv,
-  ProgressBarManager
+  ProgressBarManager, deleteDirectory, createDataDirectoriesIfNonexistent
 } from './util'
 import { logger } from './util/logger'
 import { Octokit } from '@octokit/rest'
@@ -185,6 +185,9 @@ async function runRepoRules (octokit: Octokit, repo: RepoInfo): Promise<void> {
 }
 
 export async function runReports (): Promise<void> {
+  await deleteDirectory('./data/reports')
+  await createDataDirectoriesIfNonexistent()
+
   const files = await fs.readdir('./data/repoInfo')
   const repos: RepoInfo[] = []
 
@@ -420,25 +423,50 @@ export async function searchOrganizationForStrings (octokit: Octokit, searchTerm
 export async function generateOverallReport (repos: RepoInfo[]): Promise<void> {
   const header = [
     { id: 'repoName', title: 'Repo' },
+    { id: 'overallScore', title: 'Overall Score/Grade' },
     { id: 'teams', title: 'Admin Teams' },
     { id: 'lastCommitDate', title: 'Last Commit Date' },
     { id: 'lastCommitAuthor', title: 'Last Commit User' },
     { id: 'dependabotBranchReportGrade', title: 'Dependabot Branch Report Grade' },
-    { id: 'nodeVersionReportGrade', title: 'Node Version Report Grade' }
+    { id: 'nodeVersionReportGrade', title: 'Node Version Report Grade' },
+    { id: 'terraformVersionReportGrade', title: 'Terraform Version Report Grade' },
+    { id: 'staleBranchReportGrade', title: 'Stale Branch Report Grade' },
+    { id: 'reposWithoutNewCommitsReport', title: 'Newest Commit Report Grade' }
   ]
 
   const overallHealthReportWriter = new ReportDataWriter('./data/overallHealthReport.csv', header)
 
   for (const repo of repos) {
+    const overallScore = getOverallScore(repo.healthScores)
     overallHealthReportWriter.data.push({
       repoName: repo.name,
+      overallScore,
       teams: repo.teams,
       lastCommitDate: repo.lastCommit.date,
       lastCommitAuthor: repo.lastCommit.author,
-      dependabotBranchReportGrade: repo.healthScores.dependabotBranchReportGrade ?? GradeEnum.NotApplicable,
-      nodeVersionReport: repo.healthScores.nodeVersionReport ?? GradeEnum.NotApplicable
+      dependabotBranchReportGrade: repo.healthScores.dependabotBranchReportGrade != null ? repo.healthScores.dependabotBranchReportGrade.grade : GradeEnum.NotApplicable,
+      nodeVersionReportGrade: repo.healthScores.nodeVersionReportGrade != null ? repo.healthScores.nodeVersionReportGrade.grade : GradeEnum.NotApplicable,
+      terraformVersionReportGrade: repo.healthScores.terraformVersionReportGrade != null ? repo.healthScores.terraformVersionReportGrade.grade : GradeEnum.NotApplicable,
+      staleBranchReportGrade: repo.healthScores.staleBranchReportGrade != null ? repo.healthScores.staleBranchReportGrade.grade : GradeEnum.NotApplicable,
+      reposWithoutNewCommitsReport: repo.healthScores.reposWithoutNewCommitsReport != null ? repo.healthScores.reposWithoutNewCommitsReport.grade : GradeEnum.NotApplicable
     })
   }
 
   await overallHealthReportWriter.write()
+}
+
+// this function basically calculates a GPA
+function getOverallScore (healthScores: Record<string, any>): number {
+  let totalWeight = 0
+  let totalPoints = 0
+
+  for (const scoreName in healthScores) {
+    totalWeight += healthScores[scoreName].weight as number
+    totalPoints += healthScores[scoreName].grade * healthScores[scoreName].weight
+  }
+
+  if (totalWeight === 0) {
+    return -1
+  }
+  return totalPoints / totalWeight
 }

@@ -1,12 +1,13 @@
 import {
-  Grade, GradeEnum,
+  Grade, GradeEnum, HealthScore,
   type RepoInfo,
   type ReportFunction, ReportGradeFunction
 } from '../types'
 import ReportDataWriter from '../util/reportDataWriter'
 import { errorHandler } from '../util'
+import { dependabotBranchReportGradeWeight } from '../util/constants'
 
-export const dependabotReportGrade: ReportGradeFunction = (input: string): Grade => {
+export const dependabotReportGrade: ReportGradeFunction = (input: string): HealthScore => {
   const gradeMinValues: Record<number, Grade> = {
     5: GradeEnum.A,
     10: GradeEnum.B,
@@ -17,10 +18,16 @@ export const dependabotReportGrade: ReportGradeFunction = (input: string): Grade
 
   for (const minValue in gradeMinValues) {
     if (parseInt(input) < parseInt(minValue)) {
-      return gradeMinValues[minValue]
+      return {
+        grade: gradeMinValues[minValue],
+        weight: dependabotBranchReportGradeWeight
+      }
     }
   }
-  return GradeEnum.NotApplicable
+  return {
+    grade: GradeEnum.NotApplicable,
+    weight: 0
+  }
 }
 
 export const dependabotBranchReport: ReportFunction = async (repos: RepoInfo[]): Promise<void> => {

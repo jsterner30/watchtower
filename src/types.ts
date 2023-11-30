@@ -11,20 +11,15 @@ export type RepoRule = (octokit: Octokit, repo: RepoInfo) => Promise<void>
 export type ReportFunction = (repos: RepoInfo[]) => Promise<void>
 
 export enum GradeEnum {
-  A = 'A',
-  B = 'B',
-  C = 'C',
-  D = 'D',
-  F = 'F',
-  NotApplicable = 'N/A'
+  A = 4.0,
+  B = 3.0,
+  C = 2.0,
+  D = 1.0,
+  F = 0.0,
+  NotApplicable = '??'
 }
 const GradeSchema = Type.Enum(GradeEnum)
 export type Grade = Static<typeof GradeSchema>
-
-const ReportGradeFunctionSchema = Type.Function([
-  Type.String()
-], GradeSchema)
-export type ReportGradeFunction = Static<typeof ReportGradeFunctionSchema>
 
 export enum FileTypeEnum {
   PACKAGE_JSON = 'PACKAGE_LOCK',
@@ -121,6 +116,17 @@ const IssueSchema = Type.Object({
 })
 export type Issue = Static<typeof IssueSchema>
 
+const HealthScoreSchema = Type.Object({
+  weight: Type.Number({ minimum: 1, maximum: 5 }),
+  grade: GradeSchema
+})
+export type HealthScore = Static<typeof HealthScoreSchema>
+
+const ReportGradeFunctionSchema = Type.Function([
+  Type.String()
+], HealthScoreSchema)
+export type ReportGradeFunction = Static<typeof ReportGradeFunctionSchema>
+
 export const RepoInfoSchema = Type.Object({
   name: Type.String(),
   private: Type.Boolean(),
@@ -138,7 +144,7 @@ export const RepoInfoSchema = Type.Object({
   openIssues: Type.Array(IssueSchema),
   teams: Type.Array(Type.String()),
   admins: Type.Array(Type.String()),
-  healthScores: Type.Record(Type.String(), Type.Any())
+  healthScores: Type.Record(Type.String(), HealthScoreSchema)
 })
 export type RepoInfo = Static<typeof RepoInfoSchema>
 export const validRepoInfo = TypeCompiler.Compile(RepoInfoSchema)

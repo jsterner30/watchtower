@@ -2,15 +2,19 @@ import {
   type RepoInfo,
   type ReportFunction,
   validDockerfile,
-  validGHAFile, FileTypeEnum, ReportGradeFunction, Grade, GradeEnum
+  validGHAFile, FileTypeEnum, ReportGradeFunction, Grade, GradeEnum, HealthScore
 } from '../types'
 import { compare, validate } from 'compare-versions'
 import ReportDataWriter from '../util/reportDataWriter'
 import { errorHandler } from '../util'
+import { nodeVersionReportGradeWeight } from '../util/constants'
 
-export const nodeVersionReportGrade: ReportGradeFunction = (input: string): Grade => {
+export const nodeVersionReportGrade: ReportGradeFunction = (input: string): HealthScore => {
   if (!validate(input)) {
-    return GradeEnum.NotApplicable
+    return {
+      grade: GradeEnum.NotApplicable,
+      weight: nodeVersionReportGradeWeight
+    }
   }
   const gradeMinValues: Record<string, Grade> = {
     '18.0.0': GradeEnum.A,
@@ -22,10 +26,16 @@ export const nodeVersionReportGrade: ReportGradeFunction = (input: string): Grad
 
   for (const minValue in gradeMinValues) {
     if (compare(input, minValue, '>=')) {
-      return gradeMinValues[minValue]
+      return {
+        grade: gradeMinValues[minValue],
+        weight: nodeVersionReportGradeWeight
+      }
     }
   }
-  return GradeEnum.NotApplicable
+  return {
+    grade: GradeEnum.NotApplicable,
+    weight: 0
+  }
 }
 
 export const nodeVersionReport: ReportFunction = async (repos: RepoInfo[]): Promise<void> => {
@@ -135,6 +145,7 @@ export const nodeVersionReport: ReportFunction = async (repos: RepoInfo[]): Prom
 
         if (repoNonStaleBranchesNodeReport.highestVersion !== startingHighestVersion && repoNonStaleBranchesNodeReport.lowestVersion !== startingLowestVersion) {
           nonStaleReposWriter.data.push(repoNonStaleBranchesNodeReport)
+          repo.healthScores.nodeVersionReportGrade = nodeVersionReportGrade(repoNonStaleBranchesNodeReport.lowestVersion)
         }
         if (repoAllBranchesNodeReport.highestVersion !== startingHighestVersion && repoAllBranchesNodeReport.lowestVersion !== startingLowestVersion) {
           allReposWriter.data.push(repoAllBranchesNodeReport)
@@ -143,7 +154,6 @@ export const nodeVersionReport: ReportFunction = async (repos: RepoInfo[]): Prom
         errorHandler(error, nodeVersionReport.name, repo.name, branchName)
       }
     }
-    repo.healthScores.nodeVersionReportGrade = nodeVersionReportGrade(repoNonStaleBranchesNodeReport.lowestVersion)
   }
 
   await allBranchesWriter.write()

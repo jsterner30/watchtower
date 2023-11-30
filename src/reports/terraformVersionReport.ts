@@ -1,11 +1,41 @@
 import {
   type RepoInfo,
   type ReportFunction,
-  validGHAFile, validTerraformFile, FileTypeEnum
+  validGHAFile, validTerraformFile, FileTypeEnum, ReportGradeFunction, Grade, GradeEnum, HealthScore
 } from '../types'
 import { compare, validate } from 'compare-versions'
 import ReportDataWriter from '../util/reportDataWriter'
 import { errorHandler } from '../util'
+import { terraformVersionReportGradeWeight } from '../util/constants'
+
+export const terraformVersionReportGrade: ReportGradeFunction = (input: string): HealthScore => {
+  if (!validate(input)) {
+    return {
+      grade: GradeEnum.NotApplicable,
+      weight: 0
+    }
+  }
+  const gradeMinValues: Record<string, Grade> = {
+    '1.5.0': GradeEnum.A,
+    '1.3.0': GradeEnum.B,
+    '1.1.0': GradeEnum.C,
+    '0.14.0': GradeEnum.D,
+    '0.0.0': GradeEnum.F
+  }
+
+  for (const minValue in gradeMinValues) {
+    if (compare(input, minValue, '>=')) {
+      return {
+        grade: gradeMinValues[minValue],
+        weight: terraformVersionReportGradeWeight
+      }
+    }
+  }
+  return {
+    grade: GradeEnum.NotApplicable,
+    weight: 0
+  }
+}
 
 export const terraformVersionReport: ReportFunction = async (repos: RepoInfo[]): Promise<void> => {
   const startingLowestVersion = '100.0.0'
@@ -37,12 +67,12 @@ export const terraformVersionReport: ReportFunction = async (repos: RepoInfo[]):
   const nonStaleReposWriter = new ReportDataWriter('./data/reports/terraform/TerraformVersionReport-Repos-NonStaleBranches.csv', repoHeader)
 
   for (const repo of repos) {
-    const repoAllBranchesNodeReport = {
+    const repoAllBranchesTerraformReport = {
       repoName: repo.name,
       lowestVersion: startingLowestVersion,
       highestVersion: startingHighestVersion
     }
-    const repoNonStaleBranchesNodeReport = {
+    const repoNonStaleBranchesTerraformReport = {
       repoName: repo.name,
       lowestVersion: startingLowestVersion,
       highestVersion: startingHighestVersion
@@ -96,27 +126,28 @@ export const terraformVersionReport: ReportFunction = async (repos: RepoInfo[]):
         if (lowestVersion !== startingLowestVersion && highestVersion !== startingHighestVersion) {
           if (!repo.branches[branchName].staleBranch) {
             nonStaleBranchesWriter.data.push(terraformBranchReport)
-            if (compare(terraformBranchReport.lowestVersion, repoNonStaleBranchesNodeReport.lowestVersion, '<')) {
-              repoNonStaleBranchesNodeReport.lowestVersion = terraformBranchReport.lowestVersion
+            if (compare(terraformBranchReport.lowestVersion, repoNonStaleBranchesTerraformReport.lowestVersion, '<')) {
+              repoNonStaleBranchesTerraformReport.lowestVersion = terraformBranchReport.lowestVersion
             }
-            if (compare(terraformBranchReport.highestVersion, repoNonStaleBranchesNodeReport.highestVersion, '>')) {
-              repoNonStaleBranchesNodeReport.highestVersion = terraformBranchReport.highestVersion
+            if (compare(terraformBranchReport.highestVersion, repoNonStaleBranchesTerraformReport.highestVersion, '>')) {
+              repoNonStaleBranchesTerraformReport.highestVersion = terraformBranchReport.highestVersion
             }
           }
-          if (compare(terraformBranchReport.lowestVersion, repoAllBranchesNodeReport.lowestVersion, '<')) {
-            repoAllBranchesNodeReport.lowestVersion = terraformBranchReport.lowestVersion
+          if (compare(terraformBranchReport.lowestVersion, repoAllBranchesTerraformReport.lowestVersion, '<')) {
+            repoAllBranchesTerraformReport.lowestVersion = terraformBranchReport.lowestVersion
           }
-          if (compare(terraformBranchReport.highestVersion, repoAllBranchesNodeReport.highestVersion, '>')) {
-            repoAllBranchesNodeReport.highestVersion = terraformBranchReport.highestVersion
+          if (compare(terraformBranchReport.highestVersion, repoAllBranchesTerraformReport.highestVersion, '>')) {
+            repoAllBranchesTerraformReport.highestVersion = terraformBranchReport.highestVersion
           }
           allBranchesWriter.data.push(terraformBranchReport)
         }
 
-        if (repoNonStaleBranchesNodeReport.highestVersion !== startingHighestVersion && repoNonStaleBranchesNodeReport.lowestVersion !== startingLowestVersion) {
-          nonStaleReposWriter.data.push(repoNonStaleBranchesNodeReport)
+        if (repoNonStaleBranchesTerraformReport.highestVersion !== startingHighestVersion && repoNonStaleBranchesTerraformReport.lowestVersion !== startingLowestVersion) {
+          repo.healthScores.terraformVersionReportGrade = terraformVersionReportGrade(repoNonStaleBranchesTerraformReport.lowestVersion)
+          nonStaleReposWriter.data.push(repoNonStaleBranchesTerraformReport)
         }
-        if (repoAllBranchesNodeReport.highestVersion !== startingHighestVersion && repoAllBranchesNodeReport.lowestVersion !== startingLowestVersion) {
-          allReposWriter.data.push(repoAllBranchesNodeReport)
+        if (repoAllBranchesTerraformReport.highestVersion !== startingHighestVersion && repoAllBranchesTerraformReport.lowestVersion !== startingLowestVersion) {
+          allReposWriter.data.push(repoAllBranchesTerraformReport)
         }
       } catch (error) {
         errorHandler(error, terraformVersionReport.name, repo.name, branchName)

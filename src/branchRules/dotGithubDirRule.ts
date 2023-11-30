@@ -2,7 +2,6 @@ import { type BranchRule, FileTypeEnum, GHAFile, type RepoInfo } from '../types'
 import { Octokit } from '@octokit/rest'
 import JSZip from 'jszip'
 import { load } from 'js-yaml'
-import { logger } from '../util/logger'
 import { errorHandler } from '../util'
 
 export const dotGithubDirRule: BranchRule = async (octokit: Octokit, repo: RepoInfo, downloaded: JSZip, branchName: string, fileName: string): Promise<void> => {
@@ -13,8 +12,6 @@ export const dotGithubDirRule: BranchRule = async (octokit: Octokit, repo: RepoI
         repo.branches[branchName].deps.push(parseYmlGHA(content, fileName))
       } else if (downloaded.files[fileName].name.endsWith('CODEOWNERS')) {
         // TODO parse and store codeowners info
-      } else {
-        logger.error(`Unexpected file found in the .github directory for repo: ${repo.name}, branch: ${branchName}, filename: ${downloaded.files[fileName].name}`)
       }
     }
   } catch (error) {
