@@ -5,7 +5,8 @@ import {
   FileTypeEnum, CSVWriterHeader
 } from '../types'
 import ReportDataWriter from '../util/reportDataWriter'
-import { errorHandler } from '../util'
+import { errorHandler, getRelativeReportGrades } from '../util'
+import {ghActionModuleReportGradeName, ghActionModuleReportGradeWeight} from '../util/constants'
 
 export const ghActionModuleReport: ReportFunction = async (repos: RepoInfo[]): Promise<void> => {
   const header: CSVWriterHeader = [
@@ -52,6 +53,8 @@ export const ghActionModuleReport: ReportFunction = async (repos: RepoInfo[]): P
       }
     }
   }
+
+  getRelativeReportGrades(actionModuleWriters, repos, ghActionModuleReportGradeName, ghActionModuleReportGradeWeight)
 
   for (const writer in actionModuleWriters) {
     await actionModuleWriters[writer].write()

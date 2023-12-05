@@ -4,7 +4,8 @@ import {
   FileTypeEnum, CSVWriterHeader, validPackageJsonFile
 } from '../types'
 import ReportDataWriter from '../util/reportDataWriter'
-import { errorHandler } from '../util'
+import { errorHandler, getRelativeReportGrades, removeComparatorsInVersion } from '../util'
+import {npmDependencyReportGradeName, npmDependencyReportGradeWeight} from '../util/constants'
 
 export const npmDependencyReport: ReportFunction = async (repos: RepoInfo[]): Promise<void> => {
   const header: CSVWriterHeader = [
@@ -28,7 +29,7 @@ export const npmDependencyReport: ReportFunction = async (repos: RepoInfo[]): Pr
               dependencyReportWriters[dependencyName].data.push({
                 repoName: repo.name,
                 branchName,
-                version: dep.dependencies[name]
+                version: removeComparatorsInVersion(dep.dependencies[name])
               })
             }
           }
@@ -38,6 +39,8 @@ export const npmDependencyReport: ReportFunction = async (repos: RepoInfo[]): Pr
       }
     }
   }
+
+  getRelativeReportGrades(dependencyReportWriters, repos, npmDependencyReportGradeName, npmDependencyReportGradeWeight)
 
   for (const writer in dependencyReportWriters) {
     await dependencyReportWriters[writer].write()

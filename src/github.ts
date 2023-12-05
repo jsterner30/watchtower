@@ -2,7 +2,7 @@ import {
   readJsonFromFile,
   writeJsonToFile,
   getEnv,
-  ProgressBarManager, deleteDirectory, createDataDirectoriesIfNonexistent
+  ProgressBarManager, deleteDirectory, createDataDirectoriesIfNonexistent, getOverallGPAScore
 } from './util'
 import { logger } from './util/logger'
 import { Octokit } from '@octokit/rest'
@@ -49,6 +49,14 @@ import {
   npmDependencyReport
 } from './reports'
 import ReportDataWriter from './util/reportDataWriter'
+import {
+  dependabotBranchReportGradeName, dockerfileImageReportGradeName, ghActionModuleReportGradeName,
+  nodeVersionReportGradeName, npmDependencyReportGradeName,
+  publicAndInternalReportGradeName,
+  reposWithoutNewCommitsReportGradeName,
+  staleBranchReportGradeName, teamlessRepoReportGradeName, terraformModuleReportGradeName,
+  terraformVersionReportGradeName
+} from "./util/constants";
 
 export async function getAllReposInOrg (orgName: string, octokit: Octokit): Promise<CacheFile> {
   const readFromAllReposFile = true
@@ -141,6 +149,7 @@ export async function downloadReposAndApplyRules (reposWithBranchesFile: CacheFi
       await runRepoRules(octokit, repo)
       for (const branchName of Object.keys(repo.branches)) {
         if (!repo.branches[branchName].dependabot) {
+          repo.lastCommit = await getBranchCommitInfo(octokit, repoName, branchName)
           if (repo.branches[branchName].lastCommit.date > lastRunDate) {
             const downloaded = await downloadRepoToMemory(octokit, repoName, branchName)
             if (downloaded != null) {
@@ -249,6 +258,45 @@ export async function getProtectionRules (octokit: Octokit, repoName: string, br
   }
 }
 
+async function getBranchCommitInfo (octokit: Octokit, repoName: string, branchName: string): Promise<Commit> {
+  try {
+    const response = await octokit.repos.getBranch({
+      owner: (await getEnv()).githubOrg,
+      repo: repoName,
+      branch: branchName
+    })
+
+    const commitSha = response.data.commit.sha
+
+    const commitResponse = await octokit.repos.getCommit({
+      owner: (await getEnv()).githubOrg,
+      repo: repoName,
+      ref: commitSha
+    })
+
+    const commit = commitResponse.data.commit
+    const author = commit.author
+
+    if (author != null) {
+      return {
+        author: author.name ?? '',
+        date: author.date ?? ''
+      }
+    } else {
+      return {
+        author: '',
+        date: ''
+      }
+    }
+  } catch (error) {
+    console.error(`Unable to get last commit info for repo: ${repoName}, Branch: ${branchName}. Error: ${error as string}`)
+    return {
+      author: '',
+      date: ''
+    }
+  }
+}
+
 export async function getBranches (octokit: Octokit, repos: RepoInfo[]): Promise<CacheFile> {
   const readFromFile = true
   let filteredWithBranchesWithMeta: CacheFile = await readJsonFromFile('./data/filteredWithBranches.json') as CacheFile
@@ -256,13 +304,13 @@ export async function getBranches (octokit: Octokit, repos: RepoInfo[]): Promise
   if (filteredWithBranchesWithMeta == null || (Object.keys(filteredWithBranchesWithMeta.info)).length === 0 || !readFromFile) {
     logger.info('Getting all repos in org and writing them to allRepos.json file')
     const filteredWithBranches: Record<string, any> = {}
-    // const progress = new ProgressBarManager(repos.length, 'Getting branch info for repos', [{ displayName: 'Current Repo', token: 'currentRepo' }])
-    // progress.start()
+    const progress = new ProgressBarManager(repos.length, 'Getting branch info for repos', [{ displayName: 'Current Repo', token: 'currentRepo' }])
+    progress.start()
     let branchCount = 0
 
     for (const repo of repos) {
       try {
-        // progress.update([{ displayName: 'Current Repo', token: 'currentRepo', value: repo.name }])
+        progress.update([{ displayName: 'Current Repo', token: 'currentRepo', value: repo.name }])
 
         let page = 1
         let branches: any[] = []
@@ -427,46 +475,42 @@ export async function generateOverallReport (repos: RepoInfo[]): Promise<void> {
     { id: 'teams', title: 'Admin Teams' },
     { id: 'lastCommitDate', title: 'Last Commit Date' },
     { id: 'lastCommitAuthor', title: 'Last Commit User' },
-    { id: 'dependabotBranchReportGrade', title: 'Dependabot Branch Report Grade' },
-    { id: 'nodeVersionReportGrade', title: 'Node Version Report Grade' },
-    { id: 'terraformVersionReportGrade', title: 'Terraform Version Report Grade' },
-    { id: 'staleBranchReportGrade', title: 'Stale Branch Report Grade' },
-    { id: 'reposWithoutNewCommitsReport', title: 'Newest Commit Report Grade' }
+    { id: dependabotBranchReportGradeName, title: 'Dependabot Branch Report Grade' },
+    { id: nodeVersionReportGradeName, title: 'Node Version Report Grade' },
+    { id: terraformVersionReportGradeName, title: 'Terraform Version Report Grade' },
+    { id: staleBranchReportGradeName, title: 'Stale Branch Report Grade' },
+    { id: reposWithoutNewCommitsReportGradeName, title: 'Newest Commit Report Grade' },
+    { id: publicAndInternalReportGradeName, title: 'Public and Internal Report Grade' },
+    { id: teamlessRepoReportGradeName, title: 'Teamless Repo Report Grade' },
+    { id: dockerfileImageReportGradeName, title: 'Dockerfile Image Report Grade' },
+    { id: ghActionModuleReportGradeName, title: 'GH Action Module Report Grade' },
+    { id: npmDependencyReportGradeName, title: 'NPM Dependency Report Grade' },
+    { id: terraformModuleReportGradeName, title: 'Terraform Module Report Grade' }
   ]
 
   const overallHealthReportWriter = new ReportDataWriter('./data/overallHealthReport.csv', header)
 
   for (const repo of repos) {
-    const overallScore = getOverallScore(repo.healthScores)
+    const overallScore = getOverallGPAScore(repo.healthScores)
     overallHealthReportWriter.data.push({
       repoName: repo.name,
       overallScore,
       teams: repo.teams,
       lastCommitDate: repo.lastCommit.date,
       lastCommitAuthor: repo.lastCommit.author,
-      dependabotBranchReportGrade: repo.healthScores.dependabotBranchReportGrade != null ? repo.healthScores.dependabotBranchReportGrade.grade : GradeEnum.NotApplicable,
-      nodeVersionReportGrade: repo.healthScores.nodeVersionReportGrade != null ? repo.healthScores.nodeVersionReportGrade.grade : GradeEnum.NotApplicable,
-      terraformVersionReportGrade: repo.healthScores.terraformVersionReportGrade != null ? repo.healthScores.terraformVersionReportGrade.grade : GradeEnum.NotApplicable,
-      staleBranchReportGrade: repo.healthScores.staleBranchReportGrade != null ? repo.healthScores.staleBranchReportGrade.grade : GradeEnum.NotApplicable,
-      reposWithoutNewCommitsReport: repo.healthScores.reposWithoutNewCommitsReport != null ? repo.healthScores.reposWithoutNewCommitsReport.grade : GradeEnum.NotApplicable
+      [dependabotBranchReportGradeName]: repo.healthScores[dependabotBranchReportGradeName] != null ? repo.healthScores[dependabotBranchReportGradeName].grade : GradeEnum.NotApplicable,
+      [nodeVersionReportGradeName]: repo.healthScores[nodeVersionReportGradeName] != null ? repo.healthScores[nodeVersionReportGradeName].grade : GradeEnum.NotApplicable,
+      [terraformVersionReportGradeName]: repo.healthScores[terraformVersionReportGradeName] != null ? repo.healthScores[terraformVersionReportGradeName].grade : GradeEnum.NotApplicable,
+      [staleBranchReportGradeName]: repo.healthScores[staleBranchReportGradeName] != null ? repo.healthScores[staleBranchReportGradeName].grade : GradeEnum.NotApplicable,
+      [reposWithoutNewCommitsReportGradeName]: repo.healthScores[reposWithoutNewCommitsReportGradeName] != null ? repo.healthScores[reposWithoutNewCommitsReportGradeName].grade : GradeEnum.NotApplicable,
+      [publicAndInternalReportGradeName]: repo.healthScores[publicAndInternalReportGradeName] != null ? repo.healthScores[publicAndInternalReportGradeName].grade : GradeEnum.NotApplicable,
+      [teamlessRepoReportGradeName]: repo.healthScores[teamlessRepoReportGradeName] != null ? repo.healthScores[teamlessRepoReportGradeName].grade : GradeEnum.NotApplicable,
+      [dockerfileImageReportGradeName]: repo.healthScores[dockerfileImageReportGradeName] != null ? repo.healthScores[dockerfileImageReportGradeName].grade : GradeEnum.NotApplicable,
+      [ghActionModuleReportGradeName]: repo.healthScores[ghActionModuleReportGradeName] != null ? repo.healthScores[ghActionModuleReportGradeName].grade : GradeEnum.NotApplicable,
+      [npmDependencyReportGradeName]: repo.healthScores[npmDependencyReportGradeName] != null ? repo.healthScores[npmDependencyReportGradeName].grade : GradeEnum.NotApplicable,
+      [terraformModuleReportGradeName]: repo.healthScores[terraformModuleReportGradeName] != null ? repo.healthScores[terraformModuleReportGradeName].grade : GradeEnum.NotApplicable
     })
   }
 
   await overallHealthReportWriter.write()
-}
-
-// this function basically calculates a GPA
-function getOverallScore (healthScores: Record<string, any>): number {
-  let totalWeight = 0
-  let totalPoints = 0
-
-  for (const scoreName in healthScores) {
-    totalWeight += healthScores[scoreName].weight as number
-    totalPoints += healthScores[scoreName].grade * healthScores[scoreName].weight
-  }
-
-  if (totalWeight === 0) {
-    return -1
-  }
-  return totalPoints / totalWeight
 }

@@ -1,6 +1,8 @@
 import fsSync, { promises as fs } from 'node:fs'
 import { logger } from './logger'
 import * as path from 'path'
+import { nodeLTSUrl } from './constants'
+import { GradeEnum } from '../types'
 
 export async function readJsonFromFile (filePath: string): Promise<Promise<Record<string, any>> | null> {
   try {
@@ -28,7 +30,6 @@ export async function createDirectoryIfNotExist (dirPath: string): Promise<void>
 
 export async function createDir (dirPath: string): Promise<void> {
   await fs.mkdir(path.resolve(dirPath), { recursive: true })
-  logger.debug(`Directory '${dirPath}' has been created.`)
 }
 
 export async function writeJsonToFile (jsonData: Record<string, any>, filePath: string): Promise<void> {
@@ -64,8 +65,7 @@ export async function deleteDirectoryContents (dirPath: string): Promise<void> {
 
 export async function deleteDirectory (directoryPath: string): Promise<void> {
   try {
-    await fs.rmdir(directoryPath, { recursive: true })
-    logger.debug(`Directory "${directoryPath}" and its contents have been deleted.`)
+    await fs.rm(directoryPath, { recursive: true })
   } catch (error) {
     logger.error(`Error deleting directory "${directoryPath}":`, error)
   }
@@ -98,3 +98,97 @@ export function errorHandler (error: unknown, functionName: string, repoName: st
     logger.error(`Error in ${functionName}, error: ${errorMessage}`)
   }
 }
+
+export async function fetchNodeLTSVersion (): Promise<string> {
+  try {
+    const response = await fetch(nodeLTSUrl)
+    if (!response.ok) {
+      throw new Error(`Failed to fetch schedule data. Status: ${response.status}`)
+    }
+
+    const scheduleData = await response.json()
+    for (const version in scheduleData) {
+      if (new Date(scheduleData[version].lts) < new Date() && new Date(scheduleData[version].maintenance) > new Date()) {
+        return version.split('v')[1]
+      }
+    }
+
+    return '20'
+  } catch (error) {
+    errorHandler(error, fetchNodeLTSVersion.name)
+    return '20'
+  }
+}
+
+export function getUniqueReposInWriterData (writerData: Array<Record<string, any>>): Set<string> {
+  const repoSet: Set<string> = new Set()
+  for (const row of writerData) {
+    if (!repoSet.has(row.repoName)) {
+      repoSet.add(row.repoName)
+    }
+  }
+  return repoSet
+}
+
+// this function basically calculates a GPA
+export function getOverallGPAScore (healthScores: Record<string, any>): number {
+  let totalWeight = 0
+  let totalPoints = 0
+
+  for (const scoreName in healthScores) {
+    if (typeof healthScores[scoreName].weight === 'number' && typeof healthScores[scoreName].grade === 'number') {
+      totalWeight += healthScores[scoreName].weight as number
+      totalPoints += healthScores[scoreName].grade * healthScores[scoreName].weight
+    }
+  }
+
+  if (totalWeight === 0) {
+    return -1
+  }
+  return totalPoints / totalWeight
+}
+
+export function arrayToObject (arr: Array<Record<string, any>>): Record<string, any> {
+  return arr.reduce((obj, value, index) => {
+    obj[index] = value
+    return obj
+  }, {})
+}
+
+export function numberToGrade (num: number): GradeEnum {
+  if (num > 3.5) {
+    return GradeEnum.A
+  } else if (num > 2.5) {
+    return GradeEnum.B
+  } else if (num > 1.5) {
+    return GradeEnum.C
+  } else if (num > 0.5) {
+    return GradeEnum.D
+  } else {
+    return GradeEnum.F
+  }
+}
+
+export function removeComparatorsInVersion (version: string): string {
+  let curVer = version
+
+  const firstChar = version.at(0)
+  if (firstChar != null) {
+    if (!(isNumericChar(firstChar))) {
+      let i = 0
+      for (const letter of version) {
+        if (isNumericChar(letter)) {
+          break
+        }
+        ++i
+      }
+      curVer = version.substring(i)
+    }
+  }
+  if (curVer === '') {
+    return version
+  }
+  return curVer
+}
+
+function isNumericChar (c: string): boolean { return /\d/.test(c) }

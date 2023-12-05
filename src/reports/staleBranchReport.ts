@@ -1,13 +1,13 @@
 import {
   Grade, GradeEnum, HealthScore,
   type RepoInfo,
-  type ReportFunction, ReportGradeFunction
+  type ReportFunction
 } from '../types'
 import ReportDataWriter from '../util/reportDataWriter'
 import { errorHandler } from '../util'
-import { staleBranchReportGradeWeight } from '../util/constants'
+import {staleBranchReportGradeName, staleBranchReportGradeWeight} from '../util/constants'
 
-export const staleBranchReportGrade: ReportGradeFunction = (input: string): HealthScore => {
+const staleBranchReportGrade = (input: string): HealthScore => {
   const gradeMinValues: Record<number, Grade> = {
     5: GradeEnum.A,
     10: GradeEnum.B,
@@ -51,7 +51,7 @@ export const staleBranchReport: ReportFunction = async (repos: RepoInfo[]): Prom
         repoName: repo.name,
         count
       })
-      repo.healthScores.staleBranchReportGrade = staleBranchReportGrade(count.toString())
+      repo.healthScores[staleBranchReportGradeName] = staleBranchReportGrade(count.toString())
     } catch (error) {
       errorHandler(error, staleBranchReport.name, repo.name)
     }

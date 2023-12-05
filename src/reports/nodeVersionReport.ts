@@ -2,25 +2,31 @@ import {
   type RepoInfo,
   type ReportFunction,
   validDockerfile,
-  validGHAFile, FileTypeEnum, ReportGradeFunction, Grade, GradeEnum, HealthScore
+  validGHAFile, FileTypeEnum, Grade, GradeEnum, HealthScore
 } from '../types'
 import { compare, validate } from 'compare-versions'
 import ReportDataWriter from '../util/reportDataWriter'
-import { errorHandler } from '../util'
-import { nodeVersionReportGradeWeight } from '../util/constants'
+import { errorHandler, fetchNodeLTSVersion } from '../util'
+import {
+  nodeVersionReportGradeWeight,
+  startingLowestVersion,
+  startingHighestVersion,
+  nodeVersionReportGradeName
+} from '../util/constants'
 
-export const nodeVersionReportGrade: ReportGradeFunction = (input: string): HealthScore => {
+const nodeVersionReportGrade = (input: string, nodeLTS: string): HealthScore => {
   if (!validate(input)) {
     return {
       grade: GradeEnum.NotApplicable,
       weight: nodeVersionReportGradeWeight
     }
   }
+
   const gradeMinValues: Record<string, Grade> = {
-    '18.0.0': GradeEnum.A,
-    '16.0.0': GradeEnum.B,
-    '14.0.0': GradeEnum.C,
-    '12.0.0': GradeEnum.D,
+    [nodeLTS + '.0.0']: GradeEnum.A,
+    [(parseInt(nodeLTS) - 2).toString() + '.0.0']: GradeEnum.B,
+    [(parseInt(nodeLTS) - 4).toString() + '.0.0']: GradeEnum.C,
+    [(parseInt(nodeLTS) - 6).toString() + '.0.0']: GradeEnum.D,
     '0.0.0': GradeEnum.F
   }
 
@@ -39,8 +45,7 @@ export const nodeVersionReportGrade: ReportGradeFunction = (input: string): Heal
 }
 
 export const nodeVersionReport: ReportFunction = async (repos: RepoInfo[]): Promise<void> => {
-  const startingLowestVersion = '100.0.0'
-  const startingHighestVersion = '0.0.0'
+  const nodeLTS = await fetchNodeLTSVersion()
 
   const repoHeader = [
     { id: 'repoName', title: 'Repo' },
@@ -142,17 +147,16 @@ export const nodeVersionReport: ReportFunction = async (repos: RepoInfo[]): Prom
           }
           allBranchesWriter.data.push(nodeBranchReport)
         }
-
-        if (repoNonStaleBranchesNodeReport.highestVersion !== startingHighestVersion && repoNonStaleBranchesNodeReport.lowestVersion !== startingLowestVersion) {
-          nonStaleReposWriter.data.push(repoNonStaleBranchesNodeReport)
-          repo.healthScores.nodeVersionReportGrade = nodeVersionReportGrade(repoNonStaleBranchesNodeReport.lowestVersion)
-        }
-        if (repoAllBranchesNodeReport.highestVersion !== startingHighestVersion && repoAllBranchesNodeReport.lowestVersion !== startingLowestVersion) {
-          allReposWriter.data.push(repoAllBranchesNodeReport)
-        }
       } catch (error) {
         errorHandler(error, nodeVersionReport.name, repo.name, branchName)
       }
+    }
+    if (repoNonStaleBranchesNodeReport.highestVersion !== startingHighestVersion && repoNonStaleBranchesNodeReport.lowestVersion !== startingLowestVersion) {
+      nonStaleReposWriter.data.push(repoNonStaleBranchesNodeReport)
+    }
+    if (repoAllBranchesNodeReport.highestVersion !== startingHighestVersion && repoAllBranchesNodeReport.lowestVersion !== startingLowestVersion) {
+      allReposWriter.data.push(repoAllBranchesNodeReport)
+      repo.healthScores[nodeVersionReportGradeName] = nodeVersionReportGrade(repoAllBranchesNodeReport.lowestVersion, nodeLTS)
     }
   }
 

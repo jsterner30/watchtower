@@ -122,11 +122,6 @@ const HealthScoreSchema = Type.Object({
 })
 export type HealthScore = Static<typeof HealthScoreSchema>
 
-const ReportGradeFunctionSchema = Type.Function([
-  Type.String()
-], HealthScoreSchema)
-export type ReportGradeFunction = Static<typeof ReportGradeFunctionSchema>
-
 export const RepoInfoSchema = Type.Object({
   name: Type.String(),
   private: Type.Boolean(),

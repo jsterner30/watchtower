@@ -1,15 +1,14 @@
 import {
   type RepoInfo,
   type ReportFunction,
-  type ReportGradeFunction,
   type Grade,
   GradeEnum, HealthScore
 } from '../types'
 import ReportDataWriter from '../util/reportDataWriter'
 import { errorHandler } from '../util'
-import { oldCommitReportGradeWeight } from '../util/constants'
+import {oldCommitReportGradeWeight, reposWithoutNewCommitsReportGradeName} from '../util/constants'
 
-export const oldCommitReportGrade: ReportGradeFunction = (input: string): HealthScore => {
+const oldCommitReportGrade = (input: string): HealthScore => {
   const currentDate = new Date()
   const dateThirtyDaysAgo = new Date(new Date().setDate(currentDate.getDate() - 30)).toISOString()
   const dateSixMonthsAgo = new Date(new Date().setDate(currentDate.getDate() - 180)).toISOString()
@@ -60,7 +59,7 @@ export const reposWithoutNewCommitsReport: ReportFunction = async (repos: RepoIn
         })
       }
 
-      repo.healthScores.reposWithoutNewCommitsReport = oldCommitReportGrade(repo.lastCommit.date)
+      repo.healthScores[reposWithoutNewCommitsReportGradeName] = oldCommitReportGrade(repo.lastCommit.date)
     } catch (error) {
       errorHandler(error, reposWithoutNewCommitsReport.name, repo.name)
     }

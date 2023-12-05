@@ -14,7 +14,9 @@ export const teamsRule: RepoRule = async (octokit: Octokit, repo: RepoInfo): Pro
 
     repo.teams = []
     if (teams.length > 0) {
-      repo.teams = teams.map((team) => team.slug)
+      repo.teams = teams
+        .filter((team) => team.permissions?.admin)
+        .map((adminTeam) => adminTeam.slug)
     }
   } catch (error) {
     errorHandler(error, teamsRule.name, repo.name)

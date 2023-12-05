@@ -5,7 +5,7 @@ import {
 } from '../types'
 import { errorHandler } from '../util'
 import ReportDataWriter from '../util/reportDataWriter'
-import { lowFilesReportGradeWeight } from '../util/constants'
+import {lowFilesReportGradeName, lowFilesReportGradeWeight} from '../util/constants'
 
 export const lowFilesReport: ReportFunction = async (repos: RepoInfo[]): Promise<void> => {
   const lowFileRepoWriter = new ReportDataWriter('./data/reports/LowFileCountInRepoReport.csv',
@@ -15,7 +15,7 @@ export const lowFilesReport: ReportFunction = async (repos: RepoInfo[]): Promise
     [{ id: 'repoName', title: 'Repo' }, { id: 'branchName', title: 'Branch' }, { id: 'fileCount', title: 'FileCount' }])
 
   for (const repo of repos) {
-    repo.healthScores.lowFilesReportGrade = {
+    repo.healthScores[lowFilesReportGradeName] = {
       grade: GradeEnum.A,
       weight: lowFilesReportGradeWeight
     }
@@ -36,7 +36,7 @@ export const lowFilesReport: ReportFunction = async (repos: RepoInfo[]): Promise
       }
     }
     if (!someBranchHasFiles && Object.keys(repo.branches).length !== 0) {
-      repo.healthScores.lowFilesReportGrade = {
+      repo.healthScores[lowFilesReportGradeName] = {
         grade: GradeEnum.F,
         weight: lowFilesReportGradeWeight
       }

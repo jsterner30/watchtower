@@ -1,14 +1,19 @@
 import {
   type RepoInfo,
   type ReportFunction,
-  validGHAFile, validTerraformFile, FileTypeEnum, ReportGradeFunction, Grade, GradeEnum, HealthScore
+  validGHAFile, validTerraformFile, FileTypeEnum, Grade, GradeEnum, HealthScore
 } from '../types'
 import { compare, validate } from 'compare-versions'
 import ReportDataWriter from '../util/reportDataWriter'
-import { errorHandler } from '../util'
-import { terraformVersionReportGradeWeight } from '../util/constants'
+import { errorHandler, removeComparatorsInVersion } from '../util'
+import {
+  terraformVersionReportGradeWeight,
+  startingHighestVersion,
+  startingLowestVersion,
+  terraformVersionReportGradeName
+} from '../util/constants'
 
-export const terraformVersionReportGrade: ReportGradeFunction = (input: string): HealthScore => {
+export const terraformVersionReportGrade = (input: string): HealthScore => {
   if (!validate(input)) {
     return {
       grade: GradeEnum.NotApplicable,
@@ -38,9 +43,6 @@ export const terraformVersionReportGrade: ReportGradeFunction = (input: string):
 }
 
 export const terraformVersionReport: ReportFunction = async (repos: RepoInfo[]): Promise<void> => {
-  const startingLowestVersion = '100.0.0'
-  const startingHighestVersion = '0.0.0'
-
   const repoHeader = [
     { id: 'repoName', title: 'Repo' },
     { id: 'lowestVersion', title: 'Lowest Version' },
@@ -141,17 +143,16 @@ export const terraformVersionReport: ReportFunction = async (repos: RepoInfo[]):
           }
           allBranchesWriter.data.push(terraformBranchReport)
         }
-
-        if (repoNonStaleBranchesTerraformReport.highestVersion !== startingHighestVersion && repoNonStaleBranchesTerraformReport.lowestVersion !== startingLowestVersion) {
-          repo.healthScores.terraformVersionReportGrade = terraformVersionReportGrade(repoNonStaleBranchesTerraformReport.lowestVersion)
-          nonStaleReposWriter.data.push(repoNonStaleBranchesTerraformReport)
-        }
-        if (repoAllBranchesTerraformReport.highestVersion !== startingHighestVersion && repoAllBranchesTerraformReport.lowestVersion !== startingLowestVersion) {
-          allReposWriter.data.push(repoAllBranchesTerraformReport)
-        }
       } catch (error) {
         errorHandler(error, terraformVersionReport.name, repo.name, branchName)
       }
+    }
+    if (repoNonStaleBranchesTerraformReport.highestVersion !== startingHighestVersion && repoNonStaleBranchesTerraformReport.lowestVersion !== startingLowestVersion) {
+      nonStaleReposWriter.data.push(repoNonStaleBranchesTerraformReport)
+    }
+    if (repoAllBranchesTerraformReport.highestVersion !== startingHighestVersion && repoAllBranchesTerraformReport.lowestVersion !== startingLowestVersion) {
+      repo.healthScores[terraformVersionReportGradeName] = terraformVersionReportGrade(repoAllBranchesTerraformReport.lowestVersion)
+      allReposWriter.data.push(repoAllBranchesTerraformReport)
     }
   }
 
@@ -160,24 +161,3 @@ export const terraformVersionReport: ReportFunction = async (repos: RepoInfo[]):
   await allReposWriter.write()
   await nonStaleReposWriter.write()
 }
-
-function removeComparatorsInVersion (version: string): string {
-  let curVer = version
-
-  const firstChar = version.at(0)
-  if (firstChar != null) {
-    if (!(isNumericChar(firstChar))) {
-      let i = 0
-      for (const letter of version) {
-        if (isNumericChar(letter)) {
-          break
-        }
-        ++i
-      }
-      curVer = version.substring(i)
-    }
-  }
-  return curVer
-}
-
-function isNumericChar (c: string): boolean { return /\d/.test(c) }
