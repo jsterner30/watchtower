@@ -149,7 +149,7 @@ export async function downloadReposAndApplyRules (reposWithBranchesFile: CacheFi
       await runRepoRules(octokit, repo)
       for (const branchName of Object.keys(repo.branches)) {
         if (!repo.branches[branchName].dependabot) {
-          repo.lastCommit = await getBranchCommitInfo(octokit, repoName, branchName)
+          repo.branches[branchName].lastCommit = await getBranchCommitInfo(octokit, repoName, branchName)
           if (repo.branches[branchName].lastCommit.date > lastRunDate) {
             const downloaded = await downloadRepoToMemory(octokit, repoName, branchName)
             if (downloaded != null) {

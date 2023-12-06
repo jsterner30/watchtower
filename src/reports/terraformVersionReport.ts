@@ -22,8 +22,8 @@ export const terraformVersionReportGrade = (input: string): HealthScore => {
   }
   const gradeMinValues: Record<string, Grade> = {
     '1.5.0': GradeEnum.A,
-    '1.3.0': GradeEnum.B,
-    '1.1.0': GradeEnum.C,
+    '1.2.5': GradeEnum.B,
+    '1.0.0': GradeEnum.C,
     '0.14.0': GradeEnum.D,
     '0.0.0': GradeEnum.F
   }
