@@ -5,7 +5,7 @@ import {
 } from '../types'
 import { errorHandler } from '../util'
 import ReportDataWriter from '../util/reportDataWriter'
-import {lowFilesReportGradeName, lowFilesReportGradeWeight} from '../util/constants'
+import { lowFilesReportGradeName, lowFilesReportGradeWeight } from '../util/constants'
 
 export const lowFilesReport: ReportFunction = async (repos: RepoInfo[]): Promise<void> => {
   const lowFileRepoWriter = new ReportDataWriter('./data/reports/LowFileCountInRepoReport.csv',

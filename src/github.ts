@@ -56,7 +56,8 @@ import {
   reposWithoutNewCommitsReportGradeName,
   staleBranchReportGradeName, teamlessRepoReportGradeName, terraformModuleReportGradeName,
   terraformVersionReportGradeName
-} from "./util/constants";
+} from './util/constants'
+import { codeScanningAlertsRule } from './orgRules/codeScanningAlertsRule'
 
 export async function getAllReposInOrg (orgName: string, octokit: Octokit): Promise<CacheFile> {
   const readFromAllReposFile = true
@@ -126,6 +127,27 @@ function createRepoInfo (rawRepo: Record<string, any>): RepoInfo {
     },
     openPullRequests: [],
     openIssues: [],
+    codeScanningAlerts: {
+      low: [],
+      medium: [],
+      high: [],
+      critical: [],
+      none: []
+    },
+    dependabotScanningAlerts: {
+      low: [],
+      medium: [],
+      high: [],
+      critical: [],
+      none: []
+    },
+    secretScanningAlerts: {
+      low: [],
+      medium: [],
+      high: [],
+      critical: [],
+      none: []
+    },
     teams: [],
     admins: [],
     healthScores: {}
@@ -513,4 +535,8 @@ export async function generateOverallReport (repos: RepoInfo[]): Promise<void> {
   }
 
   await overallHealthReportWriter.write()
+}
+
+export async function runOrgRules (octokit: Octokit, cacheFile: CacheFile): Promise<void> {
+  await codeScanningAlertsRule(octokit, cacheFile)
 }

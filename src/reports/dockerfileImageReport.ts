@@ -6,7 +6,7 @@ import {
 } from '../types'
 import ReportDataWriter from '../util/reportDataWriter'
 import { errorHandler, getRelativeReportGrades } from '../util'
-import {dockerfileImageReportGradeName, dockerfileImageReportGradeWeight} from '../util/constants'
+import { dockerfileImageReportGradeName, dockerfileImageReportGradeWeight } from '../util/constants'
 
 export const dockerfileImageReport: ReportFunction = async (repos: RepoInfo[]): Promise<void> => {
   const header: CSVWriterHeader = [

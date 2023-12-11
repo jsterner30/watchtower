@@ -6,7 +6,7 @@ import {
 } from '../types'
 import ReportDataWriter from '../util/reportDataWriter'
 import { errorHandler, getRelativeReportGrades } from '../util'
-import {ghActionModuleReportGradeName, ghActionModuleReportGradeWeight} from '../util/constants'
+import { ghActionModuleReportGradeName, ghActionModuleReportGradeWeight } from '../util/constants'
 
 export const ghActionModuleReport: ReportFunction = async (repos: RepoInfo[]): Promise<void> => {
   const header: CSVWriterHeader = [

@@ -5,7 +5,7 @@ import {
 } from '../types'
 import ReportDataWriter from '../util/reportDataWriter'
 import { errorHandler } from '../util'
-import {staleBranchReportGradeName, staleBranchReportGradeWeight} from '../util/constants'
+import { staleBranchReportGradeName, staleBranchReportGradeWeight } from '../util/constants'
 
 const staleBranchReportGrade = (input: string): HealthScore => {
   const gradeMinValues: Record<number, Grade> = {

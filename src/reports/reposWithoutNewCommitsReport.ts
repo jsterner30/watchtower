@@ -6,7 +6,7 @@ import {
 } from '../types'
 import ReportDataWriter from '../util/reportDataWriter'
 import { errorHandler } from '../util'
-import {oldCommitReportGradeWeight, reposWithoutNewCommitsReportGradeName} from '../util/constants'
+import { oldCommitReportGradeWeight, reposWithoutNewCommitsReportGradeName } from '../util/constants'
 
 const oldCommitReportGrade = (input: string): HealthScore => {
   const currentDate = new Date()

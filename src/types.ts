@@ -5,7 +5,7 @@ import { TypeCompiler } from '@sinclair/typebox/compiler'
 
 export type BranchRule = (octokit: Octokit, repo: RepoInfo, downloaded: JSZip, branchName: string, fileName: string) => Promise<void>
 export type SecondaryBranchRule = (repo: RepoInfo, branchName: string) => Promise<void>
-
+export type OrgRule = (octokit: Octokit, cacheFile: CacheFile) => Promise<void>
 export type RepoRule = (octokit: Octokit, repo: RepoInfo) => Promise<void>
 
 export type ReportFunction = (repos: RepoInfo[]) => Promise<void>
@@ -122,6 +122,71 @@ const HealthScoreSchema = Type.Object({
 })
 export type HealthScore = Static<typeof HealthScoreSchema>
 
+const SecretScanningAlertSchema = Type.Object({
+  secretType: Type.String(),
+  secret: Type.String()
+})
+export type SecretScanningAlert = Static<typeof SecretScanningAlertSchema>
+
+const SecretScanningAlertBySeverityLevelSchema = Type.Object({
+  low: Type.Array(SecretScanningAlertSchema),
+  medium: Type.Array(SecretScanningAlertSchema),
+  high: Type.Array(SecretScanningAlertSchema),
+  critical: Type.Array(SecretScanningAlertSchema),
+  none: Type.Array(SecretScanningAlertSchema)
+})
+export type SecretScanningAlertBySeverityLevel = Static<typeof SecretScanningAlertBySeverityLevelSchema>
+
+const DependabotAlertSchema = Type.Object({
+  dependencyName: Type.String(),
+  dependencyEcosystem: Type.String(),
+  severity: Type.String(),
+  summary: Type.String(),
+  description: Type.String()
+})
+export type DependabotAlert = Static<typeof DependabotAlertSchema>
+
+const DependabotScanningAlertBySeverityLevelSchema = Type.Object({
+  low: Type.Array(DependabotAlertSchema),
+  medium: Type.Array(DependabotAlertSchema),
+  high: Type.Array(DependabotAlertSchema),
+  critical: Type.Array(DependabotAlertSchema),
+  none: Type.Array(DependabotAlertSchema)
+})
+export type DependabotScanningAlertBySeverityLevel = Static<typeof CodeScanningAlertBySeverityLevelSchema>
+
+const CodeScanningAlertSchema = Type.Object({
+  rule: Type.Object({
+    id: Type.String(),
+    severity: Type.String(),
+    description: Type.String(),
+    tags: Type.Array(Type.String()),
+    securitySeverityLevel: Type.String()
+  }),
+  tool: Type.Object({
+    name: Type.String(),
+    version: Type.String()
+  }),
+  mostRecentInstance: Type.Object({
+    ref: Type.String(),
+    environment: Type.String(),
+    category: Type.String(),
+    commitSha: Type.String(),
+    message: Type.String(),
+    locationPath: Type.String()
+  })
+})
+export type CodeScanningAlert = Static<typeof CodeScanningAlertSchema>
+
+const CodeScanningAlertBySeverityLevelSchema = Type.Object({
+  low: Type.Array(CodeScanningAlertSchema),
+  medium: Type.Array(CodeScanningAlertSchema),
+  high: Type.Array(CodeScanningAlertSchema),
+  critical: Type.Array(CodeScanningAlertSchema),
+  none: Type.Array(CodeScanningAlertSchema)
+})
+export type CodeScanningAlertBySeverityLevel = Static<typeof CodeScanningAlertBySeverityLevelSchema>
+
 export const RepoInfoSchema = Type.Object({
   name: Type.String(),
   private: Type.Boolean(),
@@ -137,6 +202,9 @@ export const RepoInfoSchema = Type.Object({
   lastCommit: CommitSchema,
   openPullRequests: Type.Array(PullRequestSchema),
   openIssues: Type.Array(IssueSchema),
+  codeScanningAlerts: CodeScanningAlertBySeverityLevelSchema,
+  dependabotScanningAlerts: DependabotScanningAlertBySeverityLevelSchema,
+  secretScanningAlerts: SecretScanningAlertBySeverityLevelSchema,
   teams: Type.Array(Type.String()),
   admins: Type.Array(Type.String()),
   healthScores: Type.Record(Type.String(), HealthScoreSchema)

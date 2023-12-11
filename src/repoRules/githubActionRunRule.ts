@@ -2,14 +2,6 @@ import { Octokit } from '@octokit/rest'
 import { errorHandler, getEnv } from '../util'
 import type { RepoInfo, RepoRule } from '../types'
 
-export interface GitHubActionsRun {
-  id: number
-  status: string
-  conclusion: string
-  created_at: string
-  updated_at: string
-}
-
 export const githubActionRunRule: RepoRule = async (octokit: Octokit, repo: RepoInfo): Promise<void> => {
   try {
     const { data: runs } = await octokit.actions.listWorkflowRunsForRepo({

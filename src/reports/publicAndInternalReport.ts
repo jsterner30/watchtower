@@ -5,7 +5,7 @@ import {
 } from '../types'
 import ReportDataWriter from '../util/reportDataWriter'
 import { errorHandler } from '../util'
-import {publicAndInternalReportGradeName, publicAndInternalReportGradeWeight} from '../util/constants'
+import { publicAndInternalReportGradeName, publicAndInternalReportGradeWeight } from '../util/constants'
 
 export const publicAndInternalReport: ReportFunction = async (repos: RepoInfo[]): Promise<void> => {
   const header = [

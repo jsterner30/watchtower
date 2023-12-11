@@ -3,7 +3,8 @@ import {
   getAllReposInOrg,
   getBranches,
   filterArchived,
-  runReports
+  runReports,
+  runOrgRules
 } from './github'
 import { createDataDirectoriesIfNonexistent, getEnv, getLastRunDate, getOctokit, setLastRunDate } from './util'
 
@@ -15,6 +16,7 @@ async function run (): Promise<void> {
   const allReposFile = await getAllReposInOrg(env.githubOrg, octokit)
   const filteredRepos = await filterArchived(allReposFile)
   const filteredWithBranchesFile = await getBranches(octokit, filteredRepos)
+  await runOrgRules(octokit, filteredWithBranchesFile)
   await downloadReposAndApplyRules(filteredWithBranchesFile, octokit, info.lastRunDate)
   await runReports()
   await setLastRunDate()

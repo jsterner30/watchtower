@@ -5,7 +5,7 @@ import {
 } from '../types'
 import ReportDataWriter from '../util/reportDataWriter'
 import { errorHandler } from '../util'
-import {teamlessRepoReportGradeName, teamlessRepoReportGradeWeight} from '../util/constants'
+import { teamlessRepoReportGradeName, teamlessRepoReportGradeWeight } from '../util/constants'
 
 export const teamlessRepoReport: ReportFunction = async (repos: RepoInfo[]): Promise<void> => {
   const header = [{ id: 'repoName', title: 'Repo' }]

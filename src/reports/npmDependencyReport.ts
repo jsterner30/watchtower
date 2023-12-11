@@ -5,7 +5,7 @@ import {
 } from '../types'
 import ReportDataWriter from '../util/reportDataWriter'
 import { errorHandler, getRelativeReportGrades, removeComparatorsInVersion } from '../util'
-import {npmDependencyReportGradeName, npmDependencyReportGradeWeight} from '../util/constants'
+import { npmDependencyReportGradeName, npmDependencyReportGradeWeight } from '../util/constants'
 
 export const npmDependencyReport: ReportFunction = async (repos: RepoInfo[]): Promise<void> => {
   const header: CSVWriterHeader = [

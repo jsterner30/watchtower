@@ -7,7 +7,7 @@ import {
 } from '../types'
 import ReportDataWriter from '../util/reportDataWriter'
 import { errorHandler, getRelativeReportGrades } from '../util'
-import {terraformModuleReportGradeName, terraformModuleReportGradeWeight} from '../util/constants'
+import { terraformModuleReportGradeName, terraformModuleReportGradeWeight } from '../util/constants'
 
 export const terraformModuleReport: ReportFunction = async (repos: RepoInfo[]): Promise<void> => {
   const header: CSVWriterHeader = [
