@@ -58,6 +58,8 @@ import {
   terraformVersionReportGradeName
 } from './util/constants'
 import { codeScanningAlertsRule } from './orgRules/codeScanningAlertsRule'
+import { dependabotAlertsRule } from './orgRules/dependabotAlertsRule'
+import { secretScanningAlertsRule } from './orgRules/secretScanningAlertsRule'
 
 export async function getAllReposInOrg (orgName: string, octokit: Octokit): Promise<CacheFile> {
   const readFromAllReposFile = true
@@ -539,4 +541,6 @@ export async function generateOverallReport (repos: RepoInfo[]): Promise<void> {
 
 export async function runOrgRules (octokit: Octokit, cacheFile: CacheFile): Promise<void> {
   await codeScanningAlertsRule(octokit, cacheFile)
+  await dependabotAlertsRule(octokit, cacheFile)
+  await secretScanningAlertsRule(octokit, cacheFile)
 }
