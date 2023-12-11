@@ -326,7 +326,7 @@ export async function getBranches (octokit: Octokit, repos: RepoInfo[]): Promise
   let filteredWithBranchesWithMeta: CacheFile = await readJsonFromFile('./data/filteredWithBranches.json') as CacheFile
 
   if (filteredWithBranchesWithMeta == null || (Object.keys(filteredWithBranchesWithMeta.info)).length === 0 || !readFromFile) {
-    logger.info('Getting all repos in org and writing them to allRepos.json file')
+    logger.info('Getting all branches in org and writing them to filteredWithBranches.json file')
     const filteredWithBranches: Record<string, any> = {}
     const progress = new ProgressBarManager(repos.length, 'Getting branch info for repos', [{ displayName: 'Current Repo', token: 'currentRepo' }])
     progress.start()
