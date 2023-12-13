@@ -144,11 +144,7 @@ function createRepoInfo (rawRepo: Record<string, any>): RepoInfo {
       none: []
     },
     secretScanningAlerts: {
-      low: [],
-      medium: [],
-      high: [],
-      critical: [],
-      none: []
+      critical: []
     },
     teams: [],
     admins: [],

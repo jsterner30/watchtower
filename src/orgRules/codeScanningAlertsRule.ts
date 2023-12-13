@@ -24,29 +24,35 @@ export const codeScanningAlertsRule: OrgRule = async (octokit: Octokit, cacheFil
     const repos = cacheFile.info
     for (const alert of alerts) {
       if (alert.state === 'open') {
-        const securitySeverity = (alert.rule?.security_severity_level.toLowerCase() ?? 'none') as keyof CodeScanningAlertBySeverityLevel
+        if (alert.repository?.name != null && repos[alert.repository.name] != null) {
+          try {
+            const securitySeverity = (alert.rule?.security_severity_level?.toLowerCase() ?? 'none') as keyof CodeScanningAlertBySeverityLevel
 
-        repos[alert.repository.name].codeScanningAlerts[securitySeverity].push({
-          rule: {
-            id: alert.rule.id,
-            severity: alert.rule.severity,
-            description: alert.rule.description,
-            tags: alert.rule.tags,
-            securitySeverityLevel: alert.rule.security_severity_level ?? 'none'
-          },
-          tool: {
-            name: alert.tool.name,
-            version: alert.tool.version
-          },
-          mostRecentInstance: {
-            ref: alert.most_recent_instance.ref,
-            environment: alert.most_recent_instance.environment,
-            category: alert.most_recent_instance.category,
-            commitSha: alert.most_recent_instance.commit_sha,
-            message: alert.most_recent_instance.message.text,
-            locationPath: alert.most_recent_instance.location.path
+            repos[alert.repository.name].codeScanningAlerts[securitySeverity].push({
+              rule: {
+                id: alert.rule.id,
+                severity: alert.rule.severity,
+                description: alert.rule.description,
+                tags: alert.rule.tags,
+                securitySeverityLevel: alert.rule.security_severity_level ?? 'none'
+              },
+              tool: {
+                name: alert.tool.name,
+                version: alert.tool.version
+              },
+              mostRecentInstance: {
+                ref: alert.most_recent_instance.ref,
+                environment: alert.most_recent_instance.environment,
+                category: alert.most_recent_instance.category,
+                commitSha: alert.most_recent_instance.commit_sha,
+                message: alert.most_recent_instance.message.text,
+                locationPath: alert.most_recent_instance.location.path
+              }
+            })
+          } catch (error) {
+            errorHandler(error, codeScanningAlertsRule.name, alert.repository.name)
           }
-        })
+        }
       }
     }
   } catch (error) {

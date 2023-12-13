@@ -129,11 +129,7 @@ const SecretScanningAlertSchema = Type.Object({
 export type SecretScanningAlert = Static<typeof SecretScanningAlertSchema>
 
 const SecretScanningAlertBySeverityLevelSchema = Type.Object({
-  low: Type.Array(SecretScanningAlertSchema),
-  medium: Type.Array(SecretScanningAlertSchema),
-  high: Type.Array(SecretScanningAlertSchema),
-  critical: Type.Array(SecretScanningAlertSchema),
-  none: Type.Array(SecretScanningAlertSchema)
+  critical: Type.Array(SecretScanningAlertSchema)
 })
 export type SecretScanningAlertBySeverityLevel = Static<typeof SecretScanningAlertBySeverityLevelSchema>
 
