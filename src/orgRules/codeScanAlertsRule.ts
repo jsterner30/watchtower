@@ -1,8 +1,8 @@
 import { Octokit } from '@octokit/rest'
 import { errorHandler, getEnv } from '../util'
-import type { CacheFile, CodeScanningAlertBySeverityLevel, OrgRule } from '../types'
+import type { CacheFile, CodeScanAlertBySeverityLevel, OrgRule } from '../types'
 
-export const codeScanningAlertsRule: OrgRule = async (octokit: Octokit, cacheFile: CacheFile): Promise<void> => {
+export const codeScanAlertsRule: OrgRule = async (octokit: Octokit, cacheFile: CacheFile): Promise<void> => {
   try {
     let alerts: any = []
     let page = 1
@@ -26,9 +26,9 @@ export const codeScanningAlertsRule: OrgRule = async (octokit: Octokit, cacheFil
       if (alert.state === 'open') {
         if (alert.repository?.name != null && repos[alert.repository.name] != null) {
           try {
-            const securitySeverity = (alert.rule?.security_severity_level?.toLowerCase() ?? 'none') as keyof CodeScanningAlertBySeverityLevel
+            const securitySeverity = (alert.rule?.security_severity_level?.toLowerCase() ?? 'none') as keyof CodeScanAlertBySeverityLevel
 
-            repos[alert.repository.name].codeScanningAlerts[securitySeverity].push({
+            repos[alert.repository.name].codeScanAlerts[securitySeverity].push({
               rule: {
                 id: alert.rule.id,
                 severity: alert.rule.severity,
@@ -50,12 +50,12 @@ export const codeScanningAlertsRule: OrgRule = async (octokit: Octokit, cacheFil
               }
             })
           } catch (error) {
-            errorHandler(error, codeScanningAlertsRule.name, alert.repository.name)
+            errorHandler(error, codeScanAlertsRule.name, alert.repository.name)
           }
         }
       }
     }
   } catch (error) {
-    errorHandler(error, codeScanningAlertsRule.name)
+    errorHandler(error, codeScanAlertsRule.name)
   }
 }

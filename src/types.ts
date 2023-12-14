@@ -122,16 +122,16 @@ const HealthScoreSchema = Type.Object({
 })
 export type HealthScore = Static<typeof HealthScoreSchema>
 
-const SecretScanningAlertSchema = Type.Object({
+const SecretScanAlertSchema = Type.Object({
   secretType: Type.String(),
   secret: Type.String()
 })
-export type SecretScanningAlert = Static<typeof SecretScanningAlertSchema>
+export type SecretScanAlert = Static<typeof SecretScanAlertSchema>
 
-const SecretScanningAlertBySeverityLevelSchema = Type.Object({
-  critical: Type.Array(SecretScanningAlertSchema)
+const SecretScanAlertBySeverityLevelSchema = Type.Object({
+  critical: Type.Array(SecretScanAlertSchema)
 })
-export type SecretScanningAlertBySeverityLevel = Static<typeof SecretScanningAlertBySeverityLevelSchema>
+export type SecretScanAlertBySeverityLevel = Static<typeof SecretScanAlertBySeverityLevelSchema>
 
 const DependabotAlertSchema = Type.Object({
   dependencyName: Type.String(),
@@ -142,16 +142,16 @@ const DependabotAlertSchema = Type.Object({
 })
 export type DependabotAlert = Static<typeof DependabotAlertSchema>
 
-const DependabotScanningAlertBySeverityLevelSchema = Type.Object({
+const DependabotScanAlertBySeverityLevelSchema = Type.Object({
   low: Type.Array(DependabotAlertSchema),
   medium: Type.Array(DependabotAlertSchema),
   high: Type.Array(DependabotAlertSchema),
   critical: Type.Array(DependabotAlertSchema),
   none: Type.Array(DependabotAlertSchema)
 })
-export type DependabotScanningAlertBySeverityLevel = Static<typeof CodeScanningAlertBySeverityLevelSchema>
+export type DependabotScanAlertBySeverityLevel = Static<typeof DependabotScanAlertBySeverityLevelSchema>
 
-const CodeScanningAlertSchema = Type.Object({
+const CodeScanAlertSchema = Type.Object({
   rule: Type.Object({
     id: Type.String(),
     severity: Type.String(),
@@ -172,16 +172,16 @@ const CodeScanningAlertSchema = Type.Object({
     locationPath: Type.String()
   })
 })
-export type CodeScanningAlert = Static<typeof CodeScanningAlertSchema>
+export type CodeScanAlert = Static<typeof CodeScanAlertSchema>
 
-const CodeScanningAlertBySeverityLevelSchema = Type.Object({
-  low: Type.Array(CodeScanningAlertSchema),
-  medium: Type.Array(CodeScanningAlertSchema),
-  high: Type.Array(CodeScanningAlertSchema),
-  critical: Type.Array(CodeScanningAlertSchema),
-  none: Type.Array(CodeScanningAlertSchema)
+const CodeScanAlertBySeverityLevelSchema = Type.Object({
+  low: Type.Array(CodeScanAlertSchema),
+  medium: Type.Array(CodeScanAlertSchema),
+  high: Type.Array(CodeScanAlertSchema),
+  critical: Type.Array(CodeScanAlertSchema),
+  none: Type.Array(CodeScanAlertSchema)
 })
-export type CodeScanningAlertBySeverityLevel = Static<typeof CodeScanningAlertBySeverityLevelSchema>
+export type CodeScanAlertBySeverityLevel = Static<typeof CodeScanAlertBySeverityLevelSchema>
 
 export const RepoInfoSchema = Type.Object({
   name: Type.String(),
@@ -198,9 +198,9 @@ export const RepoInfoSchema = Type.Object({
   lastCommit: CommitSchema,
   openPullRequests: Type.Array(PullRequestSchema),
   openIssues: Type.Array(IssueSchema),
-  codeScanningAlerts: CodeScanningAlertBySeverityLevelSchema,
-  dependabotScanningAlerts: DependabotScanningAlertBySeverityLevelSchema,
-  secretScanningAlerts: SecretScanningAlertBySeverityLevelSchema,
+  codeScanAlerts: CodeScanAlertBySeverityLevelSchema,
+  dependabotScanAlerts: DependabotScanAlertBySeverityLevelSchema,
+  secretScanAlerts: SecretScanAlertBySeverityLevelSchema,
   teams: Type.Array(Type.String()),
   admins: Type.Array(Type.String()),
   healthScores: Type.Record(Type.String(), HealthScoreSchema)

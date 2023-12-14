@@ -46,20 +46,22 @@ import {
   lowFilesReport,
   reposWithoutNewCommitsReport,
   publicAndInternalReport,
-  npmDependencyReport
+  npmDependencyReport,
+  codeScanAlertReport,
+  dependabotAlertReport,
+  secretScanAlertReport
 } from './reports'
 import ReportDataWriter from './util/reportDataWriter'
 import {
+  codeScanAlertReportGradeName, dependabotAlertReportGradeName,
   dependabotBranchReportGradeName, dockerfileImageReportGradeName, ghActionModuleReportGradeName,
   nodeVersionReportGradeName, npmDependencyReportGradeName,
   publicAndInternalReportGradeName,
-  reposWithoutNewCommitsReportGradeName,
+  reposWithoutNewCommitsReportGradeName, secretAlertReportGradeName,
   staleBranchReportGradeName, teamlessRepoReportGradeName, terraformModuleReportGradeName,
   terraformVersionReportGradeName
 } from './util/constants'
-import { codeScanningAlertsRule } from './orgRules/codeScanningAlertsRule'
-import { dependabotAlertsRule } from './orgRules/dependabotAlertsRule'
-import { secretScanningAlertsRule } from './orgRules/secretScanningAlertsRule'
+import { codeScanAlertsRule, dependabotAlertsRule, secretScanAlertsRule } from './orgRules'
 
 export async function getAllReposInOrg (orgName: string, octokit: Octokit): Promise<CacheFile> {
   const readFromAllReposFile = true
@@ -129,21 +131,21 @@ function createRepoInfo (rawRepo: Record<string, any>): RepoInfo {
     },
     openPullRequests: [],
     openIssues: [],
-    codeScanningAlerts: {
+    codeScanAlerts: {
       low: [],
       medium: [],
       high: [],
       critical: [],
       none: []
     },
-    dependabotScanningAlerts: {
+    dependabotScanAlerts: {
       low: [],
       medium: [],
       high: [],
       critical: [],
       none: []
     },
-    secretScanningAlerts: {
+    secretScanAlerts: {
       critical: []
     },
     teams: [],
@@ -242,6 +244,9 @@ export async function runReports (): Promise<void> {
   await terraformModuleReport(repos)
   await ghActionModuleReport(repos)
   await npmDependencyReport(repos)
+  await codeScanAlertReport(repos)
+  await dependabotAlertReport(repos)
+  await secretScanAlertReport(repos)
 
   // this has to be run last
   await generateOverallReport(repos)
@@ -505,7 +510,10 @@ export async function generateOverallReport (repos: RepoInfo[]): Promise<void> {
     { id: dockerfileImageReportGradeName, title: 'Dockerfile Image Report Grade' },
     { id: ghActionModuleReportGradeName, title: 'GH Action Module Report Grade' },
     { id: npmDependencyReportGradeName, title: 'NPM Dependency Report Grade' },
-    { id: terraformModuleReportGradeName, title: 'Terraform Module Report Grade' }
+    { id: terraformModuleReportGradeName, title: 'Terraform Module Report Grade' },
+    { id: codeScanAlertReportGradeName, title: 'Code Scan Alert Report Grade' },
+    { id: dependabotAlertReportGradeName, title: 'Dependabot Scan Alert Report Grade' },
+    { id: secretAlertReportGradeName, title: 'Secret Scan Alert Report Grade' }
   ]
 
   const overallHealthReportWriter = new ReportDataWriter('./data/overallHealthReport.csv', header)
@@ -528,7 +536,10 @@ export async function generateOverallReport (repos: RepoInfo[]): Promise<void> {
       [dockerfileImageReportGradeName]: repo.healthScores[dockerfileImageReportGradeName] != null ? repo.healthScores[dockerfileImageReportGradeName].grade : GradeEnum.NotApplicable,
       [ghActionModuleReportGradeName]: repo.healthScores[ghActionModuleReportGradeName] != null ? repo.healthScores[ghActionModuleReportGradeName].grade : GradeEnum.NotApplicable,
       [npmDependencyReportGradeName]: repo.healthScores[npmDependencyReportGradeName] != null ? repo.healthScores[npmDependencyReportGradeName].grade : GradeEnum.NotApplicable,
-      [terraformModuleReportGradeName]: repo.healthScores[terraformModuleReportGradeName] != null ? repo.healthScores[terraformModuleReportGradeName].grade : GradeEnum.NotApplicable
+      [terraformModuleReportGradeName]: repo.healthScores[terraformModuleReportGradeName] != null ? repo.healthScores[terraformModuleReportGradeName].grade : GradeEnum.NotApplicable,
+      [codeScanAlertReportGradeName]: repo.healthScores[codeScanAlertReportGradeName] != null ? repo.healthScores[codeScanAlertReportGradeName].grade : GradeEnum.NotApplicable,
+      [dependabotAlertReportGradeName]: repo.healthScores[dependabotBranchReportGradeName] != null ? repo.healthScores[dependabotAlertReportGradeName].grade : GradeEnum.NotApplicable,
+      [secretAlertReportGradeName]: repo.healthScores[secretAlertReportGradeName] != null ? repo.healthScores[secretAlertReportGradeName].grade : GradeEnum.NotApplicable
     })
   }
 
@@ -536,7 +547,7 @@ export async function generateOverallReport (repos: RepoInfo[]): Promise<void> {
 }
 
 export async function runOrgRules (octokit: Octokit, cacheFile: CacheFile): Promise<void> {
-  await codeScanningAlertsRule(octokit, cacheFile)
+  await codeScanAlertsRule(octokit, cacheFile)
   await dependabotAlertsRule(octokit, cacheFile)
-  await secretScanningAlertsRule(octokit, cacheFile)
+  await secretScanAlertsRule(octokit, cacheFile)
 }

@@ -1,6 +1,6 @@
 import { Octokit } from '@octokit/rest'
 import { errorHandler, getEnv } from '../util'
-import type { CacheFile, DependabotScanningAlertBySeverityLevel, OrgRule } from '../types'
+import type { CacheFile, DependabotScanAlertBySeverityLevel, OrgRule } from '../types'
 
 export const dependabotAlertsRule: OrgRule = async (octokit: Octokit, cacheFile: CacheFile): Promise<void> => {
   try {
@@ -26,9 +26,9 @@ export const dependabotAlertsRule: OrgRule = async (octokit: Octokit, cacheFile:
       if (alert.state === 'open') {
         if (alert.repository?.name != null && repos[alert.repository.name] != null) {
           try {
-            const securitySeverity = (alert.security_vulnerability?.severity ?? 'none') as keyof DependabotScanningAlertBySeverityLevel
+            const securitySeverity = (alert.security_vulnerability?.severity ?? 'none') as keyof DependabotScanAlertBySeverityLevel
 
-            repos[alert.repository.name].dependabotScanningAlerts[securitySeverity].push({
+            repos[alert.repository.name].dependabotScanAlerts[securitySeverity].push({
               dependencyName: alert.dependency?.package?.name,
               dependencyEcosystem: alert.dependency?.package?.ecosystem,
               summary: alert.security_advisory?.summary,
