@@ -34,12 +34,14 @@
     "js-yaml": "^4.1.0",
     "jszip": "^3.10.1",
     "lodash": "^4.17.21",
+    "markdown-it": "^14.0.0",
     "progress": "^2.0.3"
   },
   "devDependencies": {
     "@tsconfig/node20": "^20.1.2",
     "@types/adm-zip": "^0.5.4",
     "@types/js-yaml": "^4.0.9",
+    "@types/markdown-it": "^13.0.7",
     "@types/progress": "^2.0.7",
     "eslint": "^8.41.0",
     "husky": "^8.0.0",

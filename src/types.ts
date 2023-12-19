@@ -30,7 +30,8 @@ export enum FileTypeEnum {
   DOCKER_COMPOSE = 'DOCKER_COMPOSE',
   GITIGNORE = 'GITIGNORE',
   GITHUB_ACTION = 'GITHUB_ACTION',
-  CODEOWNERS = 'CODEOWNERS'
+  CODEOWNERS = 'CODEOWNERS',
+  README = 'README'
 }
 const FileTypeSchema = Type.Enum(FileTypeEnum)
 export type FileType = Static<typeof FileTypeSchema>
@@ -296,6 +297,15 @@ const PackageLockFileSchema = Type.Intersect([
 ])
 export type PackageLockFile = Static<typeof PackageLockFileSchema>
 export const validPackageLockFile = TypeCompiler.Compile(PackageLockFileSchema)
+
+export const ReadmeSchema = Type.Intersect([
+  RuleFileSchema,
+  Type.Object({
+    contents: Type.Record(Type.String(), Type.Any())
+  })
+])
+export type ReadmeFile = Static<typeof ReadmeSchema>
+export const validReadmeFile = TypeCompiler.Compile(ReadmeSchema)
 
 const TerraformFileSchema = Type.Intersect([
   RuleFileSchema,

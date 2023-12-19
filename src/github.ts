@@ -16,7 +16,8 @@ import {
   dotGithubDirRule,
   dockerComposeRule,
   packageLockRule,
-  terraformRule
+  terraformRule,
+  readmeRule
 } from './branchRules'
 import {
   latestCommitRule,
@@ -46,7 +47,8 @@ import {
   lowFilesReport,
   reposWithoutNewCommitsReport,
   publicAndInternalReport,
-  npmDependencyReport
+  npmDependencyReport,
+  readmeReport
 } from './reports'
 import ReportDataWriter from './util/reportDataWriter'
 import {
@@ -55,7 +57,8 @@ import {
   publicAndInternalReportGradeName,
   reposWithoutNewCommitsReportGradeName,
   staleBranchReportGradeName, teamlessRepoReportGradeName, terraformModuleReportGradeName,
-  terraformVersionReportGradeName
+  terraformVersionReportGradeName,
+  readmeReportGradeName
 } from './util/constants'
 import { codeScanningAlertsRule } from './orgRules/codeScanningAlertsRule'
 import { dependabotAlertsRule } from './orgRules/dependabotAlertsRule'
@@ -202,6 +205,7 @@ async function runBranchRules (octokit: Octokit, repo: RepoInfo, downloaded: JSZ
   await packageLockRule(octokit, repo, downloaded, branchName, fileName)
   await terraformRule(octokit, repo, downloaded, branchName, fileName)
   await fileCountRule(octokit, repo, downloaded, branchName, fileName)
+  await readmeRule(octokit, repo, downloaded, branchName, fileName)
 }
 
 async function runSecondaryBranchRules (repo: RepoInfo, branchName: string): Promise<void> {
@@ -246,6 +250,7 @@ export async function runReports (): Promise<void> {
   await terraformModuleReport(repos)
   await ghActionModuleReport(repos)
   await npmDependencyReport(repos)
+  await readmeReport(repos)
 
   // this has to be run last
   await generateOverallReport(repos)
@@ -509,7 +514,8 @@ export async function generateOverallReport (repos: RepoInfo[]): Promise<void> {
     { id: dockerfileImageReportGradeName, title: 'Dockerfile Image Report Grade' },
     { id: ghActionModuleReportGradeName, title: 'GH Action Module Report Grade' },
     { id: npmDependencyReportGradeName, title: 'NPM Dependency Report Grade' },
-    { id: terraformModuleReportGradeName, title: 'Terraform Module Report Grade' }
+    { id: terraformModuleReportGradeName, title: 'Terraform Module Report Grade' },
+    { id: readmeReportGradeName, title: 'Readme Report Grade' }
   ]
 
   const overallHealthReportWriter = new ReportDataWriter('./data/overallHealthReport.csv', header)
@@ -532,7 +538,8 @@ export async function generateOverallReport (repos: RepoInfo[]): Promise<void> {
       [dockerfileImageReportGradeName]: repo.healthScores[dockerfileImageReportGradeName] != null ? repo.healthScores[dockerfileImageReportGradeName].grade : GradeEnum.NotApplicable,
       [ghActionModuleReportGradeName]: repo.healthScores[ghActionModuleReportGradeName] != null ? repo.healthScores[ghActionModuleReportGradeName].grade : GradeEnum.NotApplicable,
       [npmDependencyReportGradeName]: repo.healthScores[npmDependencyReportGradeName] != null ? repo.healthScores[npmDependencyReportGradeName].grade : GradeEnum.NotApplicable,
-      [terraformModuleReportGradeName]: repo.healthScores[terraformModuleReportGradeName] != null ? repo.healthScores[terraformModuleReportGradeName].grade : GradeEnum.NotApplicable
+      [terraformModuleReportGradeName]: repo.healthScores[terraformModuleReportGradeName] != null ? repo.healthScores[terraformModuleReportGradeName].grade : GradeEnum.NotApplicable,
+      [readmeReportGradeName]: repo.healthScores[readmeReportGradeName] != null ? repo.healthScores[readmeReportGradeName].grade : GradeEnum.NotApplicable
     })
   }
 
