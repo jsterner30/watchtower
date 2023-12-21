@@ -301,7 +301,7 @@ export const validPackageLockFile = TypeCompiler.Compile(PackageLockFileSchema)
 export const ReadmeSchema = Type.Intersect([
   RuleFileSchema,
   Type.Object({
-    contents: Type.Record(Type.String(), Type.Any())
+    contents: Type.Array(Type.Record(Type.String(), Type.Any()))
   })
 ])
 export type ReadmeFile = Static<typeof ReadmeSchema>
