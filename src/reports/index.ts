@@ -1,6 +1,7 @@
 export * from './codeScanAlertReport'
 export * from './dependabotAlertReport'
 export * from './dependabotBranchReport'
+export * from './devPrdBranchesReport'
 export * from './dockerfileImageReport'
 export * from './ghActionModuleReport'
 export * from './lowFilesReport'
