@@ -49,7 +49,7 @@ import {
   npmDependencyReport,
   codeScanAlertReport,
   dependabotAlertReport,
-  secretScanAlertReport,
+  secretScanAlertsReports,
   devPrdBranchesReport
 } from './reports'
 import ReportDataWriter from './util/reportDataWriter'
@@ -247,7 +247,7 @@ export async function runReports (): Promise<void> {
   await npmDependencyReport(repos)
   await codeScanAlertReport(repos)
   await dependabotAlertReport(repos)
-  await secretScanAlertReport(repos)
+  await secretScanAlertsReports(repos)
   await devPrdBranchesReport(repos)
 
   // this has to be run last

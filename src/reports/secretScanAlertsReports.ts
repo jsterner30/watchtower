@@ -12,13 +12,13 @@ import {
   secretAlertReportGradeWeight
 } from '../util/constants'
 
-interface SecretAlertReportRow {
+interface SecretAlertsReportRow {
   repoName: string
   secretType: string
   secret: string
 }
 
-const dependabotAlertReportGrade = (input: SecretScanAlertBySeverityLevel): HealthScore => {
+const secretScanningAlertsReportGrade = (input: SecretScanAlertBySeverityLevel): HealthScore => {
   if (input.critical.length === 0) {
     return {
       grade: GradeEnum.A,
@@ -32,7 +32,7 @@ const dependabotAlertReportGrade = (input: SecretScanAlertBySeverityLevel): Heal
   }
 }
 
-export const secretScanAlertReport: ReportFunction = async (repos: RepoInfo[]): Promise<void> => {
+export const secretScanAlertsReports: ReportFunction = async (repos: RepoInfo[]): Promise<void> => {
   const alertReportHeader = [
     { id: 'repoName', title: 'Repo' },
     { id: 'secretType', title: 'Secret Type' },
@@ -52,17 +52,17 @@ export const secretScanAlertReport: ReportFunction = async (repos: RepoInfo[]): 
       secretAlertWriter.data.push(...getCsvData(repo.secretScanAlerts?.critical, repo.name))
       secretAlertCountWriter.data.push({ repoName: repo.name, count: repo.secretScanAlerts?.critical.length })
 
-      repo.healthScores[secretAlertReportGradeName] = dependabotAlertReportGrade(repo.secretScanAlerts)
+      repo.healthScores[secretAlertReportGradeName] = secretScanningAlertsReportGrade(repo.secretScanAlerts)
     } catch (error) {
-      errorHandler(error, secretScanAlertReport.name, repo.name)
+      errorHandler(error, secretScanAlertsReports.name, repo.name)
     }
   }
   await secretAlertWriter.write()
   await secretAlertCountWriter.write()
 }
 
-function getCsvData (alerts: SecretScanAlert[], repoName: string): SecretAlertReportRow[] {
-  const rows: SecretAlertReportRow[] = []
+function getCsvData (alerts: SecretScanAlert[], repoName: string): SecretAlertsReportRow[] {
+  const rows: SecretAlertsReportRow[] = []
   for (const alert of alerts) {
     rows.push({
       repoName,
