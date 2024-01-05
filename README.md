@@ -16,10 +16,6 @@ There are three types of rules:
 
 - Org Rules: These rules make a single API call to the whole org, then map the data to a repo. This saves us hundreds of API calls.
 
-### Reports
-
-Reports are functions that aggregate the data gathered by a rule and output it to a csv file. They run very quickly and therefore have no need to be cached. 
-
 ### Stale Branches
 
 A stale branch is a branch that is not a default branch, protected branch, deployed branch, or a branch recently committed to. Default and protected branches are attributes set in a repo's settings. This script decides that a branch is "deployed" if the branch is listed in a GHA file called "deploy.yml" on the default branch. A branch is otherwise stale if it has not had a new commit in 30 days, although this 30 day value can be changed using the STALE_DAYS_THRESHOLD environment variable.
@@ -54,9 +50,11 @@ Each report calculates its own grade. Reports that do not apply to a repo do not
 - Dependency Reports: these are more difficult to grade. Theoretically we could try to find the most recent version of every dependency, but this could be difficult. Instead, we use a relative grading scheme. We look at the version of a given dependency on a branch of some repo, and then compare it to the highest and lowest of that dependency in the org. This comparison gives us a letter grade by finding the spread between the overall highest and lowest versions and grading on a scale between that spread. Unique dependencies used by a single repo are graded as a C.
 Each of these dependency grades contributes to the overall grade for the dependency environment for a repo, so that each npm dependency would contribute to the overall npm grade. 
 
-The overall health score for each repo is written to its own csv file. 
+The overall health score for each repo is written to its own csv file called "overallHealthReport.csv". 
 
-## Existing Reports
+### Reports
+
+Reports are functions that aggregate the data gathered by a rule and output it to a csv file. They run very quickly and therefore have no need to be cached.
 
 | Report                 | Type       | Description                                                                                                                                                                                                                                                                                                                                                                          | Contributes to Overall Healthscore Report | Weight |
 |------------------------|------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------|--------|
@@ -78,6 +76,28 @@ The overall health score for each repo is written to its own csv file.
 | terraformModule        | Dependency | Generates csv files in the "terraformModules" subdirectory corresponding to all the tf modules in the org                                                                                                                                                                                                                                                                            | Yes                                       | 3      |
 | terraformVersion       | Version    | Generates a subdirectory "terraform" with four csv files                                                                                                                                                                                                                                                                                                                             | Yes                                       | 5      |
 
+## Running Locally
+
+Env Vars: 
+You can copy the below environment variables into your run configuration
+```
+ENVIRONMENT_NAME=dev
+GITHUB_ORG=<your-org>;
+GITHUB_TOKEN=<you-token>;
+STALE_DAYS_THRESHOLD=30;
+```
+
+GITHUB_ORG and GITHUB_TOKEN are required variables. STALE_DAYS_THRESHOLD and ENVIRONMENT_NAME are not required, and default to "30" and "dev" respectively. 
+
+This tool will work best if your GITHUB_TOKEN is a token associated with admin privileges over your organization, otherwise certain rules (getting Code Scanning results and admin teams for example) may not function properly. 
+
+After adding these environment variables to your run configuration, the tool can be started by running the below command:
+
+```node --env-file=.env -r ts-node/register src/index.ts```
+
+or 
+
+```npm run dev```
 
 ## Todos
 
@@ -87,3 +107,4 @@ The overall health score for each repo is written to its own csv file.
 4. Improve caching
 5. Create more run options (run without cache, etc.)
 6. Dynamic LTS versioning for things besides node
+7. Deploy automatically to npm with GH Actions
