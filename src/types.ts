@@ -74,6 +74,7 @@ const BranchSchema = Type.Object({
   dependabot: Type.Boolean(),
   deps: Type.Array(RuleFileSchema),
   fileCount: Type.Number(),
+  fileTypes: Type.Record(Type.String(), Type.Number()),
   deployedBranch: Type.Boolean(),
   defaultBranch: Type.Boolean(),
   staleBranch: Type.Boolean(),

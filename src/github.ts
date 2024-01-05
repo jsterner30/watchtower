@@ -370,6 +370,7 @@ export async function getBranches (octokit: Octokit, repos: RepoInfo[]): Promise
             dependabot: branches[i].name.startsWith('dependabot'),
             deps: [],
             fileCount: 0,
+            fileTypes: {},
             branchProtections: {
               protected: protections != null,
               protections: protections == null ? undefined : protections
