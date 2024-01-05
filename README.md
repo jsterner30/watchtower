@@ -107,3 +107,4 @@ or
 4. Improve caching
 5. Create more run options (run without cache, etc.)
 6. Dynamic LTS versioning for things besides node
+7. GH Actions for deployment of scheduled job
