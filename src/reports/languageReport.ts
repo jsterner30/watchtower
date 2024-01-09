@@ -10,7 +10,7 @@ export const languageReport: ReportFunction = async (repos: RepoInfo[]): Promise
     { id: 'repoName', title: 'Repo' },
     { id: 'language', title: 'Language' }
   ]
-  const languageReportWriter = new ReportDataWriter('./data/reports/LanguageReport.csv', header)
+  const languageReportWriter = new ReportDataWriter('./data/reports/Languages/PrimaryLanguageReport.csv', header)
 
   for (const repo of repos) {
     try {

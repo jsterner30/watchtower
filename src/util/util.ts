@@ -76,7 +76,7 @@ export async function createDataDirectoriesIfNonexistent (): Promise<void> {
     'data/reports/GHAModules', 'data/reports/node', 'data/reports/NPMDependencies', 'data/reports/terraform',
     'data/reports/terraformModules', 'data/reports/CodeScanAlerts', 'data/reports/CodeScanAlertsCount',
     'data/reports/SecretAlerts', 'data/reports/SecretAlertsCount', 'data/reports/DependabotAlerts',
-    'data/reports/DependabotAlertsCount']
+    'data/reports/DependabotAlertsCount', 'data/reports/Languages']
 
   for (const dir of dirsToCreate) {
     const dirPath = path.join('./', dir)

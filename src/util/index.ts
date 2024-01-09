@@ -1,4 +1,5 @@
 export * from './env'
+export * from './extensionLanguageMap'
 export * from './lastRunDate'
 export * from './octokit'
 export * from './progress'
