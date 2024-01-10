@@ -6,7 +6,7 @@ import MarkdownIt from 'markdown-it'
 
 export const readmeRule: BranchRule = async (octokit: Octokit, repo: RepoInfo, downloaded: JSZip, branchName: string, fileName: string): Promise<void> => {
   try {
-    if (downloaded.files[fileName].name.endsWith('README.md')) { // TODO: whole name should be README.md, maybe not
+    if (downloaded.files[fileName].name.endsWith('README.md')) {
       const content = await downloaded.files[fileName].async('string')
       repo.branches[branchName].deps.push(parseReadmefile(content, fileName))
     }
@@ -17,7 +17,7 @@ export const readmeRule: BranchRule = async (octokit: Octokit, repo: RepoInfo, d
 
 function parseReadmefile (readmeContent: string, fileName: string): ReadmeFile {
   const md = new MarkdownIt()
-  const contents = md.parse(readmeContent, {}) // TODO: improve what gets returned
+  const contents = md.parse(readmeContent, {})
 
   return {
     fileName,

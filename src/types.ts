@@ -306,6 +306,12 @@ export const ReadmeSchema = Type.Intersect([
 ])
 export type ReadmeFile = Static<typeof ReadmeSchema>
 export const validReadmeFile = TypeCompiler.Compile(ReadmeSchema)
+export interface ReadmeContentItem {
+  type: string
+  tag: string
+  content?: string
+  children?: ReadmeContentItem[]
+}
 
 const TerraformFileSchema = Type.Intersect([
   RuleFileSchema,
