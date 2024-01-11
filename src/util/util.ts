@@ -73,7 +73,10 @@ export async function deleteDirectory (directoryPath: string): Promise<void> {
 
 export async function createDataDirectoriesIfNonexistent (): Promise<void> {
   const dirsToCreate: string[] = ['data', 'data/repoInfo', 'data/reports', 'data/reports/dockerfileImages',
-    'data/reports/GHAModules', 'data/reports/node', 'data/reports/NPMDependencies', 'data/reports/terraform', 'data/reports/terraformModules']
+    'data/reports/GHAModules', 'data/reports/node', 'data/reports/NPMDependencies', 'data/reports/terraform',
+    'data/reports/terraformModules', 'data/reports/CodeScanAlerts', 'data/reports/CodeScanAlertsCount',
+    'data/reports/SecretAlerts', 'data/reports/SecretAlertsCount', 'data/reports/DependabotAlerts',
+    'data/reports/DependabotAlertsCount', 'data/reports/Languages']
 
   for (const dir of dirsToCreate) {
     const dirPath = path.join('./', dir)

@@ -11,7 +11,10 @@ export const dockerfileImageReportGradeWeight = 3
 export const ghActionModuleReportGradeWeight = 3
 export const npmDependencyReportGradeWeight = 3
 export const terraformModuleReportGradeWeight = 3
-export const readmeReportGradeWeight = 3 // TODO: adjust weight
+export const readmeReportGradeWeight = 3
+export const codeScanAlertReportGradeWeight = 5
+export const dependabotAlertReportGradeWeight = 5
+export const secretAlertReportGradeWeight = 5
 
 // report grade names
 export const dependabotBranchReportGradeName = 'dependabotBranchReportGrade'
@@ -27,6 +30,9 @@ export const npmDependencyReportGradeName = 'npmDependencyReportGrade'
 export const terraformModuleReportGradeName = 'terraformModuleReportGrade'
 export const lowFilesReportGradeName = 'lowFilesReportGradeName'
 export const readmeReportGradeName = 'readmeReportGrade'
+export const codeScanAlertReportGradeName = 'codeScanAlertReportGrade'
+export const dependabotAlertReportGradeName = 'dependabotAlertReportGrad'
+export const secretAlertReportGradeName = 'secretAlertsReportGrade'
 
 export const startingLowestVersion = '100.0.0'
 export const startingHighestVersion = '0.0.0'

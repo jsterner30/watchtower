@@ -1,0 +1,23 @@
+version: 2
+
+updates:
+  # Application
+  # dependabot supports lerna monorepo configurations (https://github.com/github/docs/discussions/596)
+  - package-ecosystem: "npm"
+    directory: "./"
+    schedule:
+      interval: "monthly"
+    target-branch: "dev" # Our dev pipeline runs off the dev branch, production runs off of prd
+    # Requesting reviews from yourself makes Dependabot PRs easy to find (https://github.com/pulls/review-requested)
+    reviewers:
+      - "byu-oit/specops-developer-fte"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/" # For GitHub Actions, set the directory to / to check for workflow files in .github/workflows. (GitHub Docs)
+    schedule:
+      interval: "monthly"
+    target-branch: "dev" # Our dev pipeline runs off the dev branch, production runs off of prd
+    # Requesting reviews from yourself makes Dependabot PRs easy to find (https://github.com/pulls/review-requested)
+    reviewers:
+      - "byu-oit/specops-developer-fte"
