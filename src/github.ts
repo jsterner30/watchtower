@@ -16,7 +16,8 @@ import {
   dotGithubDirRule,
   dockerComposeRule,
   packageLockRule,
-  terraformRule
+  terraformRule,
+  readmeRule
 } from './branchRules'
 import {
   latestCommitRule,
@@ -47,6 +48,7 @@ import {
   reposWithoutNewCommitsReport,
   publicAndInternalReport,
   npmDependencyReport,
+  readmeReport,
   codeScanAlertReport,
   dependabotAlertReport,
   secretScanAlertsReports,
@@ -60,7 +62,8 @@ import {
   publicAndInternalReportGradeName,
   reposWithoutNewCommitsReportGradeName, secretAlertReportGradeName,
   staleBranchReportGradeName, teamlessRepoReportGradeName, terraformModuleReportGradeName,
-  terraformVersionReportGradeName
+  terraformVersionReportGradeName,
+  readmeReportGradeName
 } from './util/constants'
 import { codeScanAlertsRule, dependabotAlertsRule, secretScanAlertsRule } from './orgRules'
 
@@ -201,6 +204,7 @@ async function runBranchRules (octokit: Octokit, repo: RepoInfo, downloaded: JSZ
   await packageLockRule(octokit, repo, downloaded, branchName, fileName)
   await terraformRule(octokit, repo, downloaded, branchName, fileName)
   await fileCountRule(octokit, repo, downloaded, branchName, fileName)
+  await readmeRule(octokit, repo, downloaded, branchName, fileName)
 }
 
 async function runSecondaryBranchRules (repo: RepoInfo, branchName: string): Promise<void> {
@@ -245,6 +249,7 @@ export async function runReports (): Promise<void> {
   await terraformModuleReport(repos)
   await ghActionModuleReport(repos)
   await npmDependencyReport(repos)
+  await readmeReport(repos)
   await codeScanAlertReport(repos)
   await dependabotAlertReport(repos)
   await secretScanAlertsReports(repos)
@@ -514,6 +519,7 @@ export async function generateOverallReport (repos: RepoInfo[]): Promise<void> {
     { id: ghActionModuleReportGradeName, title: 'GH Action Module Report Grade' },
     { id: npmDependencyReportGradeName, title: 'NPM Dependency Report Grade' },
     { id: terraformModuleReportGradeName, title: 'Terraform Module Report Grade' },
+    { id: readmeReportGradeName, title: 'Readme Report Grade' },
     { id: codeScanAlertReportGradeName, title: 'Code Scan Alert Report Grade' },
     { id: dependabotAlertReportGradeName, title: 'Dependabot Scan Alert Report Grade' },
     { id: secretAlertReportGradeName, title: 'Secret Scan Alert Report Grade' }
@@ -540,6 +546,7 @@ export async function generateOverallReport (repos: RepoInfo[]): Promise<void> {
       [ghActionModuleReportGradeName]: repo.healthScores[ghActionModuleReportGradeName] != null ? repo.healthScores[ghActionModuleReportGradeName].grade : GradeEnum.NotApplicable,
       [npmDependencyReportGradeName]: repo.healthScores[npmDependencyReportGradeName] != null ? repo.healthScores[npmDependencyReportGradeName].grade : GradeEnum.NotApplicable,
       [terraformModuleReportGradeName]: repo.healthScores[terraformModuleReportGradeName] != null ? repo.healthScores[terraformModuleReportGradeName].grade : GradeEnum.NotApplicable,
+      [readmeReportGradeName]: repo.healthScores[readmeReportGradeName] != null ? repo.healthScores[readmeReportGradeName].grade : GradeEnum.NotApplicable,
       [codeScanAlertReportGradeName]: repo.healthScores[codeScanAlertReportGradeName] != null ? repo.healthScores[codeScanAlertReportGradeName].grade : GradeEnum.NotApplicable,
       [dependabotAlertReportGradeName]: repo.healthScores[dependabotBranchReportGradeName] != null ? repo.healthScores[dependabotAlertReportGradeName].grade : GradeEnum.NotApplicable,
       [secretAlertReportGradeName]: repo.healthScores[secretAlertReportGradeName] != null ? repo.healthScores[secretAlertReportGradeName].grade : GradeEnum.NotApplicable
