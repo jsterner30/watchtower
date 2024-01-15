@@ -20,6 +20,7 @@
     "prepare": "husky install"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.489.0",
     "@byu-oit/env-ssm": "^3.4.0",
     "@byu-oit/logger": "^0.4.0",
     "@cdktf/hcl2json": "^0.19.1",

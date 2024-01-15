@@ -1,14 +1,5 @@
-import { Octokit } from '@octokit/rest'
-import JSZip from 'jszip'
 import { Type, Static } from '@sinclair/typebox'
 import { TypeCompiler } from '@sinclair/typebox/compiler'
-
-export type BranchRule = (octokit: Octokit, repo: RepoInfo, downloaded: JSZip, branchName: string, fileName: string) => Promise<void>
-export type SecondaryBranchRule = (repo: RepoInfo, branchName: string) => Promise<void>
-export type OrgRule = (octokit: Octokit, cacheFile: CacheFile) => Promise<void>
-export type RepoRule = (octokit: Octokit, repo: RepoInfo) => Promise<void>
-
-export type ReportFunction = (repos: RepoInfo[]) => Promise<void>
 
 export enum GradeEnum {
   A = 4.0,
@@ -48,13 +39,19 @@ export const RuleFileSchema = Type.Object({
 })
 export type RuleFile = Static<typeof RuleFileSchema>
 
-export const CSVWriterHeaderSchema = Type.Array(
+const ExtremeVersionsSchema = Type.Object({
+  lowestVersion: Type.String(),
+  highestVersion: Type.String()
+})
+export type ExtremeVersions = Static<typeof ExtremeVersionsSchema>
+
+export const HeaderSchema = Type.Array(
   Type.Object({
     id: Type.String(),
     title: Type.String()
   })
 )
-export type CSVWriterHeader = Static<typeof CSVWriterHeaderSchema>
+export type Header = Static<typeof HeaderSchema>
 
 const BranchProtectionSchema = Type.Object({
   requiredSignatures: Type.Boolean(),
@@ -105,6 +102,12 @@ const PullRequestSchema = Type.Object({
   dependabot: Type.Boolean()
 })
 export type PullRequest = Static<typeof PullRequestSchema>
+
+const VersionLocationSchema = Type.Object({
+  location: Type.String(), // this could be a branch or a file
+  version: Type.String()
+})
+export type VersionLocation = Static<typeof VersionLocationSchema>
 
 const IssueSchema = Type.Object({
   number: Type.Number(),
@@ -211,7 +214,7 @@ export type RepoInfo = Static<typeof RepoInfoSchema>
 export const validRepoInfo = TypeCompiler.Compile(RepoInfoSchema)
 
 export const CacheFileSchema = Type.Object({
-  metadata: Object({
+  metadata: Type.Object({
     repoCount: Type.Number(),
     branchCount: Type.Number(),
     lastRunDate: Type.String()
@@ -219,6 +222,7 @@ export const CacheFileSchema = Type.Object({
   info: Type.Record(Type.String(), RepoInfoSchema)
 })
 export type CacheFile = Static<typeof CacheFileSchema>
+export const validCacheFile = TypeCompiler.Compile(CacheFileSchema)
 
 export const DockerComposeFileSchema = Type.Intersect([
   RuleFileSchema,

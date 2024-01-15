@@ -1,17 +1,17 @@
-import ReportDataWriter from './reportDataWriter'
 import { GradeEnum, HealthScore, RepoInfo } from '../types'
-import { arrayToObject, getOverallGPAScore, getUniqueReposInWriterData, numberToGrade } from './util'
+import { arrayToObject, getOverallGPAScore } from './util'
 import { compare, validate } from 'compare-versions'
 import { startingHighestVersion, startingLowestVersion } from './constants'
+import { ReportOutputData } from './reportOutputData'
 
-export const getRelativeReportGrades = (reportWriters: Record<string, ReportDataWriter>, repos: RepoInfo[], reportName: string, reportWeight: number): void => {
+export const getRelativeReportGrades = (reportOutputs: Record<string, ReportOutputData>, repos: RepoInfo[], reportName: string, reportWeight: number): void => {
   const relativeGrades: Record<string, HealthScore[]> = {}
   for (const repo of repos) {
     relativeGrades[repo.name] = []
   }
 
-  for (const depName in reportWriters) {
-    const uniqueRepos = getUniqueReposInWriterData(reportWriters[depName].data)
+  for (const depName in reportOutputs) {
+    const uniqueRepos = getUniqueReposInWriterData(reportOutputs[depName].data)
     if (uniqueRepos.size === 1) {
       const onlyRepoName = [...uniqueRepos][0]
       relativeGrades[onlyRepoName].push({
@@ -21,7 +21,7 @@ export const getRelativeReportGrades = (reportWriters: Record<string, ReportData
     } else {
       let highestVersion = startingHighestVersion
       let lowestVersion = startingLowestVersion
-      for (const row of reportWriters[depName].data) {
+      for (const row of reportOutputs[depName].data) {
         if (row.version === 'latest') {
           relativeGrades[row.repoName].push({
             grade: GradeEnum.B,
@@ -36,7 +36,7 @@ export const getRelativeReportGrades = (reportWriters: Record<string, ReportData
           }
         }
       }
-      for (const row of reportWriters[depName].data) {
+      for (const row of reportOutputs[depName].data) {
         if (highestVersion !== startingHighestVersion && lowestVersion !== startingLowestVersion) {
           if (validate(row.version)) {
             relativeGrades[row.repoName].push(getGradeFromHighest(highestVersion, lowestVersion, row.version))
@@ -99,5 +99,29 @@ export const getGradeFromHighest = (highestVersion: string, lowestVersion: strin
       grade: GradeEnum.F,
       weight: 1
     }
+  }
+}
+
+export function getUniqueReposInWriterData (outPutData: Array<Record<string, any>>): Set<string> {
+  const repoSet: Set<string> = new Set()
+  for (const row of outPutData) {
+    if (!repoSet.has(row.repoName)) {
+      repoSet.add(row.repoName)
+    }
+  }
+  return repoSet
+}
+
+function numberToGrade (num: number): GradeEnum {
+  if (num > 3.5) {
+    return GradeEnum.A
+  } else if (num > 2.5) {
+    return GradeEnum.B
+  } else if (num > 1.5) {
+    return GradeEnum.C
+  } else if (num > 0.5) {
+    return GradeEnum.D
+  } else {
+    return GradeEnum.F
   }
 }

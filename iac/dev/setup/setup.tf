@@ -1,7 +1,7 @@
 terraform {
   backend "s3" {
-    bucket         = "terraform-state-storage-?"
-    dynamodb_table = "terraform-state-lock-?"
+    bucket         = "terraform-state-storage-863362256468"
+    dynamodb_table = "terraform-state-lock-863362256468"
     key            = "watchtower/dev/setup.tfstate"
     region         = "us-west-2"
   }

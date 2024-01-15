@@ -1,88 +1,7 @@
-import fsSync, { promises as fs } from 'node:fs'
 import { logger } from './logger'
-import * as path from 'path'
-import { nodeLTSUrl } from './constants'
-import { GradeEnum } from '../types'
-
-export async function readJsonFromFile (filePath: string): Promise<Promise<Record<string, any>> | null> {
-  try {
-    const fileContent = await fs.readFile(path.resolve(filePath), 'utf-8')
-    return JSON.parse(fileContent)
-  } catch (error) {
-    logger.error(`File: ${filePath} doesn't exist.`)
-    return null
-  }
-}
-
-export async function createDirectoryIfNotExist (dirPath: string): Promise<void> {
-  try {
-    // Check if the directory exists
-    await fs.stat(path.resolve(dirPath))
-  } catch (error: any) {
-    if (error.code != null && error.code === 'ENOENT') {
-      // Directory doesn't exist, so create it
-      await createDir(dirPath)
-    } else {
-      logger.error('Error checking/creating/deleting directory:')
-    }
-  }
-}
-
-export async function createDir (dirPath: string): Promise<void> {
-  await fs.mkdir(path.resolve(dirPath), { recursive: true })
-}
-
-export async function writeJsonToFile (jsonData: Record<string, any>, filePath: string): Promise<void> {
-  try {
-    const jsonString = JSON.stringify(jsonData, null, 2)
-    await fs.writeFile(path.resolve(filePath), jsonString)
-    console.log(`JSON data successfully written to ${filePath}`)
-  } catch (error) {
-    console.error('Error occurred while writing JSON data to file:', error)
-  }
-}
-
-export async function deleteDirectoryContents (dirPath: string): Promise<void> {
-  await createDirectoryIfNotExist(dirPath)
-  const directoryPath = path.resolve(dirPath)
-  try {
-    const files = await fs.readdir(directoryPath)
-
-    for (const file of files) {
-      const filePath = path.join(directoryPath, file)
-      if (fsSync.existsSync(filePath) && fsSync.statSync(filePath).isDirectory()) {
-        await fs.rm(filePath, { recursive: true, force: true })
-      } else {
-        await fs.unlink(filePath)
-      }
-    }
-
-    logger.debug(`Contents of directory ${directoryPath} deleted.`)
-  } catch (error) {
-    logger.error(`Error deleting directory contents: ${error as string}`)
-  }
-}
-
-export async function deleteDirectory (directoryPath: string): Promise<void> {
-  try {
-    await fs.rm(directoryPath, { recursive: true })
-  } catch (error) {
-    logger.error(`Error deleting directory "${directoryPath}":`, error)
-  }
-}
-
-export async function createDataDirectoriesIfNonexistent (): Promise<void> {
-  const dirsToCreate: string[] = ['data', 'data/repoInfo', 'data/reports', 'data/reports/dockerfileImages',
-    'data/reports/GHAModules', 'data/reports/node', 'data/reports/NPMDependencies', 'data/reports/terraform',
-    'data/reports/terraformModules', 'data/reports/CodeScanAlerts', 'data/reports/CodeScanAlertsCount',
-    'data/reports/SecretAlerts', 'data/reports/SecretAlertsCount', 'data/reports/DependabotAlerts',
-    'data/reports/DependabotAlertsCount', 'data/reports/Languages']
-
-  for (const dir of dirsToCreate) {
-    const dirPath = path.join('./', dir)
-    await createDirectoryIfNotExist(path.resolve(dirPath))
-  }
-}
+import { nodeLTSUrl, startingHighestVersion, startingLowestVersion } from './constants'
+import { ExtremeVersions, VersionLocation } from '../types'
+import { compare, validate } from 'compare-versions'
 
 export function errorHandler (error: unknown, functionName: string, repoName: string = '', branchName: string = ''): void {
   let errorMessage = ''
@@ -123,16 +42,6 @@ export async function fetchNodeLTSVersion (): Promise<string> {
   }
 }
 
-export function getUniqueReposInWriterData (writerData: Array<Record<string, any>>): Set<string> {
-  const repoSet: Set<string> = new Set()
-  for (const row of writerData) {
-    if (!repoSet.has(row.repoName)) {
-      repoSet.add(row.repoName)
-    }
-  }
-  return repoSet
-}
-
 // this function basically calculates a GPA
 export function getOverallGPAScore (healthScores: Record<string, any>): number {
   let totalWeight = 0
@@ -158,20 +67,6 @@ export function arrayToObject (arr: Array<Record<string, any>>): Record<string, 
   }, {})
 }
 
-export function numberToGrade (num: number): GradeEnum {
-  if (num > 3.5) {
-    return GradeEnum.A
-  } else if (num > 2.5) {
-    return GradeEnum.B
-  } else if (num > 1.5) {
-    return GradeEnum.C
-  } else if (num > 0.5) {
-    return GradeEnum.D
-  } else {
-    return GradeEnum.F
-  }
-}
-
 export function removeComparatorsInVersion (version: string): string {
   let curVer = version
 
@@ -192,6 +87,20 @@ export function removeComparatorsInVersion (version: string): string {
     return version
   }
   return curVer
+}
+
+export function getExtremeVersions (versionLocations: VersionLocation[], currentExtremeVersions: ExtremeVersions = { lowestVersion: startingLowestVersion, highestVersion: startingHighestVersion }): ExtremeVersions {
+  for (const versionLocation of versionLocations) {
+    if (validate(versionLocation.version)) {
+      if (compare(currentExtremeVersions.lowestVersion, versionLocation.version, '>')) {
+        currentExtremeVersions.lowestVersion = versionLocation.version
+      }
+      if (compare(currentExtremeVersions.highestVersion, versionLocation.version, '<')) {
+        currentExtremeVersions.highestVersion = versionLocation.version
+      }
+    }
+  }
+  return currentExtremeVersions
 }
 
 function isNumericChar (c: string): boolean { return /\d/.test(c) }

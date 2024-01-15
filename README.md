@@ -5,13 +5,16 @@ This repo is a tool for scanning Github organizations to gather large amounts of
 ## Definitions
 ### Rules
 
-A rule is a function that gathers data. The data can be gathered from an API call, by scanning the downloaded zip file of a branch, or by other means. This data is then written to a JSON file to act as a cache.
+A rule is a class that gathers data. The data can be gathered from an API call, by scanning the downloaded zip file of a branch, or by other means. This data is then written to a JSON file to act as a cache.
 
 There are three types of rules: 
 - Branch Rules: Gather data on a branch 
 
 
 - Secondary Branch Rules: Run after Branch Rules, rely on data gathered during branch rules (for example, we cannot tell if a branch is deployed through GH Actions until we parse GHA files using the dotGithubRule, therefore it is a secondary rule)
+
+
+- Repo Rules: These rules make a single API call to the whole repo, then map the data to individual branches. This saves us dozens of API calls.
 
 
 - Org Rules: These rules make a single API call to the whole org, then map the data to a repo. This saves us hundreds of API calls.
@@ -54,7 +57,7 @@ The overall health score for each repo is written to its own csv file called "ov
 
 ### Reports
 
-Reports are functions that aggregate the data gathered by a rule and output it to a csv file. They run very quickly and therefore have no need to be cached.
+Reports are classes that aggregate the data gathered by a rule and output it to a csv and json file. They run very quickly and therefore have no need to be cached.
 
 | Report                 | Type       | Description                                                                                                                                                                                                                                                                                                                                                                          | Contributes to Overall Healthscore Report | Weight |
 |------------------------|------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------|--------|
