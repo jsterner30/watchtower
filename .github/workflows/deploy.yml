@@ -2,7 +2,7 @@ name: Deploy a Dockerized Application with Terraform
 
 on:
   push:
-    branches: [newMain]
+    branches: [dev, prd]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
