@@ -10,7 +10,7 @@ import { promises as fs } from 'fs'
 import path from 'path'
 import { logger } from './logger'
 
-/** in s3 and locally, files are written to a structure like the following
+/** In s3 and locally, files are written to a structure like the following:
 .
  └── data/
      ├── cache/

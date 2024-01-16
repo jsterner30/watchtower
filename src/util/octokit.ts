@@ -32,9 +32,7 @@ export async function getOctokit (): Promise<Octokit> {
           octokit.log.warn(`Retrying secondary after ${retryAfter} seconds! - try number ${retryCount}. Will restart at ${restartTime.getHours()}:${restartTime.getMinutes()}.`)
           return true
         } else {
-          octokit.log.warn(
-                        `SecondaryRateLimit detected for request ${options.method as string} ${options.url as string}`
-          )
+          octokit.log.warn(`SecondaryRateLimit detected for request ${options.method as string} ${options.url as string}`)
           return false
         }
       }

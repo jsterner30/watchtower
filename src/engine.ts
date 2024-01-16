@@ -27,6 +27,7 @@ import {
   ReadmeReport,
   ReposWithoutNewCommitsReport,
   SecretScanAlertReport,
+  SecretScanAlertCountReport,
   StaleBranchReport,
   TeamlessRepoReport,
   TerraformModuleReport,
@@ -145,23 +146,24 @@ export class Engine {
 
   private registerReports (): void {
     // reports with 0 weight do not contribute to the overall health report
-    this.reports.push(new CodeScanAlertReport(0, 'CodeScanAlertReports'))
     this.reports.push(new CodeScanAlertCountReport(5, 'CodeScanAlertCountReports'))
-    this.reports.push(new DependabotAlertReport(0, 'DependabotAlertReport'))
+    this.reports.push(new CodeScanAlertReport(0, 'CodeScanAlertReports'))
     this.reports.push(new DependabotAlertCountReport(5, 'DependabotAlertCountReport'))
+    this.reports.push(new DependabotAlertReport(0, 'DependabotAlertReport'))
     this.reports.push(new DependabotBranchReport(4, 'DependabotBranchReport'))
     this.reports.push(new DevPrdBranchesReport(0, 'DevPrdBranchesReport'))
     this.reports.push(new DockerfileImageReport(3, 'DockerfileImageReport'))
     this.reports.push(new FileTypesReport(0, 'FileTypesReport'))
     this.reports.push(new GhActionModuleReport(3, 'GhActionModuleReport'))
-    this.reports.push(new LanguageReport(3, 'LanguageReport'))
+    this.reports.push(new LanguageReport(0, 'LanguageReport'))
     this.reports.push(new LowFilesReport(1, 'LowFilesReport'))
     this.reports.push(new NPMDependencyReport(3, 'NPMDependencyReport'))
     this.reports.push(new NodeVersionReport(5, 'NodeVersionReport'))
     this.reports.push(new PublicAndInternalReport(2, 'PublicAndInternalReport'))
     this.reports.push(new ReadmeReport(3, 'ReadmeReport'))
     this.reports.push(new ReposWithoutNewCommitsReport(3, 'ReposWithoutNewCommitsReport'))
-    this.reports.push(new SecretScanAlertReport(5, 'SecretScanAlertReport'))
+    this.reports.push(new SecretScanAlertCountReport(5, 'SecretScanAlertCountReport'))
+    this.reports.push(new SecretScanAlertReport(0, 'SecretScanAlertReport'))
     this.reports.push(new StaleBranchReport(2, 'StaleBranchReport'))
     this.reports.push(new TeamlessRepoReport(4, 'TeamlessRepoReport'))
     this.reports.push(new TerraformModuleReport(3, 'TerraformModuleReport'))

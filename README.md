@@ -40,6 +40,25 @@ To solve these issues, this script outputs different csv files in different ways
 
 - Dependency Reports: These are reports for dependencies that cannot be enumerated (like every npm dependency in the org). They are in a subdirectory with a csv file matching the dependency name. Each row in that csv file corresponds to a branch using that dependency, and in ach row we record the version of the dependency found on that branch. 
 
+### File Structure of Cache and Report Outputs
+
+In s3 and locally, files are written to a structure like the following:
+```
+.
+ └── data/
+     ├── cache/
+     │   └── json/
+     │       ├── lastRunDate.json
+     │       └── etc.json
+     └── reports/
+         ├── csv/
+         │   └── reportDir/
+         │       └── report.csv
+         └── json/
+             └── reportDir/
+                 └── report.json
+```
+
 ### Overall Health Score 
 
 Most reports contribute to an overall heath score for each repo. These scores are calculated like GPA, where each contributing report has a weight and a letter grade associated with it.  
@@ -59,27 +78,30 @@ The overall health score for each repo is written to its own csv file called "ov
 
 Reports are classes that aggregate the data gathered by a rule and output it to a csv and json file. They run very quickly and therefore have no need to be cached.
 
-| Report                 | Type       | Description                                                                                                                                                                                                                                                                                                                                                                          | Contributes to Overall Healthscore Report | Weight |
-|------------------------|------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------|--------|
-| codeScanAlerts         | Simple     | Generates several CSV files found in the "CodeScanAlerts" and CodeScanAlertsCount subdirectories, giving information about GH Advanced Security code scanning alerts at each level: critical, high, medium,and low. The CodeScanAlertsCount directory just contains the amount of alerts at each level for each repo, while the CodeScanAlerts dir contains more detailed info.      | Yes                                       | 5      |
-| dependabotAlerts       | Simple     | Generates several CSV files found in the "DependabotAlerts" and DependabotAlertsCount subdirectories, giving information about GH Advanced Security dependabot alerts at each level: critical, high, medium,and low. The DependabotAlertsCount directory just contains the amount of alerts at each level for each repo, while the DependabotAlerts dir contains more detailed info. | Yes                                       | 5      |
-| dependabotBranch       | Simple     | Generates a csv file called "DependabotBranchReport.csv" with the amount of dependabot branches on every repo                                                                                                                                                                                                                                                                        | Yes                                       | 3      |
-| devPrdBranches         | Simple     | Generates a csv file called "devPrdBranchReport.csv" listing repos without the standard dev/prd branch default and naming scheme                                                                                                                                                                                                                                                     | No                                        | N/A    |
-| DockerfileImage        | Dependency | Generates csv files in the "dockerfileImages" subdirectory corresponding to all the images in the org                                                                                                                                                                                                                                                                                | Yes                                       | 3      |
-| fileTypeReport         | Simple     | Generates two csv files in the "Language" subdirectory. "RepoHasLanguageReport.csv" lists the languages found in the repo based on file extension. "DefaultBranchFileTypesReport.csv" reports the percentages of each file extension found on the default branch of a repo.                                                                                                          | No                                        | N/A    |
-| ghActionModule         | Dependency | Generates csv files in the "GHAModules" subdirectory corresponding to all the modules in the org                                                                                                                                                                                                                                                                                     | Yes                                       | 3      |
-| language               | Simple     | Generates a csv file called "PrimaryLanguageReport.csv" in the "Language" subdir listing the primary language in each repo                                                                                                                                                                                                                                                           | No                                        | N/A    |
-| lowFiles               | Simple     | Generates two csv files. One called "LowFileCountInRepoReport.csv" which lists the repos with a low (<5) file count on every branch. The second file, "LowFileCountOnBranchReport.csv", lists every branch in the org with a low file count                                                                                                                                          | Yes                                       | 1      |
-| nodeVersion            | Version    | Generates a subdirectory "node" with four csv files                                                                                                                                                                                                                                                                                                                                  | Yes                                       | 5      |
-| npmDependency          | Dependency | Generates csv files in the "NPMDependencies" subdirectory corresponding to all the deps in the org                                                                                                                                                                                                                                                                                   | Yes                                       | 3      |
-| publicAndInternal      | Simple     | Generates a csv file called "PublicAndInternalReport.csv" listing repos that are public or internal                                                                                                                                                                                                                                                                                  | Yes                                       | 2      |
-| readme                 | Simple     | Generates a csv file called "ReadmeReport.csv" which lists whether repos have a readme, whether it includes a title, and how many required sections they are missing                                                                                                                                                                                                                 | Yes                                       | 3      |
-| reposWithoutNewCommits | Simple     | Generates a csv file called "ReposWithoutNewCommitsReport.csv" listing repos without a new commit in the last two years                                                                                                                                                                                                                                                              | Yes                                       | 1      |
-| secretScanningAlerts   | Simple     | Generates several CSV files found in the "SecretAlerts" and "SecretAlertsCount" subdirectories, the SecretAlertsCount directory contains a file listing the number of secrets per repo, and the SecretAlerts directory contains the specific information for every secret                                                                                                            | Yes                                       | 5      |
-| staleBranch            | Simple     | Generates a csv file called "StaleBranchReport.csv" listing the number of stale branches on every repo in the org                                                                                                                                                                                                                                                                    | Yes                                       | 3      |
-| teamlessRepo           | Simple     | Generates a csv file called "TeamlessRepoReport.csv" listing the repos in the org that do not have an admin team in Github                                                                                                                                                                                                                                                           | Yes                                       | 4      |
-| terraformModule        | Dependency | Generates csv files in the "terraformModules" subdirectory corresponding to all the tf modules in the org                                                                                                                                                                                                                                                                            | Yes                                       | 3      |
-| terraformVersion       | Version    | Generates a subdirectory "terraform" with four csv files                                                                                                                                                                                                                                                                                                                             | Yes                                       | 5      |
+| Report                   | Type        | OutputDir                    | Output Files Generated  | Description of Output                                                                                                                                       | Contributes to Overall Healthscore Report | Weight |
+|--------------------------|-------------|------------------------------|-------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------|--------|
+| CodeScanAlertsCount      | Simple      | CodeScanAlertCountReports    | 4                       | The number of code scanning alerts at each level: critical, high, medium,and low for every repo.                                                            | Yes                                       | 5      |
+| CodeScanAlerts           | Simple      | CodeScanAlertReports         | 4                       | Detailed information about code scanning alerts at each level: critical, high, medium,and low, for every repo.                                              | No                                        | 0      |
+| DependabotAlertCount     | Simple      | DependabotAlertCountReport   | 4                       | Th number of dependabot scanning alerts at each level: critical, high, medium,and low for every repo.                                                       | Yes                                       | 5      |
+| DependabotAlert          | Simple      | DependabotAlertReport        | 4                       | Detailed information on dependabot scanning alerts at each level: critical, high, medium,and low for every repo.                                            | No                                        | 0      |
+| DependabotBranch         | Simple      | DependabotBranchReport       | 1                       | The number dependabot branches on every repo.                                                                                                               | Yes                                       | 4      |
+| DevPrdBranches           | Simple      | DevPrdBranchesReport         | 1                       | Repos without the standard "dev" and "prd" branch naming scheme.                                                                                            | No                                        | 0      |
+| DockerfileImage          | Dependency  | DockerfileImageReport        | 1 per image in the org  | Which repos use a given image.                                                                                                                              | Yes                                       | 3      |
+| FileTypeReport           | Simple      | FileTypesReport              | 2                       | Which repos contain a language, and the percentage of file extensions on each the default branch of each repo.                                              | No                                        | 0      |
+| GhActionModule           | Dependency  | GhActionModuleReport         | 1 per GHA module in org | Which repos use a given GHA module.                                                                                                                         | Yes                                       | 3      |
+| Language                 | Simple      | LanguageReport               | 1                       | The primary language for every repo in the org.                                                                                                             | No                                        | 0      |
+| LowFiles                 | Simple      | LowFilesReport               | 2                       | The the repos with a low (<5) file count on every branch and every branch in the org with a low file count.                                                 | Yes                                       | 1      |
+| NPMDependency            | Dependency  | NPMDependencyReport          | 1 per npm dep in org    | Which repos use a given npm dependency.                                                                                                                     | Yes                                       | 3      |
+| NodeVersion              | Version     | NodeVersionReport            | 4                       | Lowest and highest node versions on each branch, non-stale branches, each repo considering all branches, and each repo considering only non-stale branches. | Yes                                       | 5      |
+| PublicAndInternal        | Simple      | PublicAndInternalReport      | 1                       | Repos that are marked as public or internal.                                                                                                                | Yes                                       | 2      |
+| Readme                   | Simple      | ReadmeReport                 | 1                       | Whether repos have a readme, whether it includes a title, and how many required sections they are missing.                                                  | Yes                                       | 3      |
+| ReposWithoutNewCommits   | Simple      | ReposWithoutNewCommitsReport | 1                       | Repos without a new commit in the last two years.                                                                                                           | Yes                                       | 3      |
+| SecretScanningAlertCount | Simple      | SecretScanningAlertCount     | 1                       | The number of secret scanning alerts for each repo.                                                                                                         | Yes                                       | 5      |
+| SecretScanningAlert      | Simple      | SecretScanningAlert          | 1                       | Detailed information on every secret scanning alert for every repo in the org.                                                                              | No                                        | 0      |
+| StaleBranch              | Simple      | StaleBranchReport            | 1                       | The number of stale branches on every repo in the org.                                                                                                      | Yes                                       | 2      |
+| TeamlessRepo             | Simple      | TeamlessRepoReport           | 1                       | The repos in the org that do not have an admin team in Github.                                                                                              | Yes                                       | 4      |
+| TerraformModule          | Dependency  | TerraformModuleReport        | 1 per tf module in org  | Which repos use a given terraform module.                                                                                                                   | Yes                                       | 3      |
+| TerraformVersion         | Version     | TerraformVersionReport       | 4                       | Lowest and highest tf versions on each branch, non-stale branches, each repo considering all branches, and each repo considering only non-stale branches.   | Yes                                       | 5      |
 
 ## Running Locally
 
@@ -96,9 +118,16 @@ USE_CACHE=true;
 WRITE_FILES_LOCALLY-true;
 ```
 
-BUCKET_NAME
-
-This tool will work best if your GITHUB_TOKEN is a token associated with admin privileges over your organization, otherwise certain rules (getting Code Scanning results and admin teams for example) may not function properly. 
+| Env Var Name         | Description                                                                                                                                                                                                                      | Required | Default Value |
+|----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|---------------|
+| BUCKET_NAME          | The bucket where the cache and report outputs will be written (if WRTIE_FILES_LOCALLY is set to false)                                                                                                                           | true     |               |
+| ENVIRONMENT_NAME     | Either 'dev' or 'prd'                                                                                                                                                                                                            | false    | dev           |
+| GITHUB_ORG           | The name of the Github organization to scan                                                                                                                                                                                      | true     |               |
+| GITHUB_TOKEN         | This tool will work best if your GITHUB_TOKEN is a token associated with admin privileges over your organization, otherwise certain rules (getting Code Scanning results and admin teams for example) may not function properly. | true     |               |
+| STALE_DAYS_THRESHOLD | The amount of time in days until a non-deployed, unprotected, and non-default branch is considered "stale".                                                                                                                      | false    | 30            |
+| SHOW_PROGRESS        | A boolean that, if set to true, allows the progress bar to be shown in the console during long operations.                                                                                                                       | false    | false         |
+| USE_CACHE            | A boolean that, if set to true, tells the tool to use data cached from previous runs to decrease runtime.                                                                                                                        | false    | false         |
+| WRITE_FILES_LOCALLY  | A boolean that, if set to true, tells the script to write output files to your local machine. Otherwise the script will attempt to output them to the s3 bucket defined in the BUCKET_NAME variable.                             | false    | false         |
 
 After adding these environment variables to your run configuration, the tool can be started by running the below command:
 
@@ -110,10 +139,8 @@ or
 
 ## Todos
 
-1. Create terraform/run in the cloud
-2. Make reports more object-oriented
-3. Non npm repos getting 0 on npm dep grade? Possible bug
-4. Improve caching
-5. Create more run options (run without cache, etc.)
-6. Dynamic LTS versioning for things besides node
-7. GH Actions for deployment of scheduled job
+1. Non npm repos getting 0 on npm dep grade? Possible bug
+2. Dynamic LTS versioning for things besides node
+3. Write tests
+4. Create rfc template and use in GH actions for standard change
+5. Get teams webhook url and use in GH actions for teams notification
