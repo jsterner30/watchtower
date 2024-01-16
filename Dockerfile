@@ -7,6 +7,8 @@ RUN npm ci --ignore-scripts \
 && npm run build
 
 ENV TZ="America/Denver"
+ENV NODE_ENV='production'
+USER node
 EXPOSE 5000
 
 CMD [ "node", "dist/index.js" ]
