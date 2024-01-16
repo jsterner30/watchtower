@@ -25,7 +25,7 @@ jobs:
               {
                 "environment_name":"dev",
                 "tf_working_dir":"./iac/dev/watchtower",
-                "aws_account":"??",
+                "aws_account":"863362256468",
                 "aws_gha_role":"watchtower-dev-gha",
                 "rfc_key_name":"standard_change_sandbox_client_key",
                 "rfc_secret_name":"standard_change_sandbox_client_secret",
@@ -227,28 +227,29 @@ jobs:
           divvycloud-username: ${{ secrets.DIVVYCLOUD_USERNAME }}
           divvycloud-password: ${{ secrets.DIVVYCLOUD_PASSWORD }}
 
-      - name: Start Standard Change
-        if: github.event_name != 'workflow_dispatch'
-        uses: byu-oit/github-action-start-standard-change@v1
-        id: start-standard-change
-        with:
-          client-key: ${{ secrets[matrix.env.rfc_key_name] }}
-          client-secret: ${{ secrets[matrix.env.rfc_secret_name] }}
-          template-id: ${{ matrix.env.rfc_template_id }}
+# TODO: get an rfc template
+#      - name: Start Standard Change
+#        if: github.event_name != 'workflow_dispatch'
+#        uses: byu-oit/github-action-start-standard-change@v1
+#        id: start-standard-change
+#        with:
+#          client-key: ${{ secrets[matrix.env.rfc_key_name] }}
+#          client-secret: ${{ secrets[matrix.env.rfc_secret_name] }}
+#          template-id: ${{ matrix.env.rfc_template_id }}
 
       - name: Terraform Apply
         working-directory: ${{ matrix.env.tf_working_dir }}
         run: terraform apply plan
 
-      - name: End Standard Change
-        uses: byu-oit/github-action-end-standard-change@v1
-        if: github.event_name != 'workflow_dispatch' && always() && steps.start-standard-change.outcome == 'success' # Run if RFC started, even if the deploy failed
-        with:
-          client-key: ${{ secrets[matrix.env.rfc_key_name] }}
-          client-secret: ${{ secrets[matrix.env.rfc_secret_name] }}
-          change-sys-id: ${{ steps.start-standard-change.outputs.change-sys-id }}
-          work-start: ${{ steps.start-standard-change.outputs.work-start }}
-          success: ${{ job.status == 'success' }}
+#      - name: End Standard Change
+#        uses: byu-oit/github-action-end-standard-change@v1
+#        if: github.event_name != 'workflow_dispatch' && always() && steps.start-standard-change.outcome == 'success' # Run if RFC started, even if the deploy failed
+#        with:
+#          client-key: ${{ secrets[matrix.env.rfc_key_name] }}
+#          client-secret: ${{ secrets[matrix.env.rfc_secret_name] }}
+#          change-sys-id: ${{ steps.start-standard-change.outputs.change-sys-id }}
+#          work-start: ${{ steps.start-standard-change.outputs.work-start }}
+#          success: ${{ job.status == 'success' }}
 
       - name: Teams Notification
         uses: byu-oit/github-action-teams@v3
