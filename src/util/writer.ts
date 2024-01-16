@@ -125,7 +125,7 @@ export class LocalWriter extends Writer {
         logger.info(`No local files found in the directory: ${directoryPath}`)
       }
     } catch (error: any) {
-      console.error(`Error deleting local files: ${error as string}`)
+      logger.error(`Error deleting local files: ${error as string}`)
     }
   }
 
