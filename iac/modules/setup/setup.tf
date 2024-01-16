@@ -20,7 +20,7 @@ variable "github_token" {
 // terraform apply -var-file="env.tfvars"
 resource "aws_ssm_parameter" "secrets" {
   for_each = {
-    DB_USERNAME = var.github_token
+    GITHUB_TOKEN = var.github_token
   }
   name  = "/${var.name}/${var.env}/${each.key}"
   type  = "SecureString"

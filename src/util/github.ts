@@ -14,7 +14,7 @@ export async function getAllReposInOrg (orgName: string, octokit: Octokit, allRe
   }
   logger.info('Getting all repos in org')
   try {
-    const page = 1
+    let page = 1
     const repoInfoObj: Record<string, RepoInfo> = {}
 
     while (true) {
@@ -28,9 +28,10 @@ export async function getAllReposInOrg (orgName: string, octokit: Octokit, allRe
         break
       }
 
-      repos.forEach((repo) => {
+      for (const repo of repos) {
         repoInfoObj[repo.name] = createRepoInfo(repo)
-      })
+      }
+      page++
     }
 
     return attachMetadataToCacheFile(repoInfoObj)
