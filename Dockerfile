@@ -1,10 +1,11 @@
 FROM node:20
-COPY . /app
-WORKDIR /app
+WORKDIR /usr/app
 
-RUN npm ci --omit=dev
+COPY package*.json tsconfig*.json ./
+COPY src ./src/
+RUN npm ci --ignore-scripts \
+&& npm run build
 
-ENV NODE_ENV='production'
-USER node
 EXPOSE 5000
-CMD [ "npm", "start" ]
+
+CMD [ "node", "dist/index.js" ]
