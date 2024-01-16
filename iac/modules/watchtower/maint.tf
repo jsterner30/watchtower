@@ -58,7 +58,7 @@ module "watchtower" {
 
 
 resource "aws_s3_bucket" "my_s3_bucket" {
-  bucket = "${local.app_name}-${var.env}"
+  bucket = "${local.app_name}-output"
 }
 
 resource "aws_s3_bucket_public_access_block" "default" {
