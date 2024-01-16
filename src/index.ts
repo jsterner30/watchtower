@@ -1,4 +1,4 @@
-import {getEnv, getOctokit} from './util'
+import { getEnv, getOctokit } from './util'
 import { Engine } from './engine'
 
 async function run (): Promise<void> {

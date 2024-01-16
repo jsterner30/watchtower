@@ -7,7 +7,7 @@ import {
   LocalWriter,
   ProgressBarManager,
   getOverallGPAScore,
-  ReportOutputData, getOctokit
+  ReportOutputData
 } from './util'
 import { Report } from './reports/report'
 import {
