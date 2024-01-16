@@ -28,8 +28,8 @@ resource "aws_ssm_parameter" "secrets" {
 }
 
 module "my_ecr" {
-  source   = "github.com/byu-oit/terraform-aws-ecr?ref=v2.0.1"
-  name     = "${var.name}-${var.env}"
+  source = "github.com/byu-oit/terraform-aws-ecr?ref=v2.0.1"
+  name   = "${var.name}-${var.env}"
 }
 
 module "acs" {
