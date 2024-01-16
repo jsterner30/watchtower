@@ -251,9 +251,10 @@ jobs:
 #          work-start: ${{ steps.start-standard-change.outputs.work-start }}
 #          success: ${{ job.status == 'success' }}
 
-      - name: Teams Notification
-        uses: byu-oit/github-action-teams@v3
-        if: github.event_name != 'workflow_dispatch' && always()
-        with:
-          status: ${{ job.status }}
-          webhook-url: ${{ secrets.MS_TEAMS_WEBHOOK_URL }}
+# TODO: get teams channel to send notifications
+#      - name: Teams Notification
+#        uses: byu-oit/github-action-teams@v3
+#        if: github.event_name != 'workflow_dispatch' && always()
+#        with:
+#          status: ${{ job.status }}
+#          webhook-url: ${{ secrets.MS_TEAMS_WEBHOOK_URL }}
