@@ -86,13 +86,17 @@ Reports are classes that aggregate the data gathered by a rule and output it to 
 Env Vars: 
 You can copy the below environment variables into your run configuration
 ```
+BUCKET_NAME=watchtower-dev-output;
 ENVIRONMENT_NAME=dev
 GITHUB_ORG=<your-org>;
-GITHUB_TOKEN=<you-token>;
+GITHUB_TOKEN=<your-token>;
 STALE_DAYS_THRESHOLD=30;
+SHOW_PROGRESS=true;
+USE_CACHE=true;
+WRITE_FILES_LOCALLY-true;
 ```
 
-GITHUB_ORG and GITHUB_TOKEN are required variables. STALE_DAYS_THRESHOLD and ENVIRONMENT_NAME are not required, and default to "30" and "dev" respectively. 
+BUCKET_NAME
 
 This tool will work best if your GITHUB_TOKEN is a token associated with admin privileges over your organization, otherwise certain rules (getting Code Scanning results and admin teams for example) may not function properly. 
 
