@@ -34,7 +34,7 @@ export class Cache {
         this._cache.filteredWithBranches = await this.getCacheFile('filteredWithBranches.json')
       }
       // these get updated no matter what so that we can use them after running all the rules
-      this._cache.repos = await this.getRepoInfoCacheFiles('RepoInfoCacheFiles')
+      this._cache.repos = await this.getRepoInfoCacheFiles('repos')
     } catch (e: any) {
       logger.error(`Error parsing setting up cache (this error is not fatal), error: ${e as string}`)
     }
