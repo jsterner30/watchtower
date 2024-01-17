@@ -108,6 +108,8 @@ Reports are classes that aggregate the data gathered by a rule and output it to 
 Env Vars: 
 You can copy the below environment variables into your run configuration
 ```
+AWS_REGION=us-west-2;
+AWS_PROFILE=<aws-account-name>
 BUCKET_NAME=watchtower-dev-output;
 ENVIRONMENT_NAME=dev
 GITHUB_ORG=<your-org>;
@@ -120,6 +122,8 @@ WRITE_FILES_LOCALLY-true;
 
 | Env Var Name         | Description                                                                                                                                                                                                                      | Required | Default Value |
 |----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|---------------|
+| AWS_REGION           | Not positive this is necessary, but may be needed to access s3 bucket                                                                                                                                                            | true     |               |
+| AWS_PROFILE          | Needed to access s3 bucket                                                                                                                                                                                                       | true     |               |
 | BUCKET_NAME          | The bucket where the cache and report outputs will be written (if WRTIE_FILES_LOCALLY is set to false)                                                                                                                           | true     |               |
 | ENVIRONMENT_NAME     | Either 'dev' or 'prd'                                                                                                                                                                                                            | false    | dev           |
 | GITHUB_ORG           | The name of the Github organization to scan                                                                                                                                                                                      | true     |               |
@@ -129,7 +133,11 @@ WRITE_FILES_LOCALLY-true;
 | USE_CACHE            | A boolean that, if set to true, tells the tool to use data cached from previous runs to decrease runtime.                                                                                                                        | false    | false         |
 | WRITE_FILES_LOCALLY  | A boolean that, if set to true, tells the script to write output files to your local machine. Otherwise the script will attempt to output them to the s3 bucket defined in the BUCKET_NAME variable.                             | false    | false         |
 
-After adding these environment variables to your run configuration, the tool can be started by running the below command:
+After adding these environment variables to your run configuration, you should log into the AWS account where your s3 bucket is stored if you plan on using that feature:
+
+```aws sso login```
+
+the tool can be started by running the below command:
 
 ```node --env-file=.env -r ts-node/register src/index.ts```
 

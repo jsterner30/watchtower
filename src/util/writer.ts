@@ -212,11 +212,10 @@ export class S3Writer extends Writer {
         await Promise.all(
           data.Contents.map(async (file) => {
             if (file.Key != null) {
-              const filePath = file.Key.substring(directoryPath.length + 1)
-              const dataType = filePath.split('/')[1]
-              const fileContents = await this.readFile(fileUsage, dataType, filePath)
+              const filePath = file.Key.split('json/')[1]
+              const fileContents = await this.readFile('cache', 'json',  filePath)
 
-              fileObject[filePath] = fileContents ?? null
+              fileObject[file.Key] = fileContents ?? null
             }
           })
         )
