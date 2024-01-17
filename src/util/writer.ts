@@ -75,7 +75,7 @@ export class LocalWriter extends Writer {
       const fullPath = `data/${fileUsage}/${dataType}/${filePath}`
       await this.ensureDirectoryStructureExists(fullPath)
       await fs.writeFile(path.resolve('data', fileUsage, dataType, filePath), body)
-      logger.debug(`JSON data successfully written to ${filePath}`)
+      logger.info(`JSON data successfully written to ${filePath}`)
     } catch (error) {
       logger.error('Error occurred while writing JSON data to file:', error)
     }

@@ -46,14 +46,14 @@ export class Cache {
 
   async getLastRunDate (): Promise<string> {
     const dateString = await this._writer.readFile('cache', 'json', 'lastRunDate.json')
-    const { lastRunDate } = dateString == null ? null : JSON.parse(dateString)
+    const date = dateString == null ? null : JSON.parse(dateString)
 
-    if (lastRunDate == null) {
+    if (date == null) {
       const date = { lastRunDate: '1970-01-01T00:00:00Z' }
       await this._writer.writeFile('cache', 'json', 'lastRunDate.json', JSON.stringify(date, null, 2))
       return date.lastRunDate
     }
-    return lastRunDate
+    return date.lastRunDate
   }
 
   async setLastRunDate (): Promise<void> {
