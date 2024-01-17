@@ -43,7 +43,7 @@ module "watchtower" {
       GITHUB_ORG           = "byu-oit"
       SHOW_PROGRESS        = "false"
       STALE_DAYS_THRESHOLD = 30
-      USE_CACHE            = "false"
+      USE_CACHE            = "true"
       WRITE_FILES_LOCALLY  = "false"
     }
     secrets = {
