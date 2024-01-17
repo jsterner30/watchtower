@@ -102,7 +102,7 @@ export class Engine {
     await this.cache.writeFileToCache('allRepos.json', allReposFile)
     const filteredRepos = await this.filterArchived(allReposFile)
     const filteredWithBranchesFile = await getBranches(this.octokit, filteredRepos, this.cache.cache.filteredWithBranches, this.progress)
-    await this.cache.writeFileToCache('filteredWithBranches.json', allReposFile)
+    await this.cache.writeFileToCache('filteredWithBranches.json', filteredWithBranchesFile)
     await this.runOrgRules(filteredWithBranchesFile)
     await this.runRepoRules(filteredWithBranchesFile.info)
     await this.downloadAndRunBranchRules(filteredWithBranchesFile.info)
