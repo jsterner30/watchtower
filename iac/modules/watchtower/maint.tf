@@ -30,8 +30,8 @@ data "aws_ecr_repository" "api_repo" {
 module "watchtower" {
   source      = "github.com/byu-oit/terraform-aws-scheduled-fargate?ref=v4.0.0"
   app_name    = local.app_name
-  task_cpu    = 512
-  task_memory = 4096 # task keeps failing when it runs out of memory
+  task_cpu    = 1024
+  task_memory = 8192 # task keeps failing when it runs out of memory
   schedule = {
     expression = var.schedule_expression
     timezone   = "America/Denver"
@@ -45,7 +45,7 @@ module "watchtower" {
       GITHUB_ORG           = "byu-oit"
       SHOW_PROGRESS        = "false"
       STALE_DAYS_THRESHOLD = 30
-      USE_CACHE            = "true"
+      USE_CACHE            = "false"
       WRITE_FILES_LOCALLY  = "false"
     }
     secrets = {
