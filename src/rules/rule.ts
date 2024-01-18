@@ -8,6 +8,9 @@ import { CacheFile, RepoInfo } from '../types'
 
 export abstract class Rule {
   constructor (protected octokit: Octokit) {}
+  get name (): string {
+    return this.name
+  }
 }
 
 // There are four types of rules:

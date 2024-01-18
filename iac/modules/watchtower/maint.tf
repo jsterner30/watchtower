@@ -37,6 +37,8 @@ module "watchtower" {
   primary_container_definition = {
     name  = local.app_name
     image = "${data.aws_ecr_repository.api_repo.repository_url}:${var.image_tag}"
+    task_cpu = 512
+    task_memory = 4096 # task keeps failing when it runs out of memory
     environment_variables = {
       AWS_REGION           = "us-west-2"
       BUCKET_NAME          = aws_s3_bucket.my_s3_bucket.bucket
