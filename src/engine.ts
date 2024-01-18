@@ -40,23 +40,24 @@ import {
   StaleBranchRule
 } from './rules/secondaryBranchRules'
 import {
-  FileCountRule,
-  DockerfileRule,
-  PackageJsonRule,
-  GitignoreRule,
-  DotGithubDirRule,
   DockerComposeRule,
+  DockerfileRule,
+  DotGithubDirRule,
+  FileCountRule,
+  FileTypesRules,
+  GitignoreRule,
+  PackageJsonRule,
   PackageLockRule,
-  TerraformRule,
-  ReadmeRule
+  ReadmeRule,
+  TerraformRule
 } from './rules/branchRules'
 import {
-  LatestCommitRule,
   AdminsRule,
-  TeamsRule,
-  OpenPRRule,
+  GithubActionRunRule,
+  LatestCommitRule,
   OpenIssueRule,
-  GithubActionRunRule
+  OpenPRRule,
+  TeamsRule
 } from './rules/repoRules'
 import {
   CodeScanAlertsRule,
@@ -67,7 +68,6 @@ import { Octokit } from '@octokit/rest'
 import { getAllReposInOrg, getBranches, getBranchCommitInfo, downloadRepoToMemory } from './util/github'
 import { CacheFile, GradeEnum, RepoInfo } from './types'
 import JSZip from 'jszip'
-import {FileTypesRules} from "./rules/branchRules/fileTypesRules";
 
 export class Engine {
   private readonly octokit: Octokit
