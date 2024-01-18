@@ -28,17 +28,17 @@ data "aws_ecr_repository" "api_repo" {
 }
 
 module "watchtower" {
-  source   = "github.com/byu-oit/terraform-aws-scheduled-fargate?ref=v4.0.0"
-  app_name = local.app_name
+  source      = "github.com/byu-oit/terraform-aws-scheduled-fargate?ref=v4.0.0"
+  app_name    = local.app_name
+  task_cpu    = 512
+  task_memory = 4096 # task keeps failing when it runs out of memory
   schedule = {
     expression = var.schedule_expression
     timezone   = "America/Denver"
   }
   primary_container_definition = {
-    name        = local.app_name
-    image       = "${data.aws_ecr_repository.api_repo.repository_url}:${var.image_tag}"
-    task_cpu    = 512
-    task_memory = 4096 # task keeps failing when it runs out of memory
+    name  = local.app_name
+    image = "${data.aws_ecr_repository.api_repo.repository_url}:${var.image_tag}"
     environment_variables = {
       AWS_REGION           = "us-west-2"
       BUCKET_NAME          = aws_s3_bucket.my_s3_bucket.bucket
