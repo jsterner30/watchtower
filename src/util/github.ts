@@ -65,8 +65,8 @@ function createRepoInfo (rawRepo: Record<string, any>): RepoInfo {
     defaultBranch: rawRepo.default_branch,
     branches: {},
     lastCommit: {
-      author: '',
-      date: ''
+      author: 'unknown',
+      date: '1971-01-01T00:00:00Z' // after the default lastRunDate
     },
     openPullRequests: [],
     openIssues: [],
@@ -144,20 +144,20 @@ export async function getBranchCommitInfo (octokit: Octokit, repoName: string, b
 
     if (author != null) {
       return {
-        author: author.name ?? '',
-        date: author.date ?? ''
+        author: author.name ?? 'unknown',
+        date: author.date ?? '1971-01-01T00:00:00Z' // after the default lastRunDate
       }
     } else {
       return {
-        author: '',
-        date: ''
+        author: 'unknown',
+        date: '1971-01-01T00:00:00Z' // after the default lastRunDate
       }
     }
   } catch (error) {
     logger.error(`Unable to get last commit info for repo: ${repoName}, Branch: ${branchName}. Error: ${error as string}`)
     return {
-      author: '',
-      date: ''
+      author: 'unknown',
+      date: '1971-01-01T00:00:00Z' // after the default lastRunDate
     }
   }
 }

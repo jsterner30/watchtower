@@ -67,6 +67,7 @@ import { Octokit } from '@octokit/rest'
 import { getAllReposInOrg, getBranches, getBranchCommitInfo, downloadRepoToMemory } from './util/github'
 import { CacheFile, GradeEnum, RepoInfo } from './types'
 import JSZip from 'jszip'
+import {FileTypesRules} from "./rules/branchRules/fileTypesRules";
 
 export class Engine {
   private readonly octokit: Octokit
@@ -103,8 +104,8 @@ export class Engine {
     const filteredRepos = await this.filterArchived(allReposFile)
     const filteredWithBranchesFile = await getBranches(this.octokit, filteredRepos, this.cache.cache.filteredWithBranches, this.progress)
     await this.cache.writeFileToCache('filteredWithBranches.json', filteredWithBranchesFile)
-    await this.runOrgRules(filteredWithBranchesFile)
-    await this.runRepoRules(filteredWithBranchesFile.info)
+    // await this.runOrgRules(filteredWithBranchesFile)
+    // await this.runRepoRules(filteredWithBranchesFile.info)
     await this.downloadAndRunBranchRules(filteredWithBranchesFile.info)
     await this.runReports()
     await this.writeReportOutputs()
@@ -113,15 +114,16 @@ export class Engine {
   }
 
   private registerBranchRules (octokit: Octokit): void {
-    this.branchRules.push(new FileCountRule(octokit))
-    this.branchRules.push(new DockerfileRule(octokit))
-    this.branchRules.push(new PackageJsonRule(octokit))
-    this.branchRules.push(new GitignoreRule(octokit))
-    this.branchRules.push(new DotGithubDirRule(octokit))
     this.branchRules.push(new DockerComposeRule(octokit))
+    this.branchRules.push(new DockerfileRule(octokit))
+    this.branchRules.push(new DotGithubDirRule(octokit))
+    this.branchRules.push(new FileCountRule(octokit))
+    this.branchRules.push(new FileTypesRules(octokit))
+    this.branchRules.push(new GitignoreRule(octokit))
+    this.branchRules.push(new PackageJsonRule(octokit))
     this.branchRules.push(new PackageLockRule(octokit))
-    this.branchRules.push(new TerraformRule(octokit))
     this.branchRules.push(new ReadmeRule(octokit))
+    this.branchRules.push(new TerraformRule(octokit))
   }
 
   private registerSecondaryBranchRules (octokit: Octokit): void {
@@ -221,7 +223,7 @@ export class Engine {
               const downloaded = await downloadRepoToMemory(this.octokit, repoName, branchName)
               if (downloaded != null) {
                 for (const fileName of Object.keys(downloaded.files)) {
-                  if (!downloaded.files[fileName].dir) {
+                  if (!downloaded.files[fileName].dir) { // only run rules on files, not dirs
                     await this.runBranchRules(repo, downloaded, branchName, fileName)
                   }
                 }
