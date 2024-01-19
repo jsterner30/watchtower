@@ -36,7 +36,7 @@ export async function getAllReposInOrg (orgName: string, octokit: Octokit, allRe
 
     return attachMetadataToCacheFile(repoInfoObj)
   } catch (error) {
-    throw new Error('Error occurred while fetching repositories')
+    throw new Error(`Error occurred while fetching repositories: ${error as string}`)
   }
 }
 
