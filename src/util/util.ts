@@ -2,8 +2,9 @@ import { logger } from './logger'
 import { nodeLTSUrl, startingHighestVersion, startingLowestVersion } from './constants'
 import { ExtremeVersions, VersionLocation } from '../types'
 import { compare, validate } from 'compare-versions'
+import stringify from 'json-stringify-safe'
 
-export function errorHandler (error: unknown, functionName: string, repoName: string = '', branchName: string = ''): void {
+export function errorHandler (error: unknown, functionName: string, repoName: string = '', branchName: string = '', fileName: string = ''): void {
   let errorMessage = ''
   if (error instanceof Error) {
     errorMessage = error.message
@@ -104,3 +105,12 @@ export function getExtremeVersions (versionLocations: VersionLocation[], current
 }
 
 function isNumericChar (c: string): boolean { return /\d/.test(c) }
+
+export function stringifyJSON (json: Record<string, any> | Array<Record<string, any>>): string {
+  try {
+    return stringify(json, null, 2)
+  } catch (error) {
+    logger.error(`Error stringifying file to write to cache: ${error as string}`)
+    return '{}'
+  }
+}

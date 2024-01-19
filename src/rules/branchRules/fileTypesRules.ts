@@ -15,7 +15,7 @@ export class FileTypesRules extends BranchRule {
         repo.branches[branchName].fileTypes[fileType] += 1
       }
     } catch (error) {
-      errorHandler(error, FileTypesRules.name, repo.name, branchName)
+      errorHandler(error, FileTypesRules.name, repo.name, branchName, fileName)
     }
   }
 }

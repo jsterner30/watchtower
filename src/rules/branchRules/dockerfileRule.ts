@@ -11,7 +11,7 @@ export class DockerfileRule extends BranchRule {
         repo.branches[branchName].deps.push(this.parseDockerfile(content, fileName))
       }
     } catch (error) {
-      errorHandler(error, DockerfileRule.name, repo.name, branchName)
+      errorHandler(error, DockerfileRule.name, repo.name, branchName, fileName)
     }
   }
 

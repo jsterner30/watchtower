@@ -1,8 +1,8 @@
 terraform {
   backend "s3" {
-    bucket         = "terraform-state-storage-863362256468"
-    dynamodb_table = "terraform-state-lock-863362256468"
-    key            = "watchtower/dev/setup.tfstate"
+    bucket         = "terraform-state-storage-543804410856"
+    dynamodb_table = "terraform-state-lock-543804410856"
+    key            = "watchtower/prd/setup.tfstate"
     region         = "us-west-2"
   }
   required_providers {

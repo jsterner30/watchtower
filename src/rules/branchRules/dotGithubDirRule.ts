@@ -16,7 +16,7 @@ export class DotGithubDirRule extends BranchRule {
         }
       }
     } catch (error) {
-      errorHandler(error, DotGithubDirRule.name, repo.name, branchName)
+      errorHandler(error, DotGithubDirRule.name, repo.name, branchName, fileName)
     }
   }
 

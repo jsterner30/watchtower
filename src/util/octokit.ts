@@ -14,9 +14,7 @@ export async function getOctokit (): Promise<Octokit> {
     throttle: {
       minimalSecondaryRateRetryAfter: 1800, // 30 Minutes
       onRateLimit: (retryAfter: number, options: any, octokit: any, retryCount: number) => {
-        octokit.log.warn(
-                    `Request quota exhausted for request ${options.method as string} ${options.url as string}`
-        )
+        octokit.log.warn(`Request quota exhausted for request ${options.method as string} ${options.url as string}`)
 
         if (retryCount < 1) {
           // only retries once

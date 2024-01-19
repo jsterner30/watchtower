@@ -1,7 +1,7 @@
 import { Writer } from './writer'
 import { CacheFile, RepoInfo, validRepoInfo, validCacheFile } from '../types'
 import { logger } from './logger'
-import { errorHandler } from './util'
+import { errorHandler, stringifyJSON } from './util'
 
 export interface CacheInfo {
   lastRunDate: string
@@ -50,7 +50,7 @@ export class Cache {
 
     if (date == null) {
       const date = { lastRunDate: '1970-01-01T00:00:00Z' }
-      await this._writer.writeFile('cache', 'json', 'lastRunDate.json', JSON.stringify(date, null, 2))
+      await this._writer.writeFile('cache', 'json', 'lastRunDate.json', stringifyJSON(date))
       return date.lastRunDate
     }
     return date.lastRunDate
@@ -60,7 +60,7 @@ export class Cache {
     try {
       const currentDate = new Date()
       const fourHoursAgo = new Date(currentDate.setHours(currentDate.getHours() - 4))
-      await this._writer.writeFile('cache', 'json', 'lastRunDate.json', JSON.stringify({ lastRunDate: fourHoursAgo.toISOString() }, null, 2))
+      await this._writer.writeFile('cache', 'json', 'lastRunDate.json', stringifyJSON({ lastRunDate: fourHoursAgo.toISOString() }))
     } catch (error) {
       errorHandler(error, this.setLastRunDate.name)
     }
@@ -108,6 +108,6 @@ export class Cache {
 
   async writeFileToCache (filePath: string, body: CacheFile | RepoInfo): Promise<void> {
     logger.info(`Writing file to cache: ${filePath}`)
-    await this._writer.writeFile('cache', 'json', filePath, JSON.stringify(body, null, 2))
+    await this._writer.writeFile('cache', 'json', filePath, stringifyJSON(body))
   }
 }

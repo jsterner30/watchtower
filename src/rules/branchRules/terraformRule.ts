@@ -14,7 +14,7 @@ export class TerraformRule extends BranchRule {
         // TODO parse tfvars file to ensure there are no secrets?
       }
     } catch (error) {
-      errorHandler(error, TerraformRule.name, repo.name, branchName)
+      errorHandler(error, TerraformRule.name, repo.name, branchName, fileName)
     }
   }
 

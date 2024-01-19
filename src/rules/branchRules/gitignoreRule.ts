@@ -11,7 +11,7 @@ export class GitignoreRule extends BranchRule {
         repo.branches[branchName].deps.push(this.parseGitignore(content, fileName))
       }
     } catch (error) {
-      errorHandler(error, GitignoreRule.name, repo.name, branchName)
+      errorHandler(error, GitignoreRule.name, repo.name, branchName, fileName)
     }
   }
 

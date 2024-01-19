@@ -12,7 +12,7 @@ export class ReadmeRule extends BranchRule {
         repo.branches[branchName].deps.push(this.parseReadmeFile(content, fileName))
       }
     } catch (error) {
-      errorHandler(error, ReadmeRule.name, repo.name, branchName)
+      errorHandler(error, ReadmeRule.name, repo.name, branchName, fileName)
     }
   }
 

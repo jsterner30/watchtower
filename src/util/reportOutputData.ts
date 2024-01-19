@@ -1,5 +1,6 @@
 import { Header } from '../types'
 import { Writer } from './writer'
+import { stringifyJSON } from './util'
 
 export class ReportOutputData {
   private readonly _header: Header
@@ -29,7 +30,7 @@ export class ReportOutputData {
   }
 
   async writeOutput (writer: Writer): Promise<void> {
-    await writer.writeFile('reports', 'json', `${this._outputDir}/${this._fileName}.json`, JSON.stringify(this._data, null, 2))
+    await writer.writeFile('reports', 'json', `${this._outputDir}/${this._fileName}.json`, stringifyJSON(this._data))
     await writer.writeFile('reports', 'csv', `${this._outputDir}/${this._fileName}.csv`, this.convertToCSV(this._header, this._data))
   }
 

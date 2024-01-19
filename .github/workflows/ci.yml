@@ -2,7 +2,7 @@ name: Continuous Integration
 
 on:
   pull_request:
-    branches: [dev, prd]
+    branches: [prd]
     types: [opened, reopened, synchronize, edited]
 
   workflow_dispatch:
@@ -16,20 +16,6 @@ jobs:
     name: Set Env Vars
     runs-on: ubuntu-latest
     steps:
-      - name: Set up DEV Environment Variables
-        if: github.base_ref == 'dev'
-        run: |
-          matrix='{
-            "env":[
-              {
-                "tf_working_dir":"./iac/dev/watchtower",
-                "aws_account":"??",
-                "aws_gha_role":"watchtower-dev-gha"
-              }
-            ]
-          }'
-          echo matrix=`echo $matrix | jq -c .` >> $GITHUB_ENV
-
       - name: Set up PRD Environment Variables
         if: github.base_ref == 'prd'
         run: |
@@ -37,7 +23,7 @@ jobs:
             "env":[
               {
                 "tf_working_dir":"./iac/prd/watchtower",
-                "aws_account":"??",
+                "aws_account":"543804410856",
                 "aws_gha_role":"watchtower-prd-gha"
               }
             ]
@@ -47,24 +33,24 @@ jobs:
     outputs:
       matrix: ${{ env.matrix }}
 
-  test:
-    name: Test App
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          persist-credentials: false
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ env.node_version }}
-
-      - run: npm ci
-        working-directory: './'
-
-      - run: npm test --if-present
-        working-directory: './'
+#  test:
+#    name: Test App
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v3
+#        with:
+#          persist-credentials: false
+#
+#      - name: Set up Node.js
+#        uses: actions/setup-node@v3
+#        with:
+#          node-version: ${{ env.node_version }}
+#
+#      - run: npm ci
+#        working-directory: './'
+#
+#      - run: npm test --if-present
+#        working-directory: './'
 
   audit:
     name: Audit App

@@ -13,7 +13,7 @@ export class FileCountRule extends BranchRule {
       }
       repo.branches[branchName].fileCount = fileCount
     } catch (error) {
-      errorHandler(error, FileCountRule.name, repo.name, branchName)
+      errorHandler(error, FileCountRule.name, repo.name, branchName, fileName)
     }
   }
 }

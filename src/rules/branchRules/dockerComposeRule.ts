@@ -12,7 +12,7 @@ export class DockerComposeRule extends BranchRule {
         repo.branches[branchName].deps.push(this.parseDockerCompose(content, fileName))
       }
     } catch (error) {
-      errorHandler(error, DockerComposeRule.name, repo.name, branchName)
+      errorHandler(error, DockerComposeRule.name, repo.name, branchName, fileName)
     }
   }
 
