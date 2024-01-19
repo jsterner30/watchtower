@@ -38,35 +38,35 @@ jobs:
     outputs:
       matrix: ${{ env.matrix }}
 
-#  test:
-#    name: Test App
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Check out
-#        uses: actions/checkout@v3
-#        with:
-#          persist-credentials: false
-#
-#      - name: Set up Node.js
-#        uses: actions/setup-node@v3
-#        with:
-#          node-version: ${{ env.node_version }}
-#          cache: npm
-#          cache-dependency-path: '**/package-lock.json'
-#
-#      - name: npm ci
-#        working-directory: './'
-#        run: npm ci --prefer-offline
-#
-#      - name: npm test
-#        working-directory: './'
-#        run: npm test
-#
-#      - name: Report test coverage to Codecov
-#        uses: codecov/codecov-action@v3
-#        if: env.CODECOV_TOKEN
-#        env:
-#          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+  test:
+    name: Test App
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.node_version }}
+          cache: npm
+          cache-dependency-path: '**/package-lock.json'
+
+      - name: npm ci
+        working-directory: './'
+        run: npm ci --prefer-offline
+
+      - name: npm test
+        working-directory: './'
+        run: npm test
+
+      - name: Report test coverage to Codecov
+        uses: codecov/codecov-action@v3
+        if: env.CODECOV_TOKEN
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   audit:
     name: Audit

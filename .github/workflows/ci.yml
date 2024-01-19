@@ -33,24 +33,24 @@ jobs:
     outputs:
       matrix: ${{ env.matrix }}
 
-#  test:
-#    name: Test App
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v3
-#        with:
-#          persist-credentials: false
-#
-#      - name: Set up Node.js
-#        uses: actions/setup-node@v3
-#        with:
-#          node-version: ${{ env.node_version }}
-#
-#      - run: npm ci
-#        working-directory: './'
-#
-#      - run: npm test --if-present
-#        working-directory: './'
+  test:
+    name: Test App
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.node_version }}
+
+      - run: npm ci
+        working-directory: './'
+
+      - run: npm test --if-present
+        working-directory: './'
 
   audit:
     name: Audit App
