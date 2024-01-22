@@ -11,4 +11,4 @@ ENV NODE_ENV='production'
 USER node
 EXPOSE 5000
 
-CMD [ "node", "--max_old_space_size=4096", "dist/index.js" ]
+CMD [ "node", "--max_old_space_size=8192", "dist/index.js" ]
