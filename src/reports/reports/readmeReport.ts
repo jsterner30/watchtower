@@ -3,7 +3,7 @@ import {
   type RepoInfo
 } from '../../types'
 import { Report } from '../report'
-import { ReportOutputData } from '../../util'
+import { errorHandler, ReportOutputData } from '../../util'
 
 const appSections = ['Overview', 'How to Run Locally', 'How to Deploy', 'How to Use This', 'Architectural Overview']
 const libSections = ['Overview', 'How to Use This', 'How to Build Locally', 'How to Publish', 'Architectural Overview']
@@ -19,34 +19,38 @@ export class ReadmeReport extends Report {
     const readmeReportOutput = new ReportOutputData(header, this._outputDir, 'ReadmeReport')
 
     for (const repo of repos) {
-      let hasReadme = false
-      let hasTitleTemp = false
-      let numMissingSections: number = Math.max(appSections.length, libSections.length)
+      try {
+        let hasReadme = false
+        let hasTitleTemp = false
+        let numMissingSections: number = Math.max(appSections.length, libSections.length)
 
-      for (const dep of repo.branches[repo.defaultBranch].deps) {
-        if (validReadmeFile.Check(dep) && dep.fileType === 'README') {
-          const readmeContent = dep.contents
+        for (const dep of repo.branches[repo.defaultBranch].deps) {
+          if (validReadmeFile.Check(dep) && dep.fileType === 'README') {
+            const readmeContent = dep.contents
 
-          if (readmeContent.length > 0) {
-            hasReadme = true
-          } else {
-            break
+            if (readmeContent.length > 0) {
+              hasReadme = true
+            } else {
+              break
+            }
+
+            const { hasTitle, appHeadingCount, libHeadingCount } = this.hasTitleAndCountHeadings(readmeContent as ReadmeContentItem[])
+            hasTitleTemp = hasTitle
+            numMissingSections = appHeadingCount > libHeadingCount ? appSections.length - appHeadingCount : libSections.length - libHeadingCount
           }
-
-          const { hasTitle, appHeadingCount, libHeadingCount } = this.hasTitleAndCountHeadings(readmeContent as ReadmeContentItem[])
-          hasTitleTemp = hasTitle
-          numMissingSections = appHeadingCount > libHeadingCount ? appSections.length - appHeadingCount : libSections.length - libHeadingCount
         }
+
+        readmeReportOutput.addRow({
+          repoName: repo.name,
+          hasReadme,
+          hasTitle: hasTitleTemp,
+          numSectionsMissing: numMissingSections
+        })
+
+        repo.healthScores[ReadmeReport.name] = this.grade(hasReadme ? (numMissingSections).toString() : '')
+      } catch (error) {
+        errorHandler(error, ReadmeReport.name, repo.name, repo.defaultBranch)
       }
-
-      readmeReportOutput.addRow({
-        repoName: repo.name,
-        hasReadme,
-        hasTitle: hasTitleTemp,
-        numSectionsMissing: numMissingSections
-      })
-
-      repo.healthScores[ReadmeReport.name] = this.grade(hasReadme ? (numMissingSections).toString() : '')
     }
 
     this._reportOutputs.push(readmeReportOutput)

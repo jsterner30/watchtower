@@ -241,20 +241,20 @@ async function getCommitInfo (octokit: Octokit, repoName: string, sha: string): 
 
     if (author != null) {
       return {
-        author: author.name ?? '',
-        date: author.date ?? ''
+        author: 'unknown',
+        date: '1971-01-01T00:00:00Z' // after the default lastRunDate
       }
     } else {
       return {
-        author: '',
-        date: ''
+        author: 'unknown',
+        date: '1971-01-01T00:00:00Z' // after the default lastRunDate
       }
     }
   } catch (error) {
     logger.error(`Unable to get last commit info for repo: ${repoName}, Commit sha: ${sha}. Error: ${error as string}`)
     return {
-      author: '',
-      date: ''
+      author: 'unknown',
+      date: '1971-01-01T00:00:00Z' // after the default lastRunDate
     }
   }
 }
@@ -270,7 +270,7 @@ export async function downloadRepoToMemory (octokit: Octokit, repoName: string, 
 
     return await loadAsync(data as any)
   } catch (error: any) {
-    logger.error('Error downloading repo to memory, error:', error.message)
+    logger.error('Error downloading repo to memory, error:', error as string)
     return null
   }
 }

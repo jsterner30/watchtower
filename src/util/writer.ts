@@ -39,11 +39,11 @@ export abstract class Writer {
   abstract deleteAllFilesInDirectory (fileUsage: string, dataType: string, directoryPath: string): Promise<void>
 
   ensureDataTypeMatchesFileType (dataType: string, filePath: string): void {
-    const fileType = filePath.split('.')[1]
+    const fileType = path.extname(filePath).slice(1)
     if (fileType == null) {
-      logger.error(`Filepath: ${filePath} does not include a file extension, but probably should (this message can be ignored if this was purposeful)`)
+      logger.debug(`Filepath: ${filePath} does not include a file extension, but probably should (this message can be ignored if this was purposeful)`)
     } else if (fileType !== dataType) {
-      logger.error(`Filepath: ${filePath} will be in the ${dataType} directory, but the file extension does not match (this message can be ignored if this was purposeful)`)
+      logger.debug(`Filepath: ${filePath} will be in the ${dataType} directory, but the file extension does not match (this message can be ignored if this was purposeful)`)
     }
   }
 }
@@ -197,6 +197,7 @@ export class S3Writer extends Writer {
   }
 
   async readAllFilesInDirectory (fileUsage: string, dataType: string, directoryPath: string): Promise<Record<string, string | null> | null> {
+    logger.info(`Reading all files in directory: ${fileUsage}/${dataType}/${directoryPath}`)
     try {
       const bucketName = (await getEnv()).bucketName
       const params = {
@@ -209,16 +210,14 @@ export class S3Writer extends Writer {
       if (data.Contents != null) {
         const fileObject: Record<string, string | null> = {}
 
-        await Promise.all(
-          data.Contents.map(async (file) => {
-            if (file.Key != null) {
-              const filePath = file.Key.split('json/')[1]
-              const fileContents = await this.readFile('cache', 'json', filePath)
+        for (const file of data.Contents) {
+          if (file.Key != null) {
+            const filePath = file.Key.split('json/')[1]
+            const fileContents = await this.readFile('cache', 'json', filePath)
 
-              fileObject[file.Key] = fileContents ?? null
-            }
-          })
-        )
+            fileObject[file.Key] = fileContents ?? null
+          }
+        }
 
         return fileObject
       } else {

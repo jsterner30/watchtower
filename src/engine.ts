@@ -1,13 +1,14 @@
 import {
   Environment,
-  getEnv,
   Writer,
   Cache,
-  S3Writer,
-  LocalWriter,
   ProgressBarManager,
   getOverallGPAScore,
-  ReportOutputData
+  ReportOutputData,
+  getAllReposInOrg,
+  getBranches,
+  getBranchCommitInfo,
+  downloadRepoToMemory,
 } from './util'
 import { Report } from './reports/report'
 import {
@@ -65,12 +66,13 @@ import {
   SecretScanAlertsRule
 } from './rules/orgRules'
 import { Octokit } from '@octokit/rest'
-import { getAllReposInOrg, getBranches, getBranchCommitInfo, downloadRepoToMemory } from './util/github'
+
 import { CacheFile, GradeEnum, RepoInfo } from './types'
 import JSZip from 'jszip'
 
 export class Engine {
   private readonly octokit: Octokit
+  private readonly env: Environment
   private readonly branchRules: BranchRule[] = []
   private readonly secondaryBranchRules: SecondaryBranchRule[] = []
   private readonly repoRules: RepoRule[] = []
@@ -80,26 +82,22 @@ export class Engine {
   private readonly cache: Cache
   private readonly progress: ProgressBarManager
 
-  constructor (env: Environment, octokit: Octokit) {
+  constructor (env: Environment, octokit: Octokit, cache: Cache, writer: Writer) {
+    this.env = env
     this.octokit = octokit
+    this.writer = writer
+    this.cache = cache
+    this.progress = new ProgressBarManager(env.showProgress)
     this.registerBranchRules(this.octokit)
     this.registerSecondaryBranchRules(this.octokit)
     this.registerRepoRules(this.octokit)
     this.registerOrgRules(this.octokit)
     this.registerReports()
-
-    this.writer = new S3Writer()
-    if (env.writeFilesLocally) {
-      this.writer = new LocalWriter()
-    }
-    this.cache = new Cache(this.writer, env.useCache)
-    this.progress = new ProgressBarManager(env.showProgress)
   }
 
   async run (): Promise<void> {
-    const env = await getEnv()
     await this.cache.update()
-    const allReposFile = await getAllReposInOrg(env.githubOrg, this.octokit, this.cache.cache.allRepos)
+    const allReposFile = await getAllReposInOrg(this.env.githubOrg, this.octokit, this.cache.cache.allRepos)
     await this.cache.writeFileToCache('allRepos.json', allReposFile)
     const filteredRepos = await this.filterArchived(allReposFile)
     const filteredWithBranchesFile = await getBranches(this.octokit, filteredRepos, this.cache.cache.filteredWithBranches, this.progress)
@@ -107,10 +105,10 @@ export class Engine {
     await this.runOrgRules(filteredWithBranchesFile)
     await this.runRepoRules(filteredWithBranchesFile.info)
     await this.downloadAndRunBranchRules(filteredWithBranchesFile.info)
+    await this.cache.setLastRunDate() // we do this now because everything we are going to cache has now been cached
     await this.runReports()
     await this.writeReportOutputs()
     await this.generateOverallReport()
-    await this.cache.setLastRunDate()
   }
 
   private registerBranchRules (octokit: Octokit): void {

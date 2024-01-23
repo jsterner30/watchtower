@@ -1,14 +1,21 @@
-// TODO: CREATE WORKING TESTS (AVA and Node 20 don't play nice with typescript)
-
+// // TODO: CREATE WORKING TESTS (AVA and Node 20 don't play nice with typescript)
+//
 // import test from 'ava'
 // import { Engine } from '../src/engine'
-// import { Environment, getEnv } from '../src/util'
+// import { Writer, Environment, Cache } from '../src/util'
 // import { getMockOctokit } from './util'
 // import { Octokit } from '@octokit/rest'
+// import * as sinon from "sinon";
+// import {mock, when, instance, reset, anything, anyString} from 'ts-mockito'
+//
 //
 // let engine: Engine
 // let moctokit: Octokit
-// const defaultEnvironment = {
+// const mockCache: Cache = mock(Cache)
+// const mockWriter: Writer = mock(Writer)
+// // let getEnvStub = sinon.stub(util, 'getEnv')
+//
+// const defaultEnvironment: Environment = {
 //   bucketName: 'fakeBucket',
 //   environmentName: 'dev',
 //   githubOrg: 'fake-org',
@@ -18,23 +25,19 @@
 //   useCache: false,
 //   writeFilesLocally: false
 // }
-// const setEnv = (env: Environment = defaultEnvironment): void => {
-//   process.env.BUCKET_NAME = env.bucketName.toString()
-//   process.env.ENVIRONMENT_NAME = env.environmentName.toString()
-//   process.env.GITHUB_ORG = env.githubOrg.toString()
-//   process.env.GITHUB_TOKEN = env.githubToken.toString()
-//   process.env.SHOW_PROGRESS = env.showProgress.toString()
-//   process.env.STALE_DAYS_THRESHOLD = env.staleDaysThreshold.toString()
-//   process.env.USE_CACHE = env.useCache.toString()
-//   process.env.WRITE_FILES_LOCALLY = env.writeFilesLocally.toString()
-// }
 //
 // test.beforeEach(t => {
-//   setEnv(defaultEnvironment)
+//   reset()
 //   moctokit = getMockOctokit()
 // })
 //
 // test.serial('should not attempt to access cache if USE_CACHE set to false', async t => {
-//   engine = new Engine(await getEnv(), moctokit)
-//   t.deepEqual(true, true)
+//   when(mockWriter.readFile(anyString(), anyString(), anyString())).thenResolve("{}")
+//   when(mockWriter.readAllFilesInDirectory(anyString(), anyString(), anyString())).thenResolve({fake: "repo"})
+//
+//
+//   engine = new Engine(defaultEnvironment, moctokit, mockCache, mockWriter)
+//
+//   // await engine.run()
+//
 // })
