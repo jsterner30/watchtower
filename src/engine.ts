@@ -8,7 +8,7 @@ import {
   getAllReposInOrg,
   getBranches,
   getBranchCommitInfo,
-  downloadRepoToMemory,
+  downloadRepoToMemory
 } from './util'
 import { Report } from './reports/report'
 import {
