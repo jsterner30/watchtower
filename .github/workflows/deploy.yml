@@ -43,12 +43,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           persist-credentials: false
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.node_version }}
           cache: npm
@@ -72,10 +72,10 @@ jobs:
     name: Audit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.node_version }}
 
@@ -88,12 +88,12 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           persist-credentials: false
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.node_version }}
           cache: npm
@@ -111,7 +111,7 @@ jobs:
     name: Lint Docker
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # Hadolint follows semantic versioning, but doesn't have a @v2 release
       - name: Lint Dockerfile
@@ -124,10 +124,10 @@ jobs:
     name: Terraform Format
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Terraform Setup
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: ${{ env.tf_version }}
 
@@ -150,10 +150,10 @@ jobs:
       contents: read
     steps:
       - name: Check out
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v3
         with:
           role-to-assume: "arn:aws:iam::${{ matrix.env.aws_account }}:role/${{ matrix.env.aws_gha_role }}"
           role-session-name: ${{ github.sha }}
@@ -161,21 +161,21 @@ jobs:
 
       - name: Log into Amazon ECR
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+        uses: aws-actions/amazon-ecr-login@v2
 
       - name: Get Current Timestamp
         id: date
         run: echo "timestamp=$(date +'%Y-%m-%d_%H-%M-%S')" >> $GITHUB_OUTPUT
 
       - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
       - name: Build and push Docker Image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPO: ${{ env.application_name }}-${{ matrix.env.environment_name }}
           IMAGE_TAG: ${{ steps.date.outputs.timestamp }}
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
           context: './'
           platforms: linux/amd64
@@ -186,7 +186,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Terraform Setup
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: ${{ env.tf_version }}
           terraform_wrapper: false
@@ -200,7 +200,7 @@ jobs:
         run: terraform plan -var 'image_tag=${{ steps.date.outputs.timestamp }}' -input=false -out=plan
 
       - name: Analyze Terraform Plan
-        uses: byu-oit/github-action-tf-plan-analyzer@v2
+        uses: byu-oit/github-action-tf-plan-analyzer@v3
         if: github.repository_owner == 'byu-oit'
         # If you're at BYU, but outside the byu-oit GitHub org, you may be able to obtain credentials by contacting cloudoffice@byu.edu
         with:
