@@ -40,4 +40,8 @@ export class SecretScanAlertCountReport extends Report {
       }
     }
   }
+
+  public get name (): string {
+    return SecretScanAlertCountReport.name
+  }
 }

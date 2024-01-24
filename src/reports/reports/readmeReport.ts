@@ -131,4 +131,8 @@ export class ReadmeReport extends Report {
 
     return { hasTitle, appHeadingCount, libHeadingCount }
   }
+
+  public get name (): string {
+    return ReadmeReport.name
+  }
 }

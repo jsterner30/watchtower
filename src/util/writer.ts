@@ -110,22 +110,12 @@ export class LocalWriter extends Writer {
 
   async deleteAllFilesInDirectory (fileUsage: string, dataType: string, directoryPath: string): Promise<void> {
     try {
-      const files = await fs.readdir(path.resolve('data', fileUsage, dataType, directoryPath))
-
-      if (files != null) {
-        await Promise.all(
-          files.map(async (file) => {
-            const filePath = path.join(directoryPath, file)
-            await fs.unlink(filePath)
-          })
-        )
-
-        logger.info(`Successfully deleted all local files in the directory: ${directoryPath}`)
-      } else {
-        logger.info(`No local files found in the directory: ${directoryPath}`)
-      }
+      const directoryFullPath = path.resolve('data', fileUsage, dataType, directoryPath)
+      // Remove the directory and its contents
+      await fs.rm(directoryFullPath, { recursive: true })
+      logger.info(`Successfully deleted the directory and its contents: ${directoryPath}`)
     } catch (error: any) {
-      logger.error(`Error deleting local files: ${error as string}`)
+      logger.error(`Error deleting directory and its contents: ${error as string}`)
     }
   }
 

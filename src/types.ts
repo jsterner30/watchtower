@@ -322,3 +322,9 @@ const TerraformFileSchema = Type.Intersect([
 ])
 export type TerraformFile = Static<typeof TerraformFileSchema>
 export const validTerraformFile = TypeCompiler.Compile(TerraformFileSchema)
+
+const ReportJSONOutputSchema = Type.Object({
+  header: HeaderSchema,
+  report: Type.Array(Type.Record(Type.String(), Type.Any()))
+})
+export type ReportJSONOutput = Static<typeof ReportJSONOutputSchema>

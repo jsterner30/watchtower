@@ -34,7 +34,6 @@ module "watchtower" {
   task_memory = 8192 # task keeps failing when it runs out of memory
   schedule = {
     expression = var.schedule_expression
-    timezone   = "America/Denver"
   }
   primary_container_definition = {
     name  = local.app_name

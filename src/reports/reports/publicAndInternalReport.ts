@@ -21,8 +21,8 @@ export class PublicAndInternalReport extends Report {
             repoName: repo.name,
             visibility: repo.visibility
           })
-          repo.healthScores[PublicAndInternalReport.name] = this.grade(repo.visibility)
         }
+        repo.healthScores[PublicAndInternalReport.name] = this.grade(repo.visibility)
       } catch (error) {
         errorHandler(error, PublicAndInternalReport.name, repo.name)
       }
@@ -48,5 +48,9 @@ export class PublicAndInternalReport extends Report {
         weight: this._weight
       }
     }
+  }
+
+  public get name (): string {
+    return PublicAndInternalReport.name
   }
 }

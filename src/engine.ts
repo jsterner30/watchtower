@@ -69,6 +69,7 @@ import { Octokit } from '@octokit/rest'
 
 import { CacheFile, GradeEnum, RepoInfo } from './types'
 import JSZip from 'jszip'
+import { logger } from './util/logger'
 
 export class Engine {
   private readonly octokit: Octokit
@@ -202,7 +203,7 @@ export class Engine {
 
   private async downloadAndRunBranchRules (repos: Record<string, RepoInfo>): Promise<void> {
     // get rid of the current cache repos
-    await this.writer.deleteAllFilesInDirectory('cache', 'json', 'repos')
+    // await this.writer.deleteAllFilesInDirectory('cache', 'json', 'repos')
 
     const repoNames = Object.keys(repos)
     this.progress.reset(repoNames.length, 'Running rules on', [{ displayName: 'Current Repo', token: 'currentRepo' }])
@@ -258,8 +259,7 @@ export class Engine {
 
   private async writeReportOutputs (): Promise<void> {
     // just get rid of all reports
-    await this.writer.deleteAllFilesInDirectory('reports', 'csv', '')
-    await this.writer.deleteAllFilesInDirectory('reports', 'json', '')
+    await this.writer.deleteAllFilesInDirectory('reports', '', '')
 
     for (const report of this.reports) {
       for (const reportOutput of report.reportOutputs) {
@@ -300,16 +300,17 @@ export class Engine {
       }
 
       for (const report of this.reports) {
+        try {
         // only include contributing reports
-        if (report.weight > 0) {
-          reportRow[report.name] = repo.healthScores[report.name] ?? GradeEnum.NotApplicable
+          if (report.weight > 0) {
+            reportRow[report.name] = repo.healthScores[report.name].grade ?? GradeEnum.NotApplicable
+          }
+        } catch (error) {
+          logger.error(`Error adding row to overall health report for repo: ${repo.name}, report: ${report.name}, error: ${error as string}`)
         }
       }
-      overallHealthReportOutput.addRow({
-        reportRow
-      })
+      overallHealthReportOutput.addRow(reportRow)
     }
-
     await overallHealthReportOutput.writeOutput(this.writer)
   }
 }

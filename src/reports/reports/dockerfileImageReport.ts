@@ -69,4 +69,8 @@ export class DockerfileImageReport extends Report {
       weight: 0
     }
   }
+
+  public get name (): string {
+    return DockerfileImageReport.name
+  }
 }

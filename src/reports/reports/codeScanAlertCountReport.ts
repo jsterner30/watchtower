@@ -14,10 +14,10 @@ export class CodeScanAlertCountReport extends Report {
       { id: 'count', title: 'Count' }
     ]
 
-    const criticalAlertCountWriter = new ReportOutputData(countReportHeader, this._outputDir, 'CodeScanCriticalAlertCountReport.csv')
-    const highAlertCountWriter = new ReportOutputData(countReportHeader, this._outputDir, 'CodeScanHighAlertCountReport.csv')
-    const mediumAlertCountWriter = new ReportOutputData(countReportHeader, this._outputDir, 'CodeScanMediumAlertCountReport')
-    const lowAlertCountWriter = new ReportOutputData(countReportHeader, this._outputDir, 'CodeScanMediumAlertCountReport')
+    const criticalAlertCountWriter = new ReportOutputData(countReportHeader, this._outputDir, 'CodeScanAlertCountReport-Critical')
+    const highAlertCountWriter = new ReportOutputData(countReportHeader, this._outputDir, 'CodeScanAlertCountReport-High')
+    const mediumAlertCountWriter = new ReportOutputData(countReportHeader, this._outputDir, 'CodeScanAlertCountReport-Medium')
+    const lowAlertCountWriter = new ReportOutputData(countReportHeader, this._outputDir, 'CodeScanAlertCountReport-Low')
 
     for (const repo of repos) {
       try {
@@ -65,5 +65,9 @@ export class CodeScanAlertCountReport extends Report {
       grade: GradeEnum.NotApplicable,
       weight: 0
     }
+  }
+
+  public get name (): string {
+    return CodeScanAlertCountReport.name
   }
 }

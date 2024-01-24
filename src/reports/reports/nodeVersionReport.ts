@@ -29,7 +29,7 @@ export class NodeVersionReport extends Report {
     // this report lists every branch that has node on it as a single row
     const allBranchesOutput = new ReportOutputData(branchHeader, this._outputDir, 'NodeVersionReport-AllBranches')
     // this report lists every non-stale branch that has node on it as a single row
-    const nonStaleBranchesOutput = new ReportOutputData(branchHeader, this._outputDir, '/NodeVersionReport-NonStaleBranches')
+    const nonStaleBranchesOutput = new ReportOutputData(branchHeader, this._outputDir, 'NodeVersionReport-NonStaleBranches')
     // this report lists every repo that has mode on it as a single row, giving the lowest/highest version on any branch of the repo
     const allBranchesRepoOutput = new ReportOutputData(repoHeader, this._outputDir, 'NodeVersionReport-Repos-AllBranches')
     // this report lists every repo that has node on it as a single row, giving the lowest/highest version on any non-stale branch of the repo
@@ -64,7 +64,7 @@ export class NodeVersionReport extends Report {
                 location: branchName,
                 version: branchExtremeVersions.highestVersion
               })
-              nonStaleBranchesOutput.addRow(branchExtremeVersions)
+              nonStaleBranchesOutput.addRow({ repoName: repo.name, branchName, lowestVersion: branchExtremeVersions.lowestVersion, highestVersion: branchExtremeVersions.highestVersion })
             }
 
             // now add extremes for all branches, not just stale
@@ -76,7 +76,7 @@ export class NodeVersionReport extends Report {
               location: branchName,
               version: branchExtremeVersions.highestVersion
             })
-            allBranchesOutput.addRow(branchExtremeVersions)
+            allBranchesOutput.addRow({ repoName: repo.name, branchName, lowestVersion: branchExtremeVersions.lowestVersion, highestVersion: branchExtremeVersions.highestVersion })
           }
         } catch (error) {
           errorHandler(error, NodeVersionReport.name, repo.name, branchName)
@@ -85,18 +85,21 @@ export class NodeVersionReport extends Report {
 
       // now that we have iterated over all branches, calculate the overall extrema for the repo
       const nonStaleBranchRepoExtrema = getExtremeVersions(nonStaleBranchVersionLocationsExtremes)
-      nonStaleBranchesRepoOutput.addRow({
-        repoName: repo.name,
-        lowestVersion: nonStaleBranchRepoExtrema.lowestVersion,
-        highestVersion: nonStaleBranchRepoExtrema.highestVersion
-      })
-
+      if (nonStaleBranchRepoExtrema.highestVersion !== startingHighestVersion && nonStaleBranchRepoExtrema.lowestVersion !== startingLowestVersion) {
+        nonStaleBranchesRepoOutput.addRow({
+          repoName: repo.name,
+          lowestVersion: nonStaleBranchRepoExtrema.lowestVersion,
+          highestVersion: nonStaleBranchRepoExtrema.highestVersion
+        })
+      }
       const allBranchRepoExtrema = getExtremeVersions(allBranchVersionLocationsExtremes)
-      allBranchesRepoOutput.addRow({
-        repoName: repo.name,
-        lowestVersion: allBranchRepoExtrema.lowestVersion,
-        highestVersion: allBranchRepoExtrema.highestVersion
-      })
+      if (allBranchRepoExtrema.highestVersion !== startingHighestVersion && allBranchRepoExtrema.lowestVersion !== startingLowestVersion) {
+        allBranchesRepoOutput.addRow({
+          repoName: repo.name,
+          lowestVersion: allBranchRepoExtrema.lowestVersion,
+          highestVersion: allBranchRepoExtrema.highestVersion
+        })
+      }
 
       // we currently use the lowest version from any branch to get the overall health score for this report
       repo.healthScores[NodeVersionReport.name] = this.grade({ lowestVersion: allBranchRepoExtrema.lowestVersion, nodeLTS })
@@ -154,5 +157,9 @@ export class NodeVersionReport extends Report {
       grade: GradeEnum.NotApplicable,
       weight: 0
     }
+  }
+
+  public get name (): string {
+    return NodeVersionReport.name
   }
 }

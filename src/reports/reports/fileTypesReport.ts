@@ -13,7 +13,7 @@ export class FileTypesReport extends Report {
       this._outputDir, 'RepoHasLanguageReport'
     )
 
-    const defaultBranchFileTypeReportOutput = new ReportOutputData([{ id: 'repoName', title: 'Repo' }, { id: 'percentageJson', title: 'Percentages' }],
+    const defaultBranchFileTypeReportOutput = new ReportOutputData([{ id: 'repoName', title: 'Repo' }, { id: 'percentageList', title: 'Percentages' }],
       this._outputDir, 'DefaultBranchFileTypesReport')
 
     const fileExtensionMap = extensionLanguageMap()
@@ -28,20 +28,25 @@ export class FileTypesReport extends Report {
           }
 
           if (repo.branches[branchName].defaultBranch) {
-            let totalFiles = 0
-            const percentageJson: Record<string, number> = {}
-            for (const extension in repo.branches[branchName].fileTypes) {
-              totalFiles += repo.branches[branchName].fileTypes[extension]
-            }
-            for (const extension in repo.branches[branchName].fileTypes) {
-              percentageJson[extension] = repo.branches[branchName].fileTypes[extension] / totalFiles
-            }
+            const fileTypes = repo.branches[branchName].fileTypes
 
-            defaultBranchFileTypeReportOutput.addRow({ repoName: repo, percentageJson })
+            // Calculate total files
+            const totalFiles = Object.values(fileTypes).reduce((acc, count) => acc + count, 0)
+
+            // Create CSV-formatted string from percentage JSON
+            const csvString = Object.entries(fileTypes)
+              .map(([extension, count]) => `${extension}:${count / totalFiles}`)
+              .join(',')
+
+            // Create a report row
+            defaultBranchFileTypeReportOutput.addRow({
+              repoName: repo.name,
+              percentageList: csvString
+            })
           }
         }
 
-        repoHasLanguageReportOutput.addRow({ repoName: repo, languages: Array.from(repoLanguageList) })
+        repoHasLanguageReportOutput.addRow({ repoName: repo.name, languages: Array.from(repoLanguageList) })
       } catch (error) {
         errorHandler(error, FileTypesReport.name, repo.name)
       }
@@ -56,5 +61,9 @@ export class FileTypesReport extends Report {
       grade: GradeEnum.NotApplicable,
       weight: 0
     }
+  }
+
+  public get name (): string {
+    return FileTypesReport.name
   }
 }

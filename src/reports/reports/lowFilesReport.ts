@@ -57,4 +57,8 @@ export class LowFilesReport extends Report {
       weight: this._weight
     }
   }
+
+  public get name (): string {
+    return LowFilesReport.name
+  }
 }

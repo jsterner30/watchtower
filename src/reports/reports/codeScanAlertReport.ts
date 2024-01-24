@@ -29,18 +29,18 @@ export class CodeScanAlertReport extends Report {
 
     for (const repo of repos) {
       try {
-        criticalAlertWriter.addRow(this.getCsvData(repo.codeScanAlerts?.critical, repo.name))
-        highAlertWriter.addRow(this.getCsvData(repo.codeScanAlerts?.high, repo.name))
-        mediumAlertWriter.addRow(this.getCsvData(repo.codeScanAlerts?.medium, repo.name))
-        lowAlertWriter.addRow(this.getCsvData(repo.codeScanAlerts?.low, repo.name))
+        if (repo.codeScanAlerts?.critical.length > 0) criticalAlertWriter.addRows(this.getCsvData(repo.codeScanAlerts?.critical, repo.name))
+        if (repo.codeScanAlerts?.high.length > 0) highAlertWriter.addRows(this.getCsvData(repo.codeScanAlerts?.high, repo.name))
+        if (repo.codeScanAlerts?.medium.length > 0) mediumAlertWriter.addRows(this.getCsvData(repo.codeScanAlerts?.medium, repo.name))
+        if (repo.codeScanAlerts?.low.length > 0) lowAlertWriter.addRows(this.getCsvData(repo.codeScanAlerts?.low, repo.name))
       } catch (error) {
         errorHandler(error, CodeScanAlertReport.name, repo.name)
       }
     }
     this._reportOutputs.push(criticalAlertWriter)
-    this._reportOutputs.push(criticalAlertWriter)
-    this._reportOutputs.push(criticalAlertWriter)
-    this._reportOutputs.push(criticalAlertWriter)
+    this._reportOutputs.push(highAlertWriter)
+    this._reportOutputs.push(mediumAlertWriter)
+    this._reportOutputs.push(lowAlertWriter)
   }
 
   private getCsvData (alerts: CodeScanAlert[], repoName: string): ScanAlertReportRow[] {
@@ -62,5 +62,9 @@ export class CodeScanAlertReport extends Report {
       grade: GradeEnum.NotApplicable,
       weight: 0
     }
+  }
+
+  public get name (): string {
+    return CodeScanAlertReport.name
   }
 }

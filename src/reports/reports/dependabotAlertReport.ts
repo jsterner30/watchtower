@@ -66,4 +66,8 @@ export class DependabotAlertReport extends Report {
       weight: 0
     }
   }
+
+  public get name (): string {
+    return DependabotAlertReport.name
+  }
 }

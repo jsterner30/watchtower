@@ -14,7 +14,6 @@ export abstract class Report {
     this._reportOutputs = []
   }
 
-  abstract run (repos: RepoInfo[]): Promise<void>
   get reportOutputs (): ReportOutputData[] {
     return this._reportOutputs
   }
@@ -22,9 +21,7 @@ export abstract class Report {
   get weight (): number {
     return this._weight
   }
-
-  get name (): string {
-    return this.name
-  }
+  abstract get name (): string
+  abstract run (repos: RepoInfo[]): Promise<void>
   abstract grade (input: unknown): HealthScore
 }

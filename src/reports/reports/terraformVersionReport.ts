@@ -3,11 +3,12 @@ import {
   validGHAFile, validTerraformFile, FileTypeEnum, Grade, GradeEnum, HealthScore, VersionLocation
 } from '../../types'
 import { compare, validate } from 'compare-versions'
-import { errorHandler, getExtremeVersions, removeComparatorsInVersion, ReportOutputData } from '../../util'
 import {
+  errorHandler, getExtremeVersions, removeComparatorsInVersion, ReportOutputData,
   startingHighestVersion,
   startingLowestVersion
-} from '../../util/constants'
+} from '../../util'
+
 import { Report } from '../report'
 
 export class TerraformVersionReport extends Report {
@@ -65,7 +66,7 @@ export class TerraformVersionReport extends Report {
                 location: branchName,
                 version: branchExtremeVersions.highestVersion
               })
-              nonStaleBranchesOutput.addRow(branchExtremeVersions)
+              nonStaleBranchesOutput.addRow({ repoName: repo.name, branchName, lowestVersion: branchExtremeVersions.lowestVersion, highestVersion: branchExtremeVersions.highestVersion })
             }
 
             // now add extremes for all branches, not just stale
@@ -77,7 +78,7 @@ export class TerraformVersionReport extends Report {
               location: branchName,
               version: branchExtremeVersions.highestVersion
             })
-            allBranchesOutput.addRow(branchExtremeVersions)
+            allBranchesOutput.addRow({ repoName: repo.name, branchName, lowestVersion: branchExtremeVersions.lowestVersion, highestVersion: branchExtremeVersions.highestVersion })
           }
         } catch (error) {
           errorHandler(error, TerraformVersionReport.name, repo.name, branchName)
@@ -86,18 +87,22 @@ export class TerraformVersionReport extends Report {
 
       // now that we have iterated over all branches, calculate the overall extrema for the repo
       const nonStaleBranchRepoExtrema = getExtremeVersions(nonStaleBranchVersionLocationsExtremes)
-      nonStaleBranchesRepoOutput.addRow({
-        repoName: repo.name,
-        lowestVersion: nonStaleBranchRepoExtrema.lowestVersion,
-        highestVersion: nonStaleBranchRepoExtrema.highestVersion
-      })
+      if (nonStaleBranchRepoExtrema.highestVersion !== startingHighestVersion && nonStaleBranchRepoExtrema.lowestVersion !== startingLowestVersion) {
+        nonStaleBranchesRepoOutput.addRow({
+          repoName: repo.name,
+          lowestVersion: nonStaleBranchRepoExtrema.lowestVersion,
+          highestVersion: nonStaleBranchRepoExtrema.highestVersion
+        })
+      }
 
       const allBranchRepoExtrema = getExtremeVersions(allBranchVersionLocationsExtremes)
-      allBranchesRepoOutput.addRow({
-        repoName: repo.name,
-        lowestVersion: allBranchRepoExtrema.lowestVersion,
-        highestVersion: allBranchRepoExtrema.highestVersion
-      })
+      if (allBranchRepoExtrema.highestVersion !== startingHighestVersion && allBranchRepoExtrema.lowestVersion !== startingLowestVersion) {
+        allBranchesRepoOutput.addRow({
+          repoName: repo.name,
+          lowestVersion: allBranchRepoExtrema.lowestVersion,
+          highestVersion: allBranchRepoExtrema.highestVersion
+        })
+      }
 
       // we currently use the lowest version from any branch to get the overall health score for this report
       repo.healthScores[TerraformVersionReport.name] = this.grade({ lowestVersion: allBranchRepoExtrema.lowestVersion, terraformLTS: '1.5.0' })
@@ -156,5 +161,9 @@ export class TerraformVersionReport extends Report {
       }
     }
     return branchTerraformFiles
+  }
+
+  public get name (): string {
+    return TerraformVersionReport.name
   }
 }

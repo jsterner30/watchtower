@@ -42,4 +42,8 @@ export class TeamlessRepoReport extends Report {
       weight: this._weight
     }
   }
+
+  public get name (): string {
+    return TeamlessRepoReport.name
+  }
 }

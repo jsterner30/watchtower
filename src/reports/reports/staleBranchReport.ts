@@ -58,4 +58,8 @@ export class StaleBranchReport extends Report {
       weight: 0
     }
   }
+
+  public get name (): string {
+    return StaleBranchReport.name
+  }
 }

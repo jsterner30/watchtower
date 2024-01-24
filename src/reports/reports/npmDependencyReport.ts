@@ -54,4 +54,8 @@ export class NPMDependencyReport extends Report {
       weight: 0
     }
   }
+
+  public get name (): string {
+    return NPMDependencyReport.name
+  }
 }

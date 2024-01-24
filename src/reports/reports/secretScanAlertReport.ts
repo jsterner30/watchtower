@@ -52,4 +52,8 @@ export class SecretScanAlertReport extends Report {
     }
     return rows
   }
+
+  public get name (): string {
+    return SecretScanAlertReport.name
+  }
 }

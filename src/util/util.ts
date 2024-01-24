@@ -106,11 +106,11 @@ export function getExtremeVersions (versionLocations: VersionLocation[], current
 
 function isNumericChar (c: string): boolean { return /\d/.test(c) }
 
-export function stringifyJSON (json: Record<string, any> | Array<Record<string, any>>): string {
+export function stringifyJSON (json: Record<string, any> | Array<Record<string, any>>, resourceName: string): string {
   try {
     return stringify(json, null, 2)
   } catch (error) {
-    logger.error(`Error stringifying file to write to cache: ${error as string}`)
+    logger.error(`Error stringifying file to write to cache: ${error as string} with resource: ${resourceName}`)
     return '{}'
   }
 }

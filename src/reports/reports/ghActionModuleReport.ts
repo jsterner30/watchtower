@@ -3,7 +3,7 @@ import {
   validGHAFile,
   FileTypeEnum, Header, HealthScore, GradeEnum
 } from '../../types'
-import { errorHandler, ReportOutputData } from '../../util'
+import { errorHandler, getRelativeReportGrades, ReportOutputData } from '../../util'
 import { Report } from '../report'
 import { logger } from '../../util/logger'
 
@@ -53,6 +53,9 @@ export class GhActionModuleReport extends Report {
         }
       }
     }
+
+    getRelativeReportGrades(actionModuleOutputs, repos, GhActionModuleReport.name, this._weight)
+
     for (const output in actionModuleOutputs) {
       this._reportOutputs.push(actionModuleOutputs[output])
     }
@@ -64,5 +67,9 @@ export class GhActionModuleReport extends Report {
       grade: GradeEnum.NotApplicable,
       weight: 0
     }
+  }
+
+  public get name (): string {
+    return GhActionModuleReport.name
   }
 }

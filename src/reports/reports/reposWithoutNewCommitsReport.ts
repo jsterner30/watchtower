@@ -65,4 +65,8 @@ export class ReposWithoutNewCommitsReport extends Report {
       weight: 0
     }
   }
+
+  public get name (): string {
+    return ReposWithoutNewCommitsReport.name
+  }
 }

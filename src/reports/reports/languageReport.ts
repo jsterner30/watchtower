@@ -35,4 +35,8 @@ export class LanguageReport extends Report {
       weight: 0
     }
   }
+
+  public get name (): string {
+    return LanguageReport.name
+  }
 }
