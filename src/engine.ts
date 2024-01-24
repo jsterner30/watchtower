@@ -203,7 +203,7 @@ export class Engine {
 
   private async downloadAndRunBranchRules (repos: Record<string, RepoInfo>): Promise<void> {
     // get rid of the current cache repos
-    // await this.writer.deleteAllFilesInDirectory('cache', 'json', 'repos')
+    await this.writer.deleteAllFilesInDirectory('cache', 'json', 'repos')
 
     const repoNames = Object.keys(repos)
     this.progress.reset(repoNames.length, 'Running rules on', [{ displayName: 'Current Repo', token: 'currentRepo' }])
