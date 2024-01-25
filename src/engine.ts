@@ -8,7 +8,9 @@ import {
   getAllReposInOrg,
   getBranches,
   getBranchCommitInfo,
-  downloadRepoToMemory
+  downloadRepoToMemory,
+  allReposCacheFileName,
+  filteredWithBranchesCacheFileName
 } from './util'
 import { Report } from './reports/report'
 import {
@@ -99,14 +101,14 @@ export class Engine {
   async run (): Promise<void> {
     await this.cache.update()
     const allReposFile = await getAllReposInOrg(this.env.githubOrg, this.octokit, this.cache.cache.allRepos)
-    await this.cache.writeFileToCache('allRepos.json', allReposFile)
+    await this.cache.writeFileToCache(allReposCacheFileName, allReposFile)
     const filteredRepos = await this.filterArchived(allReposFile)
     const filteredWithBranchesFile = await getBranches(this.octokit, filteredRepos, this.cache.cache.filteredWithBranches, this.progress)
-    await this.cache.writeFileToCache('filteredWithBranches.json', filteredWithBranchesFile)
+    await this.cache.writeFileToCache(filteredWithBranchesCacheFileName, filteredWithBranchesFile)
     await this.runOrgRules(filteredWithBranchesFile)
     await this.runRepoRules(filteredWithBranchesFile.info)
     await this.downloadAndRunBranchRules(filteredWithBranchesFile.info)
-    await this.cache.setLastRunDate() // we do this now because everything we are going to cache has now been cached
+    await this.cache.setLastRunDate(new Date()) // we do this now because everything we are going to cache has now been cached
     await this.runReports()
     await this.writeReportOutputs()
     await this.generateOverallReport()
@@ -232,8 +234,8 @@ export class Engine {
             }
           }
         }
-        await this.cache.writeFileToCache(`repos/${repoName}.json`, repo)
       }
+      await this.cache.writeFileToCache(`repos/${repoName}.json`, repo)
     }
   }
 

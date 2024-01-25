@@ -69,6 +69,7 @@
     }
   },
   "ava": {
+    "failWithoutAssertions": false,
     "extensions": {
       "ts": "commonjs"
     }

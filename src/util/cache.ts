@@ -2,6 +2,7 @@ import { Writer } from './writer'
 import { CacheFile, RepoInfo, validRepoInfo, validCacheFile } from '../types'
 import { logger } from './logger'
 import { errorHandler, stringifyJSON } from './util'
+import { allReposCacheFileName, filteredWithBranchesCacheFileName, lastRunDateFileName } from './constants'
 
 export interface CacheInfo {
   lastRunDate: string
@@ -30,8 +31,8 @@ export class Cache {
     try {
       if (this._useCache) {
         this._cache.lastRunDate = await this.getLastRunDate()
-        this._cache.allRepos = await this.getCacheFile('allRepos.json')
-        this._cache.filteredWithBranches = await this.getCacheFile('filteredWithBranches.json')
+        this._cache.allRepos = await this.getCacheFile(allReposCacheFileName)
+        this._cache.filteredWithBranches = await this.getCacheFile(filteredWithBranchesCacheFileName)
       }
       // these get updated no matter what so that we can use them after running all the rules
       this._cache.repos = await this.getRepoInfoCacheFiles('repos')
@@ -45,22 +46,21 @@ export class Cache {
   }
 
   async getLastRunDate (): Promise<string> {
-    const dateString = await this._writer.readFile('cache', 'json', 'lastRunDate.json')
+    const dateString = await this._writer.readFile('cache', 'json', lastRunDateFileName)
     const date = dateString == null ? null : JSON.parse(dateString)
 
     if (date == null) {
       const date = { lastRunDate: '1970-01-01T00:00:00Z' }
-      await this._writer.writeFile('cache', 'json', 'lastRunDate.json', stringifyJSON(date, 'lastRunDate.json'))
+      await this._writer.writeFile('cache', 'json', lastRunDateFileName, stringifyJSON(date, lastRunDateFileName))
       return date.lastRunDate
     }
     return date.lastRunDate
   }
 
-  async setLastRunDate (): Promise<void> {
+  async setLastRunDate (currentDate: Date): Promise<void> {
     try {
-      const currentDate = new Date()
       const fourHoursAgo = new Date(currentDate.setHours(currentDate.getHours() - 4))
-      await this._writer.writeFile('cache', 'json', 'lastRunDate.json', stringifyJSON({ lastRunDate: fourHoursAgo.toISOString() }, 'lastRunDate.json'))
+      await this._writer.writeFile('cache', 'json', lastRunDateFileName, stringifyJSON({ lastRunDate: fourHoursAgo.toISOString() }, lastRunDateFileName))
     } catch (error) {
       errorHandler(error, this.setLastRunDate.name)
     }

@@ -6,9 +6,9 @@ import {
   PutObjectCommand,
   S3Client
 } from '@aws-sdk/client-s3'
-import { promises as fs } from 'fs'
 import path from 'path'
 import { logger } from './logger'
+import { FileSystemWrapper } from './fileSystemWrapper'
 
 /** In s3 and locally, files are written to a structure like the following:
 .
@@ -34,35 +34,33 @@ import { logger } from './logger'
 export abstract class Writer {
   abstract writeFile (fileUsage: string, dataType: string, filePath: string, body: string): Promise<void>
   abstract readFile (fileUsage: string, dataType: string, filePath: string): Promise<string | null>
-  abstract deleteFile (fileUsage: string, dataType: string, filePath: string): Promise<void>
   abstract readAllFilesInDirectory (fileUsage: string, dataType: string, directoryPath: string): Promise<Record<string, string | null> | null>
   abstract deleteAllFilesInDirectory (fileUsage: string, dataType: string, directoryPath: string): Promise<void>
 
-  ensureDataTypeMatchesFileType (dataType: string, filePath: string): void {
+  ensureDataTypeMatchesFileType (dataType: string, filePath: string): boolean {
     const fileType = path.extname(filePath).slice(1)
     if (fileType == null) {
       logger.debug(`Filepath: ${filePath} does not include a file extension, but probably should (this message can be ignored if this was purposeful)`)
+      return false
     } else if (fileType !== dataType) {
       logger.debug(`Filepath: ${filePath} will be in the ${dataType} directory, but the file extension does not match (this message can be ignored if this was purposeful)`)
+      return false
     }
+    return true
   }
 }
 
 export class LocalWriter extends Writer {
-  async deleteFile (fileUsage: string, dataType: string, filePath: string): Promise<void> {
-    try {
-      this.ensureDataTypeMatchesFileType(dataType, filePath)
-      await fs.unlink(path.resolve('data', fileUsage, dataType, filePath))
-      logger.info(`File ${filePath} deleted successfully.`)
-    } catch (error) {
-      logger.error(`Error deleting file: ${error as string}`)
-    }
+  private readonly fs: FileSystemWrapper
+  public constructor (fs: FileSystemWrapper = new FileSystemWrapper()) {
+    super()
+    this.fs = fs
   }
 
   async readFile (fileUsage: string, dataType: string, filePath: string): Promise<string | null> {
     try {
       this.ensureDataTypeMatchesFileType(dataType, filePath)
-      return await fs.readFile(path.resolve('data', fileUsage, dataType, filePath), 'utf-8')
+      return await this.fs.readFile(path.resolve('data', fileUsage, dataType, filePath))
     } catch (error) {
       logger.error(`File: ${filePath} doesn't exist.`)
       return null
@@ -74,7 +72,7 @@ export class LocalWriter extends Writer {
       this.ensureDataTypeMatchesFileType(dataType, filePath)
       const fullPath = `data/${fileUsage}/${dataType}/${filePath}`
       await this.ensureDirectoryStructureExists(fullPath)
-      await fs.writeFile(path.resolve('data', fileUsage, dataType, filePath), body)
+      await this.fs.writeFile(path.resolve('data', fileUsage, dataType, filePath), body)
       logger.info(`JSON data successfully written to ${filePath}`)
     } catch (error) {
       logger.error('Error occurred while writing JSON data to file:', error)
@@ -83,7 +81,7 @@ export class LocalWriter extends Writer {
 
   async readAllFilesInDirectory (fileUsage: string, dataType: string, directoryPath: string): Promise<Record<string, string | null> | null> {
     try {
-      const files = await fs.readdir(path.resolve('data', fileUsage, dataType, directoryPath))
+      const files = await this.fs.readdir(path.resolve('data', fileUsage, dataType, directoryPath))
 
       if (files != null) {
         const fileObject: Record<string, string | null> = {}
@@ -112,7 +110,7 @@ export class LocalWriter extends Writer {
     try {
       const directoryFullPath = path.resolve('data', fileUsage, dataType, directoryPath)
       // Remove the directory and its contents
-      await fs.rm(directoryFullPath, { recursive: true })
+      await this.fs.rm(directoryFullPath)
       logger.info(`Successfully deleted the directory and its contents: ${directoryPath}`)
     } catch (error: any) {
       logger.error(`Error deleting directory and its contents: ${error as string}`)
@@ -123,30 +121,16 @@ export class LocalWriter extends Writer {
     const dirPath = path.dirname(filePath)
     try {
       // Check if the directory already exists
-      await fs.access(dirPath)
+      await this.fs.access(dirPath)
     } catch (error) {
       // If not, create the directory recursively
-      await fs.mkdir(dirPath, { recursive: true })
+      await this.fs.mkdir(dirPath)
     }
   }
 }
 
 export class S3Writer extends Writer {
   private readonly client = new S3Client({ region: 'us-west-2' })
-
-  async deleteFile (fileUsage: string, dataType: string, filePath: string): Promise<void> {
-    try {
-      this.ensureDataTypeMatchesFileType(dataType, filePath)
-      const params = {
-        Bucket: (await getEnv()).bucketName,
-        Key: `data/${fileUsage}/${dataType}/${filePath}`
-      }
-
-      await this.client.send(new DeleteObjectCommand(params))
-    } catch (e) {
-      logger.error('There was an error removing S3 object')
-    }
-  }
 
   async readFile (fileUsage: string, dataType: string, filePath: string): Promise<string | null> {
     try {
