@@ -12,7 +12,7 @@ export class LatestCommitRule extends RepoRule {
       })
       let oldestUnfilteredCommit = commits[0]
       for (const commit of commits) {
-        if (!commit.commit.message?.includes('repo-meta') && !commit.commit.message?.includes('repo_meta') && !commit.commit.author?.name?.toLowerCase().includes('service account')) { // filter out non-meaningful commits
+        if (!(commit.commit.message?.includes('repo-meta') || commit.commit.message?.includes('repo_meta')) && !(commit.commit?.author?.name?.toLowerCase()?.includes('service account') ?? false)) { // filter out non-meaningful commits
           oldestUnfilteredCommit = commit
           break
         }
