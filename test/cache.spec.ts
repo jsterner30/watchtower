@@ -15,8 +15,8 @@ let cache: Cache
 const mockWriter: Writer = mock(S3Writer)
 const fileUsage = 'cache'
 const dataType = 'json'
-const dirName = 'repos'
-const filePath = 'test.json'
+const directoryPath = 'repos'
+const fileName = 'test.json'
 
 test.beforeEach(t => {
   reset(mockWriter)
@@ -50,7 +50,7 @@ test.serial('update() should not attempt to read data/cache/json/allRepos.json a
 
 test.serial('update() should attempt to read data/cache/json/repos dir even if USE_CACHE set to false', async t => {
   await cache.update()
-  verify(mockWriter.readAllFilesInDirectory(fileUsage, dataType, dirName)).times(1)
+  verify(mockWriter.readAllFilesInDirectory(fileUsage, dataType, directoryPath)).times(1)
   t.deepEqual(cache.cache, defaultCacheInfo)
 })
 
@@ -78,7 +78,7 @@ test.serial('update() should attempt to read data/cache/json/allRepos.json and d
 test.serial('update() should attempt to read data/cache/json/repos dir if USE_CACHE set to true', async t => {
   cache = new Cache(instance(mockWriter), true)
   await cache.update()
-  verify(mockWriter.readAllFilesInDirectory(fileUsage, dataType, dirName)).times(1)
+  verify(mockWriter.readAllFilesInDirectory(fileUsage, dataType, directoryPath)).times(1)
   t.deepEqual(cache.cache, useCacheInfo)
 })
 
@@ -118,29 +118,29 @@ test.serial('setLastRunDate() should set a last run date of 4 hours before the d
  * getCacheFile tests
  */
 test.serial('getCacheFile() should return null when writer.readFile() returns null', async t => {
-  when(mockWriter.readFile(fileUsage, dataType, filePath)).thenResolve(null)
-  const file = await cache.getCacheFile(filePath)
-  verify(mockWriter.readFile(fileUsage, dataType, filePath)).times(1)
+  when(mockWriter.readFile(fileUsage, dataType, fileName)).thenResolve(null)
+  const file = await cache.getCacheFile(fileName)
+  verify(mockWriter.readFile(fileUsage, dataType, fileName)).times(1)
   t.deepEqual(file, null)
 })
 
 test.serial('getCacheFile() should return null when writer.readFile() returns invalid json', async t => {
-  when(mockWriter.readFile(fileUsage, dataType, filePath)).thenResolve('{')
-  const file = await cache.getCacheFile(filePath)
-  verify(mockWriter.readFile(fileUsage, dataType, filePath)).times(1)
+  when(mockWriter.readFile(fileUsage, dataType, fileName)).thenResolve('{')
+  const file = await cache.getCacheFile(fileName)
+  verify(mockWriter.readFile(fileUsage, dataType, fileName)).times(1)
   t.deepEqual(file, null)
 })
 
 test.serial('getCacheFile() should return null when writer.readFile() returns valid json but an invalid Cachefile', async t => {
-  when(mockWriter.readFile(fileUsage, dataType, filePath)).thenResolve('{}')
-  const file = await cache.getCacheFile(filePath)
-  verify(mockWriter.readFile(fileUsage, dataType, filePath)).times(1)
+  when(mockWriter.readFile(fileUsage, dataType, fileName)).thenResolve('{}')
+  const file = await cache.getCacheFile(fileName)
+  verify(mockWriter.readFile(fileUsage, dataType, fileName)).times(1)
   t.deepEqual(file, null)
 })
 
 test.serial('getCacheFile() should return a Cachefile when writer.readFile() returns valid a json/Cachefile', async t => {
-  when(mockWriter.readFile(fileUsage, dataType, filePath)).thenResolve(JSON.stringify(fakeCacheFile))
-  const file = await cache.getCacheFile(filePath)
+  when(mockWriter.readFile(fileUsage, dataType, fileName)).thenResolve(JSON.stringify(fakeCacheFile))
+  const file = await cache.getCacheFile(fileName)
   verify(mockWriter.readFile(anyString(), anyString(), anyString())).times(1)
   t.deepEqual(file, fakeCacheFile)
 })
@@ -149,37 +149,37 @@ test.serial('getCacheFile() should return a Cachefile when writer.readFile() ret
  * getRepoInfoCacheFiles() tests
  */
 test.serial('getRepoInfoCacheFiles() should return an empty array if writer.readFile() returns null', async t => {
-  when(mockWriter.readAllFilesInDirectory(fileUsage, dataType, dirName)).thenResolve(null)
-  const files = await cache.getRepoInfoCacheFiles(dirName)
-  verify(mockWriter.readAllFilesInDirectory(fileUsage, dataType, dirName)).times(1)
+  when(mockWriter.readAllFilesInDirectory(fileUsage, dataType, directoryPath)).thenResolve(null)
+  const files = await cache.getRepoInfoCacheFiles(directoryPath)
+  verify(mockWriter.readAllFilesInDirectory(fileUsage, dataType, directoryPath)).times(1)
   t.deepEqual(files, [])
 })
 
 test.serial('getRepoInfoCacheFiles() should not add repoInfo to the return array if value is null', async t => {
-  when(mockWriter.readAllFilesInDirectory(fileUsage, dataType, dirName)).thenResolve({ fakeRepo: null })
-  const files = await cache.getRepoInfoCacheFiles(dirName)
-  verify(mockWriter.readAllFilesInDirectory(fileUsage, dataType, dirName)).times(1)
+  when(mockWriter.readAllFilesInDirectory(fileUsage, dataType, directoryPath)).thenResolve({ fakeRepo: null })
+  const files = await cache.getRepoInfoCacheFiles(directoryPath)
+  verify(mockWriter.readAllFilesInDirectory(fileUsage, dataType, directoryPath)).times(1)
   t.deepEqual(files, [])
 })
 
 test.serial('getRepoInfoCacheFiles() should not add repoInfo to the return array if value is invalid json', async t => {
-  when(mockWriter.readAllFilesInDirectory(fileUsage, dataType, dirName)).thenResolve({ fakeRepo: '{' })
-  const files = await cache.getRepoInfoCacheFiles(dirName)
-  verify(mockWriter.readAllFilesInDirectory(fileUsage, dataType, dirName)).times(1)
+  when(mockWriter.readAllFilesInDirectory(fileUsage, dataType, directoryPath)).thenResolve({ fakeRepo: '{' })
+  const files = await cache.getRepoInfoCacheFiles(directoryPath)
+  verify(mockWriter.readAllFilesInDirectory(fileUsage, dataType, directoryPath)).times(1)
   t.deepEqual(files, [])
 })
 
 test.serial('getRepoInfoCacheFiles() should not add repoInfo to return array if value is an invalid repoInfo', async t => {
-  when(mockWriter.readAllFilesInDirectory(fileUsage, dataType, dirName)).thenResolve({ fakeRepo: '{}' })
-  const files = await cache.getRepoInfoCacheFiles(dirName)
-  verify(mockWriter.readAllFilesInDirectory(fileUsage, dataType, dirName)).times(1)
+  when(mockWriter.readAllFilesInDirectory(fileUsage, dataType, directoryPath)).thenResolve({ fakeRepo: '{}' })
+  const files = await cache.getRepoInfoCacheFiles(directoryPath)
+  verify(mockWriter.readAllFilesInDirectory(fileUsage, dataType, directoryPath)).times(1)
   t.deepEqual(files, [])
 })
 
 test.serial('getRepoInfoCacheFiles() should add repoInfo to return array if value is valid json/repoInfo', async t => {
-  when(mockWriter.readAllFilesInDirectory(fileUsage, dataType, dirName)).thenResolve({ fakeRepo: JSON.stringify(fakeRepo) })
-  const files = await cache.getRepoInfoCacheFiles(dirName)
-  verify(mockWriter.readAllFilesInDirectory(fileUsage, dataType, dirName)).times(1)
+  when(mockWriter.readAllFilesInDirectory(fileUsage, dataType, directoryPath)).thenResolve({ fakeRepo: JSON.stringify(fakeRepo) })
+  const files = await cache.getRepoInfoCacheFiles(directoryPath)
+  verify(mockWriter.readAllFilesInDirectory(fileUsage, dataType, directoryPath)).times(1)
   t.deepEqual(files, [fakeRepo])
 })
 
@@ -187,7 +187,6 @@ test.serial('getRepoInfoCacheFiles() should add repoInfo to return array if valu
  * writeFileToCache() tests
  */
 test.serial('writeFileToCache() should attempt to write file to data/cache/json/<fileName>', async t => {
-  const fileName = filePath
   await cache.writeFileToCache(fileName, fakeRepo)
   verify(mockWriter.writeFile(fileUsage, dataType, fileName, JSON.stringify(fakeRepo)))
 })

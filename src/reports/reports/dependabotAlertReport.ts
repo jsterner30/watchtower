@@ -27,7 +27,7 @@ export class DependabotAlertReport extends Report {
     const criticalAlertWriter = new ReportOutputData(alertReportHeader, this._outputDir, 'DependabotAlertReport-Critical')
     const highAlertWriter = new ReportOutputData(alertReportHeader, this._outputDir, 'DependabotAlertReport-High')
     const mediumAlertWriter = new ReportOutputData(alertReportHeader, this._outputDir, 'DependabotAlertReport-Medium')
-    const lowAlertWriter = new ReportOutputData(alertReportHeader, this._outputDir, 'DependabotAlertReport-Low.csv')
+    const lowAlertWriter = new ReportOutputData(alertReportHeader, this._outputDir, 'DependabotAlertReport-Low')
 
     for (const repo of repos) {
       try {

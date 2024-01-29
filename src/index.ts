@@ -3,7 +3,7 @@ import { Engine } from './engine'
 
 async function run (): Promise<void> {
   const env = await getEnv()
-  let writer: Writer = new S3Writer()
+  let writer: Writer = new S3Writer(env.bucketName)
   if (env.writeFilesLocally) {
     writer = new LocalWriter()
   }
