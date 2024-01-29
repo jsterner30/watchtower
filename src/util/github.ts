@@ -133,25 +133,10 @@ export async function getBranchCommitInfo (octokit: Octokit, repoName: string, b
     })
 
     const commitSha = response.data.commit.sha
-    const commitResponse = await octokit.repos.getCommit({
-      owner: (await getEnv()).githubOrg,
-      repo: repoName,
-      ref: commitSha
-    })
-
-    const commit = commitResponse.data.commit
-    const author = commit.author
-
-    if (author != null) {
-      return {
-        author: author.name ?? 'unknown',
-        date: author.date ?? '1971-01-01T00:00:00Z' // after the default lastRunDate
-      }
-    } else {
-      return {
-        author: 'unknown',
-        date: '1971-01-01T00:00:00Z' // after the default lastRunDate
-      }
+    const author = await getCommitInfo(octokit, repoName, commitSha)
+    return {
+      author: author.author,
+      date: author.date
     }
   } catch (error) {
     logger.error(`Unable to get last commit info for repo: ${repoName}, Branch: ${branchName}. Error: ${error as string}`)
@@ -229,6 +214,10 @@ export async function getBranches (octokit: Octokit, repos: RepoInfo[], filtered
 }
 
 async function getCommitInfo (octokit: Octokit, repoName: string, sha: string): Promise<Commit> {
+  const defaultCommit = {
+    author: 'unknown',
+    date: '1971-01-01T00:00:00Z' // after the default lastRunDate
+  }
   try {
     const response = await octokit.repos.getCommit({
       owner: (await getEnv()).githubOrg,
@@ -241,21 +230,14 @@ async function getCommitInfo (octokit: Octokit, repoName: string, sha: string): 
 
     if (author != null) {
       return {
-        author: 'unknown',
-        date: '1971-01-01T00:00:00Z' // after the default lastRunDate
-      }
-    } else {
-      return {
-        author: 'unknown',
-        date: '1971-01-01T00:00:00Z' // after the default lastRunDate
+        author: author.name ?? defaultCommit.author,
+        date: author.date ?? defaultCommit.date
       }
     }
+    return defaultCommit
   } catch (error) {
     logger.error(`Unable to get last commit info for repo: ${repoName}, Commit sha: ${sha}. Error: ${error as string}`)
-    return {
-      author: 'unknown',
-      date: '1971-01-01T00:00:00Z' // after the default lastRunDate
-    }
+    return defaultCommit
   }
 }
 
