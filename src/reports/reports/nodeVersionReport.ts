@@ -6,7 +6,7 @@ import {
   HealthScore,
   VersionLocation,
   validDockerfile,
-  validGHAFile
+  validGHAFile, validTerraformFile
 } from '../../types'
 import { compare, validate } from 'compare-versions'
 import {
@@ -135,6 +135,16 @@ export class NodeVersionReport extends Report {
       } else if (validGHAFile.Check(dep) && dep.fileType === FileTypeEnum.GITHUB_ACTION) {
         if (dep.contents.env?.node_version != null) {
           branchNodeFiles.push({ location: dep.fileName, version: dep.contents.env.node_version })
+        }
+      } else if (validTerraformFile.Check(dep) && dep.fileType === 'TERRAFORM') {
+        for (const moduleName in dep.contents.module) {
+          for (const subModule of dep.contents.module[moduleName]) {
+            if (subModule.runtime != null) {
+              if ((subModule.runtime as string).includes('nodejs')) {
+                branchNodeFiles.push({ location: dep.fileName, version: subModule.runtime.split('nodejs')[1] })
+              }
+            }
+          }
         }
       }
     }
