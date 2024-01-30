@@ -36,6 +36,8 @@ export class TerraformVersionReport extends Report {
     const allBranchesRepoOutput = new ReportOutputData(repoHeader, this._outputDir, 'TerraformVersionReport-Repos-AllBranches')
     // this report lists every repo that has terraform on it as a single row, giving the lowest/highest version on any non-stale branch of the repo
     const nonStaleBranchesRepoOutput = new ReportOutputData(repoHeader, this._outputDir, 'TerraformVersionReport-Repos-NonStaleBranches')
+    // this report lists every repo that has node on it as a single row, giving the lowest/highest version on the default branch of the repo
+    const defaultBranchRepoOutput = new ReportOutputData(repoHeader, this._outputDir, 'NodeVersionReport-Repos-DefaultBranches')
 
     for (const repo of repos) {
       // we add each most extreme version on every branch to these arrays, then use them to get the highest and lowest versions in the whole repo
@@ -67,6 +69,10 @@ export class TerraformVersionReport extends Report {
                 version: branchExtremeVersions.highestVersion
               })
               nonStaleBranchesOutput.addRow({ repoName: repo.name, branchName, lowestVersion: branchExtremeVersions.lowestVersion, highestVersion: branchExtremeVersions.highestVersion })
+            }
+
+            if (repo.branches[branchName].defaultBranch) {
+              defaultBranchRepoOutput.addRow({ repoName: repo.name, branchName, lowestVersion: branchExtremeVersions.lowestVersion, highestVersion: branchExtremeVersions.highestVersion })
             }
 
             // now add extremes for all branches, not just stale
