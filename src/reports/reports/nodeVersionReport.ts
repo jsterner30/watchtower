@@ -41,7 +41,7 @@ export class NodeVersionReport extends Report {
     // this report lists every repo that has node on it as a single row, giving the lowest/highest version on any non-stale branch of the repo
     const nonStaleBranchesRepoOutput = new ReportOutputData(repoHeader, this._outputDir, 'NodeVersionReport-Repos-NonStaleBranches')
     // this report lists every repo that has node on it as a single row, giving the lowest/highest version on the default branch of the repo
-    const defaultBranchRepoOutput = new ReportOutputData(repoHeader, this._outputDir, 'NodeVersionReport-Repos-DefaultBranches')
+    const defaultBranchRepoOutput = new ReportOutputData(branchHeader, this._outputDir, 'NodeVersionReport-Repos-DefaultBranches')
 
     for (const repo of repos) {
       // we add each most extreme version on every branch to these arrays, then use them to get the highest and lowest versions in the whole repo
