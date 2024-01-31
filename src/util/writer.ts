@@ -144,8 +144,16 @@ export class S3Writer extends Writer {
     }
   }
 
-  async deleteAllFilesInDirectory (fileUsage: string, dataType: string, directoryPath: string): Promise<void> {
-    const data = await this.s3Wrapper.listObjects(`data/${fileUsage}/${dataType}/${directoryPath}/`)
+  async deleteAllFilesInDirectory (fileUsage: string, dataType: string = '', directoryPath: string = ''): Promise<void> {
+    let finalPath: string = `data/${fileUsage}/`
+    if (dataType !== '') {
+      finalPath = `${finalPath}${dataType}/`
+      if (directoryPath !== '') {
+        finalPath = `${finalPath}${directoryPath}/`
+      }
+    }
+
+    const data = await this.s3Wrapper.listObjects(finalPath)
     if (data != null) {
       for (const file of data) {
         await this.s3Wrapper.deleteObject(`data/${fileUsage}/${dataType}/${directoryPath}/${file}`)

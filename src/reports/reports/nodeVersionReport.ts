@@ -125,6 +125,7 @@ export class NodeVersionReport extends Report {
     this._reportOutputs.push(allBranchesRepoOutput)
     this._reportOutputs.push(nonStaleBranchesOutput)
     this._reportOutputs.push(allBranchesOutput)
+    this._reportOutputs.push(defaultBranchRepoOutput)
   }
 
   gatherNodeFiles (repo: RepoInfo, branchName: string): VersionLocation[] {
