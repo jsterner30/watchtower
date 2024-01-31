@@ -1,6 +1,6 @@
 import {
   getEnv,
-  ProgressBarManager
+  ProgressBarManager, sortObjectKeys
 } from './index'
 import { logger } from './logger'
 import { Octokit } from '@octokit/rest'
@@ -47,7 +47,7 @@ function attachMetadataToCacheFile (info: Record<string, RepoInfo>, branchCount:
       branchCount,
       lastRunDate: new Date().toISOString()
     },
-    info
+    info: sortObjectKeys(info)
   }
 }
 
