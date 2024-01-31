@@ -114,3 +114,14 @@ export function stringifyJSON (json: Record<string, any> | Array<Record<string, 
     return '{}'
   }
 }
+
+export function sortObjectKeys (unordered: Record<string, any>): Record<string, any> {
+  const ordered: Record<string, any> = Object.keys(unordered).sort().reduce(
+    (obj: Record<string, any>, key) => {
+      obj[key] = unordered[key]
+      return obj
+    },
+    {}
+  )
+  return ordered
+}
