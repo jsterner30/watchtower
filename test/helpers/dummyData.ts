@@ -16,7 +16,13 @@ export const fakeBranch = {
   actionRuns: [],
   deployedBranch: false,
   defaultBranch: false,
-  staleBranch: false
+  staleBranch: false,
+  reportResults: {
+    lowNodeVersion: '??',
+    highNodeVersion: '??',
+    lowTerraformVersion: '??',
+    highTerraformVersion: '??'
+  }
 }
 export const fakeRepo = {
   name: 'fakeRepo',
@@ -57,7 +63,16 @@ export const fakeRepo = {
   },
   teams: [],
   admins: [],
-  healthScores: {}
+  healthScores: {},
+  reportResults: {
+    staleBranchCount: -1,
+    dependabotBranchCount: -1,
+    lowNodeVersion: '??',
+    highNodeVersion: '??',
+    lowTerraformVersion: '??',
+    highTerraformVersion: '??',
+    followsDevPrdNamingScheme: false
+  }
 }
 export const fakeCacheFile: CacheFile = {
   metadata: {

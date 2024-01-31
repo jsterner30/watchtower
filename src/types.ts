@@ -86,7 +86,13 @@ const BranchSchema = Type.Object({
     conclusion: Type.String(),
     created_at: Type.String(),
     updated_at: Type.String()
-  }))
+  })),
+  reportResults: Type.Object({
+    lowNodeVersion: Type.String(),
+    highNodeVersion: Type.String(),
+    lowTerraformVersion: Type.String(),
+    highTerraformVersion: Type.String()
+  })
 })
 export type Branch = Static<typeof BranchSchema>
 
@@ -208,7 +214,16 @@ export const RepoInfoSchema = Type.Object({
   secretScanAlerts: SecretScanAlertBySeverityLevelSchema,
   teams: Type.Array(Type.String()),
   admins: Type.Array(Type.String()),
-  healthScores: Type.Record(Type.String(), HealthScoreSchema)
+  healthScores: Type.Record(Type.String(), HealthScoreSchema),
+  reportResults: Type.Object({
+    staleBranchCount: Type.Number(),
+    dependabotBranchCount: Type.Number(),
+    lowNodeVersion: Type.String(),
+    highNodeVersion: Type.String(),
+    lowTerraformVersion: Type.String(),
+    highTerraformVersion: Type.String(),
+    followsDevPrdNamingScheme: Type.Boolean()
+  })
 })
 export type RepoInfo = Static<typeof RepoInfoSchema>
 export const validRepoInfo = TypeCompiler.Compile(RepoInfoSchema)

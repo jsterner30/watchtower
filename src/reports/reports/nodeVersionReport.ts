@@ -89,6 +89,8 @@ export class NodeVersionReport extends Report {
               version: branchExtremeVersions.highestVersion
             })
             allBranchesOutput.addRow({ repoName: repo.name, branchName, lowestVersion: branchExtremeVersions.lowestVersion, highestVersion: branchExtremeVersions.highestVersion })
+            repo.branches[branchName].reportResults.lowNodeVersion = branchExtremeVersions.lowestVersion
+            repo.branches[branchName].reportResults.highNodeVersion = branchExtremeVersions.highestVersion
           }
         } catch (error) {
           errorHandler(error, NodeVersionReport.name, repo.name, branchName)
@@ -115,6 +117,8 @@ export class NodeVersionReport extends Report {
 
       // we currently use the lowest version from any branch to get the overall health score for this report
       repo.healthScores[NodeVersionReport.name] = this.grade({ lowestVersion: allBranchRepoExtrema.lowestVersion, nodeLTS })
+      repo.reportResults.lowNodeVersion = allBranchRepoExtrema.lowestVersion
+      repo.reportResults.highNodeVersion = allBranchRepoExtrema.highestVersion
     }
 
     this._reportOutputs.push(nonStaleBranchesRepoOutput)

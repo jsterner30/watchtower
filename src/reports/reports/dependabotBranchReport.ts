@@ -31,6 +31,7 @@ export class DependabotBranchReport extends Report {
       })
 
       repo.healthScores[DependabotBranchReport.name] = this.grade(count.toString())
+      repo.reportResults.dependabotBranchCount = count
     }
 
     this.reportOutputs.push(dependabotReportOutput)
