@@ -89,7 +89,16 @@ function createRepoInfo (rawRepo: Record<string, any>): RepoInfo {
     },
     teams: [],
     admins: [],
-    healthScores: {}
+    healthScores: {},
+    reportResults: {
+      staleBranchCount: -1,
+      dependabotBranchCount: -1,
+      lowNodeVersion: '??',
+      highNodeVersion: '??',
+      lowTerraformVersion: '??',
+      highTerraformVersion: '??',
+      followsDevPrdNamingScheme: false
+    }
   }
 }
 
@@ -201,7 +210,13 @@ export async function getBranches (octokit: Octokit, repos: RepoInfo[], filtered
           actionRuns: [],
           deployedBranch: false,
           defaultBranch: repo.defaultBranch === branch.name,
-          staleBranch: false
+          staleBranch: false,
+          reportResults: {
+            lowNodeVersion: '??',
+            highNodeVersion: '??',
+            lowTerraformVersion: '??',
+            highTerraformVersion: '??'
+          }
         }
       }
     } catch (error: any) {

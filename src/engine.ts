@@ -109,9 +109,13 @@ export class Engine {
     await this.runRepoRules(filteredWithBranchesFile.info)
     await this.downloadAndRunBranchRules(filteredWithBranchesFile.info)
     await this.cache.setLastRunDate(new Date()) // we do this now because everything we are going to cache has now been cached
-    await this.runReports()
+    await this.cache.update()
+    const repos = this.cache.cache.repos
+    await this.runReports(repos)
     await this.writeReportOutputs()
-    await this.generateOverallReport()
+    await this.generateOverallHealthScoreReport(repos)
+    await this.generateOverallRepoReport(repos)
+    await this.generateOverallBranchReport(repos)
   }
 
   private registerBranchRules (octokit: Octokit): void {
@@ -251,11 +255,9 @@ export class Engine {
     }
   }
 
-  private async runReports (): Promise<void> {
-    // refresh repos now that we have ran our rules
-    await this.cache.update()
+  private async runReports (repos: RepoInfo[]): Promise<void> {
     for (const report of this.reports) {
-      await report.run(this.cache.cache.repos)
+      await report.run(repos)
     }
   }
 
@@ -270,7 +272,7 @@ export class Engine {
     }
   }
 
-  private async generateOverallReport (): Promise<void> {
+  private async generateOverallHealthScoreReport (repos: RepoInfo[]): Promise<void> {
     const header = [
       { id: 'repoName', title: 'Repo' },
       { id: 'overallScore', title: 'Overall Score/Grade' },
@@ -289,8 +291,6 @@ export class Engine {
       }
     }
     const overallHealthReportOutput = new ReportOutputData(header, 'OverallHealthReport', 'overallHealthReport')
-
-    const repos = this.cache.cache.repos
     for (const repo of repos) {
       const overallScore = getOverallGPAScore(repo.healthScores)
       const reportRow: Record<string, any> = {
@@ -314,5 +314,112 @@ export class Engine {
       overallHealthReportOutput.addRow(reportRow)
     }
     await overallHealthReportOutput.writeOutput(this.writer)
+  }
+
+  private async generateOverallRepoReport (repos: RepoInfo[]): Promise<void> {
+    const header = [
+      { id: 'repoName', title: 'Repo' },
+      { id: 'teams', title: 'Admin Teams' },
+      { id: 'lastCommitDate', title: 'Last Commit Date' },
+      { id: 'lastCommitAuthor', title: 'Last Commit User' },
+      { id: 'totalBranches', title: 'Total Number of Branches' },
+      { id: 'totalStaleBranches', title: 'Total Number of Stale Branches' },
+      { id: 'totalDependabotBranches', title: 'Total Number of Dependabot Branches' },
+      { id: 'defaultBranch', title: 'Default Branch Name' },
+      { id: 'lowNodeVersion', title: 'Lowest Node Version Across Any Branch' },
+      { id: 'highNodeVersion', title: 'Highest Node Version Across Any Branch' },
+      { id: 'lowTerraformVersion', title: 'Lowest Terraform Version Across Any Branch' },
+      { id: 'highTerraformVersion', title: 'Highest Terraform Version Across Any Branch' },
+      { id: 'followsDevPrdNamingScheme', title: 'Follows Standard Dev/Prd Naming Schema' },
+      { id: 'codeScanAlertCountCritical', title: 'Critical Code Scan Alert Count' },
+      { id: 'codeScanAlertCountHigh', title: 'High Code Scan Alert Count' },
+      { id: 'codeScanAlertCountMedium', title: 'Medium Code Scan Alert Count' },
+      { id: 'codeScanAlertCountLow', title: 'Low Code Scan Alert Count' },
+      { id: 'dependabotAlertCountCritical', title: 'Critical Dependabot Alert Count' },
+      { id: 'dependabotAlertCountHigh', title: 'High Dependabot Alert Count' },
+      { id: 'dependabotAlertCountMedium', title: 'Medium Dependabot Alert Count' },
+      { id: 'dependabotAlertCountLow', title: 'Low Dependabot Alert Count' },
+      { id: 'secretAlertCount', title: 'Secret Alert Count' },
+      { id: 'primaryLanguage', title: 'Primary Language' },
+      { id: 'visibility', title: 'Visibility' }
+    ]
+    const overallRepoReportOutput = new ReportOutputData(header, 'OverallRepoReport', 'overallRepoReport')
+
+    for (const repo of repos) {
+      const reportRow: Record<string, any> = {
+        repoName: repo.name,
+        teams: repo.teams,
+        lastCommitDate: repo.lastCommit.date,
+        lastCommitAuthor: repo.lastCommit.author,
+        totalBranches: Object.keys(repo.branches).length,
+        totalStaleBranches: repo.reportResults.staleBranchCount,
+        totalDependabotBranches: repo.reportResults.dependabotBranchCount,
+        defaultBranch: repo.defaultBranch,
+        lowNodeVersion: repo.reportResults.lowNodeVersion,
+        highNodeVersion: repo.reportResults.highNodeVersion,
+        lowTerraformVersion: repo.reportResults.lowTerraformVersion,
+        highTerraformVersion: repo.reportResults.highTerraformVersion,
+        followsDevPrdNamingScheme: repo.reportResults.followsDevPrdNamingScheme,
+        codeScanAlertCountCritical: repo.codeScanAlerts.critical.length,
+        codeScanAlertCountHigh: repo.codeScanAlerts.high.length,
+        codeScanAlertCountMedium: repo.codeScanAlerts.medium.length,
+        codeScanAlertCountLow: repo.codeScanAlerts.low.length,
+        dependabotAlertCountCritical: repo.dependabotScanAlerts.critical.length,
+        dependabotAlertCountHigh: repo.dependabotScanAlerts.high.length,
+        dependabotAlertCountMedium: repo.dependabotScanAlerts.medium.length,
+        dependabotAlertCountLow: repo.dependabotScanAlerts.low.length,
+        secretAlertCount: repo.secretScanAlerts.critical.length,
+        primaryLanguage: repo.language,
+        visibility: repo.visibility
+      }
+
+      overallRepoReportOutput.addRow(reportRow)
+    }
+    await overallRepoReportOutput.writeOutput(this.writer)
+  }
+
+  private async generateOverallBranchReport (repos: RepoInfo[]): Promise<void> {
+    const header = [
+      { id: 'repoName', title: 'Repo' },
+      { id: 'branchName', title: 'Branch' },
+      { id: 'teams', title: 'Admin Teams' },
+      { id: 'lastCommitDate', title: 'Last Commit Date' },
+      { id: 'lastCommitAuthor', title: 'Last Commit User' },
+      { id: 'lowNodeVersion', title: 'Lowest Node Version Across Any Branch' },
+      { id: 'highNodeVersion', title: 'Highest Node Version Across Any Branch' },
+      { id: 'lowTerraformVersion', title: 'Lowest Terraform Version Across Any Branch' },
+      { id: 'highTerraformVersion', title: 'Highest Terraform Version Across Any Branch' },
+      { id: 'default', title: 'Default Branch?' },
+      { id: 'stale', title: 'Stale Branch?' },
+      { id: 'deployed', title: 'Deployed Branch?' },
+      { id: 'protected', title: 'Protected Branch?' }
+    ]
+    const overallBranchReportOutput = new ReportOutputData(header, 'OverallRBranchReport', 'overallBranchReport')
+
+    for (const repo of repos) {
+      for (const branchName in repo.branches) {
+        const branch = repo.branches[branchName]
+        if (!branch.dependabot) {
+          const reportRow: Record<string, any> = {
+            repoName: repo.name,
+            branchName,
+            teams: repo.teams,
+            lastCommitDate: branch.lastCommit.date,
+            lastCommitAuthor: branch.lastCommit.author,
+            lowNodeVersion: branch.reportResults.lowNodeVersion,
+            highNodeVersion: branch.reportResults.highNodeVersion,
+            lowTerraformVersion: branch.reportResults.lowTerraformVersion,
+            highTerraformVersion: branch.reportResults.highTerraformVersion,
+            default: repo.defaultBranch === branchName,
+            stale: branch.staleBranch,
+            deployed: branch.deployedBranch,
+            protected: branch.branchProtections.protected
+          }
+
+          overallBranchReportOutput.addRow(reportRow)
+        }
+      }
+    }
+    await overallBranchReportOutput.writeOutput(this.writer)
   }
 }

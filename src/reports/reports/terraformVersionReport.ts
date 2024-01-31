@@ -85,6 +85,8 @@ export class TerraformVersionReport extends Report {
               version: branchExtremeVersions.highestVersion
             })
             allBranchesOutput.addRow({ repoName: repo.name, branchName, lowestVersion: branchExtremeVersions.lowestVersion, highestVersion: branchExtremeVersions.highestVersion })
+            repo.branches[branchName].reportResults.lowTerraformVersion = branchExtremeVersions.lowestVersion
+            repo.branches[branchName].reportResults.highTerraformVersion = branchExtremeVersions.highestVersion
           }
         } catch (error) {
           errorHandler(error, TerraformVersionReport.name, repo.name, branchName)
@@ -112,6 +114,8 @@ export class TerraformVersionReport extends Report {
 
       // we currently use the lowest version from any branch to get the overall health score for this report
       repo.healthScores[TerraformVersionReport.name] = this.grade({ lowestVersion: allBranchRepoExtrema.lowestVersion, terraformLTS: '1.5.0' })
+      repo.reportResults.lowTerraformVersion = allBranchRepoExtrema.lowestVersion
+      repo.reportResults.highTerraformVersion = allBranchRepoExtrema.highestVersion
     }
 
     this._reportOutputs.push(nonStaleBranchesRepoOutput)

@@ -28,6 +28,7 @@ export class StaleBranchReport extends Report {
           count
         })
         repo.healthScores[StaleBranchReport.name] = this.grade(count)
+        repo.reportResults.staleBranchCount = count
       } catch (error) {
         errorHandler(error, StaleBranchReport.name, repo.name)
       }

@@ -38,6 +38,7 @@ export class DevPrdBranchesReport extends Report {
         hasPrd,
         devDefault: repo.defaultBranch === 'dev'
       })
+      repo.reportResults.followsDevPrdNamingScheme = hasDev && hasPrd && repo.defaultBranch === 'dev'
     }
 
     this._reportOutputs.push(devPrdBranchesReportOutput)
