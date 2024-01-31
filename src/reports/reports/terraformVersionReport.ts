@@ -122,6 +122,7 @@ export class TerraformVersionReport extends Report {
     this._reportOutputs.push(allBranchesRepoOutput)
     this._reportOutputs.push(nonStaleBranchesOutput)
     this._reportOutputs.push(allBranchesOutput)
+    this._reportOutputs.push(defaultBranchRepoOutput)
   }
 
   grade (input: { lowestVersion: string, terraformLTS: string }): HealthScore {

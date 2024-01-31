@@ -266,8 +266,8 @@ export async function downloadRepoToMemory (octokit: Octokit, repoName: string, 
     })
 
     return await loadAsync(data as any)
-  } catch (error: any) {
-    logger.error('Error downloading repo to memory, error:', error as string)
+  } catch (error) {
+    logger.error('Error downloading repo to memory, error: ' + (error as string))
     return null
   }
 }

@@ -394,7 +394,7 @@ export class Engine {
       { id: 'deployed', title: 'Deployed Branch?' },
       { id: 'protected', title: 'Protected Branch?' }
     ]
-    const overallBranchReportOutput = new ReportOutputData(header, 'OverallRBranchReport', 'overallBranchReport')
+    const overallBranchReportOutput = new ReportOutputData(header, 'OverallBranchReport', 'overallBranchReport')
 
     for (const repo of repos) {
       for (const branchName in repo.branches) {
