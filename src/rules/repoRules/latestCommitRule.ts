@@ -14,7 +14,8 @@ export class LatestCommitRule extends RepoRule {
       for (const commit of commits) {
         if (!(commit.commit.message?.toLowerCase().includes('repo-meta') || commit.commit.message?.toLowerCase().includes('repo_meta')) &&
             !(commit.commit?.author?.name?.toLowerCase().includes('service account') ?? false) &&
-            !(commit.commit?.message?.toLowerCase().includes('license'))
+            !(commit.commit?.message?.toLowerCase().includes('license') &&
+            !(commit.commit?.message?.toLowerCase().includes('maintained_by')))
         ) { // filter out non-meaningful commits
           oldestUnfilteredCommit = commit
           break
