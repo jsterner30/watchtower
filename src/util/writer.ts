@@ -156,7 +156,7 @@ export class S3Writer extends Writer {
     const data = await this.s3Wrapper.listObjects(finalPath)
     if (data != null) {
       for (const file of data) {
-        await this.s3Wrapper.deleteObject(`data/${fileUsage}/${dataType}/${directoryPath}/${file}`)
+        await this.s3Wrapper.deleteObject(file)
       }
       logger.info(`Successfully deleted all files in the directory: ${directoryPath}`)
     }
