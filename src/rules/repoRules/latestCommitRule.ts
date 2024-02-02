@@ -12,10 +12,11 @@ export class LatestCommitRule extends RepoRule {
       })
       let oldestUnfilteredCommit = commits[0]
       for (const commit of commits) {
-        if (!(commit.commit.message?.toLowerCase().includes('repo-meta') || commit.commit.message?.toLowerCase().includes('repo_meta')) &&
-            !(commit.commit?.author?.name?.toLowerCase().includes('service account') ?? false) &&
-            !(commit.commit?.message?.toLowerCase().includes('license') &&
-            !(commit.commit?.message?.toLowerCase().includes('maintained_by')))
+        if (!(commit.commit.message?.toLowerCase().includes('repo-meta') || commit.commit.message?.toLowerCase().includes('repo_meta')) && // exclude repo-meta commits
+            !(commit.commit?.author?.name?.toLowerCase().includes('service account') ?? false) && // exclude service account commits
+            !(commit.commit?.message?.toLowerCase().includes('license')) && // exclude adding license commits
+            !(commit.commit?.message?.toLowerCase().includes('maintained_by')) && // exclude changes to repo-meta file maintained_by commits
+            !(commit.commit?.message?.toLowerCase().includes('richardskg/patch-1')) // exclude the merged PRs of changes to repo-meta file maintained_by commits
         ) { // filter out non-meaningful commits
           oldestUnfilteredCommit = commit
           break
