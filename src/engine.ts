@@ -360,7 +360,7 @@ export class Engine {
         lowNodeVersion: repo.reportResults.lowNodeVersion === startingLowestVersion ? '??' : repo.reportResults.lowNodeVersion,
         highNodeVersion: repo.reportResults.highNodeVersion === startingHighestVersion ? '??' : repo.reportResults.highNodeVersion,
         lowTerraformVersion: repo.reportResults.lowTerraformVersion === startingLowestVersion ? '??' : repo.reportResults.lowTerraformVersion,
-        highTerraformVersion: repo.reportResults.highTerraformVersion === startingLowestVersion ? '??' : repo.reportResults.highTerraformVersion,
+        highTerraformVersion: repo.reportResults.highTerraformVersion === startingHighestVersion ? '??' : repo.reportResults.highTerraformVersion,
         followsDevPrdNamingScheme: repo.reportResults.followsDevPrdNamingScheme,
         codeScanAlertCountCritical: repo.codeScanAlerts.critical.length,
         codeScanAlertCountHigh: repo.codeScanAlerts.high.length,
