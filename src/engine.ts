@@ -10,7 +10,9 @@ import {
   getBranchCommitInfo,
   downloadRepoToMemory,
   allReposCacheFileName,
-  filteredWithBranchesCacheFileName
+  filteredWithBranchesCacheFileName,
+  startingLowestVersion,
+  startingHighestVersion
 } from './util'
 import { Report } from './reports/report'
 import {
@@ -355,10 +357,10 @@ export class Engine {
         totalStaleBranches: repo.reportResults.staleBranchCount,
         totalDependabotBranches: repo.reportResults.dependabotBranchCount,
         defaultBranch: repo.defaultBranch,
-        lowNodeVersion: repo.reportResults.lowNodeVersion,
-        highNodeVersion: repo.reportResults.highNodeVersion,
-        lowTerraformVersion: repo.reportResults.lowTerraformVersion,
-        highTerraformVersion: repo.reportResults.highTerraformVersion,
+        lowNodeVersion: repo.reportResults.lowNodeVersion === startingLowestVersion ? '??' : repo.reportResults.lowNodeVersion,
+        highNodeVersion: repo.reportResults.highNodeVersion === startingHighestVersion ? '??' : repo.reportResults.highNodeVersion,
+        lowTerraformVersion: repo.reportResults.lowTerraformVersion === startingLowestVersion ? '??' : repo.reportResults.lowTerraformVersion,
+        highTerraformVersion: repo.reportResults.highTerraformVersion === startingLowestVersion ? '??' : repo.reportResults.highTerraformVersion,
         followsDevPrdNamingScheme: repo.reportResults.followsDevPrdNamingScheme,
         codeScanAlertCountCritical: repo.codeScanAlerts.critical.length,
         codeScanAlertCountHigh: repo.codeScanAlerts.high.length,
