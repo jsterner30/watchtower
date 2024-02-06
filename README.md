@@ -125,7 +125,7 @@ WRITE_FILES_LOCALLY-true;
 |----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|---------------|
 | AWS_REGION           | Not positive this is necessary, but may be needed to access s3 bucket                                                                                                                                                            | true     |               |
 | AWS_PROFILE          | Needed to access s3 bucket                                                                                                                                                                                                       | true     |               |
-| BUCKET_NAME          | The bucket where the cache and report outputs will be written (if WRTIE_FILES_LOCALLY is set to false)                                                                                                                           | true     |               |
+| BUCKET_NAME          | The bucket where the cache and report outputs will be written (if WRITE_FILES_LOCALLY is set to false)                                                                                                                           | true     |               |
 | ENVIRONMENT_NAME     | Either 'dev' or 'prd'                                                                                                                                                                                                            | false    | dev           |
 | GITHUB_ORG           | The name of the Github organization to scan                                                                                                                                                                                      | true     |               |
 | GITHUB_TOKEN         | This tool will work best if your GITHUB_TOKEN is a token associated with admin privileges over your organization, otherwise certain rules (getting Code Scanning results and admin teams for example) may not function properly. | true     |               |
@@ -146,10 +146,21 @@ or
 
 ```npm run dev```
 
+## Downloading Data
+
+Step 0 (One time): Install awscli
+
+```pip install awscli```
+
+Step 2: Log Into the ces-architects-prd AWS Account
+
+Step 3: Download Data
+
+```aws s3 sync s3://watchtower-prd-output ./```
+
 ## Todos
 
 1. Non npm repos getting 0 on npm dep grade? Possible bug
 2. Dynamic LTS versioning for things besides node
-3. Write tests
-4. Create rfc template and use in GH actions for standard change
-5. Get teams webhook url and use in GH actions for teams notification
+3. Create rfc template and use in GH actions for standard change
+4. Get teams webhook url and use in GH actions for teams notification
