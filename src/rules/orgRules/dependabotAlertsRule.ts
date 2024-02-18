@@ -1,8 +1,8 @@
 import { errorHandler, getOrgDependabotScanAlerts } from '../../util'
 import type { CacheFile } from '../../types'
-import { OrgWideRule } from '../rule'
+import { OrgRule } from '../rule'
 
-export class DependabotAlertsRule extends OrgWideRule {
+export class DependabotAlertsRule extends OrgRule {
   async run (cacheFile: CacheFile): Promise<void> {
     try {
       const alerts = (await getOrgDependabotScanAlerts()).filter(alert => alert.state === 'open')

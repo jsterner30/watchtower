@@ -41,7 +41,7 @@ import {
   OverallRepoReport,
   OverallHealthScoreReport
 } from './reports'
-import { BranchRule, OrgWideRule, RepoRule, SecondaryBranchRule } from './rules/rule'
+import { BranchRule, OrgRule, RepoRule, SecondaryBranchRule } from './rules/rule'
 import {
   DeployedBranchRule,
   StaleBranchRule
@@ -85,7 +85,7 @@ export class Engine {
   private readonly branchRules: BranchRule[] = []
   private readonly secondaryBranchRules: SecondaryBranchRule[] = []
   private readonly repoRules: RepoRule[] = []
-  private readonly orgRules: OrgWideRule[] = []
+  private readonly orgRules: OrgRule[] = []
   private readonly reports: Array<RepoReport<RepoReportData, Writers<RepoReportData>>> = []
   private readonly overallReports: Array<RepoReport<RepoReportData, Writers<RepoReportData>>> = []
   private readonly writer: Writer

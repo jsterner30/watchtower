@@ -30,6 +30,6 @@ export abstract class RepoRule extends Rule {
 
 //  An OrgRule makes a single API call to the whole org, then maps the data to a repo.
 //  This saves us hundreds of API calls.
-export abstract class OrgWideRule extends Rule {
+export abstract class OrgRule extends Rule {
   abstract run (cacheFile: CacheFile): Promise<void>
 }

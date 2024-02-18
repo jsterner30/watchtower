@@ -1,8 +1,8 @@
 import { errorHandler, getOrgSecretScanAlerts } from '../../util'
 import type { CacheFile } from '../../types'
-import { OrgWideRule } from '../rule'
+import { OrgRule } from '../rule'
 
-export class SecretScanAlertsRule extends OrgWideRule {
+export class SecretScanAlertsRule extends OrgRule {
   async run (cacheFile: CacheFile): Promise<void> {
     try {
       const alerts = (await getOrgSecretScanAlerts()).filter(alert => alert.state === 'open')
