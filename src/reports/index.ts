@@ -26,7 +26,7 @@ export * from './repoReports/simpleReports/reposWithoutNewCommitsReport'
 export * from './repoReports/simpleReports/teamlessRepoReport'
 
 export * from './repoReports/versionReports/branchVersionReports/nodeBranchVersionReport'
-export * from './repoReports/versionReports/branchVersionReports/terraformBrancVersionReport'
+export * from './repoReports/versionReports/branchVersionReports/terraformBranchVersionReport'
 
 export * from './repoReports/versionReports/repoVersionReports/nodeRepoVersionReport'
 export * from './repoReports/versionReports/repoVersionReports/terraformRepoVersionReport'
