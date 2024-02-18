@@ -443,7 +443,7 @@ export async function getOrg (orgTeamNames: string[], orgMemberNames: string[]):
 export async function getOrgMembers (): Promise<GithubMember[]> {
   const parser = async (response: any): Promise<GithubMember[]> =>
     response.data.map((member: any) => ({
-      username: member.login,
+      name: member.login,
       type: member.type
     }))
   return await getGithubData<GithubMember>(true, 'organization members', 'GET /orgs/{org}/members', { org: (await getEnv()).githubOrg, per_page: 100 }, parser)
