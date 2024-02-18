@@ -1,10 +1,10 @@
 import JSZip from 'jszip'
-import type { RepoInfo } from '../../types'
+import type { Repo } from '../../types'
 import { errorHandler } from '../../util'
 import { BranchRule } from '../rule'
 
 export class FileTypesRules extends BranchRule {
-  async run (repo: RepoInfo, downloaded: JSZip, branchName: string, fileName: string): Promise<void> {
+  async run (repo: Repo, downloaded: JSZip, branchName: string, fileName: string): Promise<void> {
     try {
       if (!downloaded.files[fileName].dir) {
         const extensions = fileName.split('.').filter(Boolean)

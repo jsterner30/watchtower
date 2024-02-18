@@ -1,10 +1,10 @@
 import JSZip from 'jszip'
-import { FileTypeEnum, PackageLockFile, RepoInfo } from '../../types'
+import { FileTypeEnum, PackageLockFile, Repo } from '../../types'
 import { errorHandler } from '../../util'
 import { BranchRule } from '../rule'
 
 export class PackageLockRule extends BranchRule {
-  async run (repo: RepoInfo, downloaded: JSZip, branchName: string, fileName: string): Promise<void> {
+  async run (repo: Repo, downloaded: JSZip, branchName: string, fileName: string): Promise<void> {
     try {
       if (downloaded.files[fileName].name.endsWith('package-lock.json') && !downloaded.files[fileName].name.includes('node_modules')) {
         repo.branches[branchName].deps.push(this.parsePackageLock(await downloaded.files[fileName].async('string'), fileName))

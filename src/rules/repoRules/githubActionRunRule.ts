@@ -1,26 +1,15 @@
-import { errorHandler, getEnv } from '../../util'
-import type { RepoInfo } from '../../types'
+import { errorHandler, getRepoGithubActionRuns } from '../../util'
+import type { Repo } from '../../types'
 import { RepoRule } from '../rule'
 
 export class GithubActionRunRule extends RepoRule {
-  async run (repo: RepoInfo): Promise<void> {
+  async run (repo: Repo): Promise<void> {
     try {
-      const { data: runs } = await this.octokit.actions.listWorkflowRunsForRepo({
-        owner: (await getEnv()).githubOrg,
-        repo: repo.name,
-        per_page: 100
-      })
-
-      for (const branchName of Object.keys(repo.branches)) {
-        const branchRuns = runs.workflow_runs.filter((run) => run.head_branch === branchName)
-
-        repo.branches[branchName].actionRuns = branchRuns.map((run) => ({
-          id: run.id ?? '',
-          status: run.status ?? '',
-          conclusion: run.conclusion ?? '',
-          created_at: run.created_at ?? '',
-          updated_at: run.updated_at ?? ''
-        }))
+      const runs = await getRepoGithubActionRuns(repo.name)
+      for (const run of runs) {
+        if (repo.branches[run.branch] != null) {
+          repo.branches[run.branch].actionRuns.push(run)
+        }
       }
     } catch (error) {
       errorHandler(error, GithubActionRunRule.name, repo.name)

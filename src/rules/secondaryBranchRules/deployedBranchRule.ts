@@ -1,13 +1,13 @@
 import {
   FileTypeEnum,
-  type RepoInfo,
+  type Repo,
   validGHAFile
 } from '../../types'
 import { errorHandler } from '../../util'
 import { SecondaryBranchRule } from '../rule'
 
 export class DeployedBranchRule extends SecondaryBranchRule {
-  async run (repo: RepoInfo, branchName: string): Promise<void> {
+  async run (repo: Repo, branchName: string): Promise<void> {
     try {
       if (repo.branches[branchName].defaultBranch) {
         for (const dep of repo.branches[branchName].deps) {

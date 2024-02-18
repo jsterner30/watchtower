@@ -1,10 +1,10 @@
-import { FileTypeEnum, GitignoreFile, RepoInfo } from '../../types'
+import { FileTypeEnum, GitignoreFile, Repo } from '../../types'
 import { errorHandler } from '../../util'
 import { BranchRule } from '../rule'
 import JSZip from 'jszip'
 
 export class GitignoreRule extends BranchRule {
-  async run (repo: RepoInfo, downloaded: JSZip, branchName: string, fileName: string): Promise<void> {
+  async run (repo: Repo, downloaded: JSZip, branchName: string, fileName: string): Promise<void> {
     try {
       if (downloaded.files[fileName].name.endsWith('.gitignore')) {
         const content = await downloaded.files[fileName].async('string')

@@ -11,7 +11,7 @@ export interface Environment {
   writeFilesLocally: boolean
 }
 
-let params: Environment
+let params: Environment | null = null
 
 export async function getEnv (): Promise<Environment> {
   if (params == null) {

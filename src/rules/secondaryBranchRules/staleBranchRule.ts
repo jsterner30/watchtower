@@ -1,11 +1,11 @@
 import {
-  type RepoInfo
+  type Repo
 } from '../../types'
 import { errorHandler, getEnv } from '../../util'
 import { SecondaryBranchRule } from '../rule'
 
 export class StaleBranchRule extends SecondaryBranchRule {
-  async run (repo: RepoInfo, branchName: string): Promise<void> {
+  async run (repo: Repo, branchName: string): Promise<void> {
     try {
       // the below line checks if the branch is not a default, protected, or deployed branch
       if (!repo.branches[branchName].defaultBranch && !repo.branches[branchName].branchProtections.protected && !repo.branches[branchName].deployedBranch) {

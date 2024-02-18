@@ -1,11 +1,11 @@
-import { FileTypeEnum, GHAFile, type RepoInfo } from '../../types'
+import { FileTypeEnum, GHAFile, type Repo } from '../../types'
 import JSZip from 'jszip'
 import { load } from 'js-yaml'
 import { errorHandler } from '../../util'
 import { BranchRule } from '../rule'
 
 export class DotGithubDirRule extends BranchRule {
-  async run (repo: RepoInfo, downloaded: JSZip, branchName: string, fileName: string): Promise<void> {
+  async run (repo: Repo, downloaded: JSZip, branchName: string, fileName: string): Promise<void> {
     try {
       if (downloaded.files[fileName].name.includes('/.github/') && !downloaded.files[fileName].dir) { // we are in the .github directory
         if (downloaded.files[fileName].name.endsWith('.yml') || downloaded.files[fileName].name.endsWith('.yaml')) { // this is a GHA file

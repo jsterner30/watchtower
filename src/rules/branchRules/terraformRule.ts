@@ -1,11 +1,11 @@
 import JSZip from 'jszip'
 import { parse } from '@cdktf/hcl2json'
-import { FileTypeEnum, type RepoInfo, TerraformFile } from '../../types'
+import { FileTypeEnum, type Repo, TerraformFile } from '../../types'
 import { errorHandler } from '../../util'
 import { BranchRule } from '../rule'
 
 export class TerraformRule extends BranchRule {
-  async run (repo: RepoInfo, downloaded: JSZip, branchName: string, fileName: string): Promise<void> {
+  async run (repo: Repo, downloaded: JSZip, branchName: string, fileName: string): Promise<void> {
     try {
       if (fileName.endsWith('.tf')) {
         const content = await downloaded.files[fileName].async('string')

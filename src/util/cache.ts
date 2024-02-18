@@ -1,5 +1,5 @@
 import { Writer } from './writer'
-import { CacheFile, RepoInfo, validRepoInfo, validCacheFile } from '../types'
+import { CacheFile, Repo, validRepo, validCacheFile } from '../types'
 import { logger } from './logger'
 import { errorHandler, stringifyJSON } from './util'
 import { allReposCacheFileName, filteredWithBranchesCacheFileName, lastRunDateFileName } from './constants'
@@ -8,7 +8,7 @@ export interface CacheInfo {
   lastRunDate: string
   allRepos: CacheFile | null
   filteredWithBranches: CacheFile | null
-  repos: RepoInfo[]
+  repos: Repo[]
 }
 
 export class Cache {
@@ -83,16 +83,16 @@ export class Cache {
     }
   }
 
-  async getRepoInfoCacheFiles (directoryName: string): Promise<RepoInfo[]> {
+  async getRepoInfoCacheFiles (directoryName: string): Promise<Repo[]> {
     const repoInfoCacheFiles = await this._writer.readAllFilesInDirectory('cache', 'json', directoryName)
-    const repos: RepoInfo[] = []
+    const repos: Repo[] = []
     if (repoInfoCacheFiles != null) {
       for (const repoInfoFile in repoInfoCacheFiles) {
         const repoInfoString = repoInfoCacheFiles[repoInfoFile]
         if (repoInfoString != null) {
           try {
             const repoInfo = JSON.parse(repoInfoString)
-            if (validRepoInfo.Check(repoInfo)) {
+            if (validRepo.Check(repoInfo)) {
               repos.push(repoInfo)
             } else {
               logger.error(`Invalid RepoInfo found for ${repoInfoFile}`)
@@ -106,7 +106,7 @@ export class Cache {
     return repos
   }
 
-  async writeFileToCache (filePath: string, body: CacheFile | RepoInfo): Promise<void> {
+  async writeFileToCache (filePath: string, body: CacheFile | Repo): Promise<void> {
     logger.info(`Writing file to cache: ${filePath}`)
     await this._writer.writeFile('cache', 'json', filePath, stringifyJSON(body, filePath))
   }
