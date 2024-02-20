@@ -1,4 +1,4 @@
-import {Branch, CacheFile, Repo} from '../../src/types'
+import { Branch, CacheFile, Repo } from '../../src/types'
 
 export const fakeBranch: Branch = {
   name: 'feature/api-authentication',
