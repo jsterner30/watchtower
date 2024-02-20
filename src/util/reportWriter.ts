@@ -46,12 +46,11 @@ export class ReportWriter<T extends Data> {
   async writeOutput (writer: Writer): Promise<void> {
     if (this._data.length === 0) {
       logger.error(`No data found for report file: ${this._fileName} skipping the writing of that report`)
-    }
-    else {
+    } else {
       await writer.writeFile('reports', 'json', `${this._outputDir}/${this._fileName}.json`, stringifyJSON(this.convertToCorrectJsonOutput(), this._fileName))
       await writer.writeFile('reports', 'csv', `${this._outputDir}/${this._fileName}.csv`, this.convertToCSV())
     }
-    }
+  }
 
   private convertToCSV (): string {
     const csvStringifier = createObjectCsvStringifier({

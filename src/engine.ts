@@ -105,7 +105,7 @@ export class Engine {
   }
 
   async run (): Promise<void> {
-    // await this.getAndWriteOrgData()
+    await this.getAndWriteOrgData()
     await this.cache.update()
     const allReposFile = await this.getReposCacheFile(this.cache.cache.allRepos)
     await this.cache.writeFileToCache(allReposCacheFileName, allReposFile)
@@ -264,8 +264,7 @@ export class Engine {
                 }
               }
             }
-          }
-          catch (error) {
+          } catch (error) {
             errorHandler(error, 'downloadAndRunBranchRules', repoName, branchName)
           }
         }
