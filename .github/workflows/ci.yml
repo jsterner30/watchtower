@@ -2,7 +2,7 @@ name: Continuous Integration
 
 on:
   pull_request:
-    branches: [prd]
+    branches: [dev, prd]
     types: [opened, reopened, synchronize, edited]
 
   workflow_dispatch:
@@ -16,6 +16,20 @@ jobs:
     name: Set Env Vars
     runs-on: ubuntu-latest
     steps:
+      - name: Set up DEV Environment Variables
+        if: github.base_ref == 'dev'
+        run: |
+          matrix='{
+            "env":[
+              {
+                "tf_working_dir":"./iac/dev/watchtower",
+                "aws_account":"543804410856",
+                "aws_gha_role":"watchtower-dev-gha"
+              }
+            ]
+          }'
+          echo matrix=`echo $matrix | jq -c .` >> $GITHUB_ENV
+
       - name: Set up PRD Environment Variables
         if: github.base_ref == 'prd'
         run: |

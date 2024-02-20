@@ -7,7 +7,7 @@ import {
   downloadRepoToMemory,
   allReposCacheFileName,
   filteredWithBranchesCacheFileName,
-  getOrgMembers, getOrg, getOrgTeams, getBranch, attachMetadataToCacheFile, getRepos
+  getOrgMembers, getOrg, getOrgTeams, getBranch, attachMetadataToCacheFile, getRepos, errorHandler
 } from './util'
 import { Writers } from './reports/report'
 import {
@@ -71,7 +71,6 @@ import {
   DependabotAlertsRule,
   SecretScanAlertsRule
 } from './rules/orgRules'
-
 import { CacheFile, Repo } from './types'
 import JSZip from 'jszip'
 import { logger } from './util/logger'
@@ -106,7 +105,7 @@ export class Engine {
   }
 
   async run (): Promise<void> {
-    await this.getAndWriteOrgData()
+    // await this.getAndWriteOrgData()
     await this.cache.update()
     const allReposFile = await this.getReposCacheFile(this.cache.cache.allRepos)
     await this.cache.writeFileToCache(allReposCacheFileName, allReposFile)
@@ -195,6 +194,7 @@ export class Engine {
   }
 
   private async getAndWriteOrgData (): Promise<void> {
+    logger.info('Getting and writing organization, org member, and org team reports')
     const orgMembers = await getOrgMembers()
     const orgTeams = await getOrgTeams()
     const org = await getOrg(orgTeams.map(team => team.name), orgMembers.map(member => member.name))
@@ -247,21 +247,26 @@ export class Engine {
 
       if (repo.lastCommit.date > this.cache.cache.lastRunDate) {
         for (const branchName of Object.keys(repo.branches)) {
-          // we don't run rules on dependabot branches
-          if (!repo.branches[branchName].dependabot) {
-            repo.branches[branchName] = await getBranch(repo, branchName)
-            if (repo.branches[branchName].lastCommit.date > this.cache.cache.lastRunDate) {
-              const downloaded = await downloadRepoToMemory(repoName, branchName)
-              if (downloaded != null) {
-                for (const fileName of Object.keys(downloaded.files)) {
-                  if (!downloaded.files[fileName].dir) { // only run rules on files, not dirs
-                    await this.runBranchRules(repo, downloaded, branchName, fileName)
+          try {
+            // we don't run rules on dependabot branches
+            if (!repo.branches[branchName].dependabot) {
+              repo.branches[branchName] = await getBranch(repo, branchName)
+              if (repo.branches[branchName].lastCommit.date > this.cache.cache.lastRunDate) {
+                const downloaded = await downloadRepoToMemory(repoName, branchName)
+                if (downloaded != null) {
+                  for (const fileName of Object.keys(downloaded.files)) {
+                    if (!downloaded.files[fileName].dir) { // only run rules on files, not dirs
+                      await this.runBranchRules(repo, downloaded, branchName, fileName)
+                    }
                   }
+                  // these are rules that rely on the initial branch rules
+                  await this.runSecondaryBranchRules(repo, branchName)
                 }
-                // these are rules that rely on the initial branch rules
-                await this.runSecondaryBranchRules(repo, branchName)
               }
             }
+          }
+          catch (error) {
+            errorHandler(error, 'downloadAndRunBranchRules', repoName, branchName)
           }
         }
       }

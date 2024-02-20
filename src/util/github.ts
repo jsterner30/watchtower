@@ -92,7 +92,7 @@ export async function getProtectionRules (repoName: string, branchName: string):
       allowForcePushes: response.data.allow_force_pushes.enabled,
       allowDeletions: response.data.allow_deletions.enabled,
       blockCreations: response.data.block_creations.enabled,
-      requiredConversationResolution: response.data.required_conversation_resolution,
+      requiredConversationResolution: response.data.required_conversation_resolution.enabled,
       lockBranch: response.data.lock_branch.enabled,
       allowForkSyncing: response.data.allow_fork_syncing.enabled
     }]
@@ -106,7 +106,7 @@ function getBranchParser (repo: Repo): (branch: any) => Promise<Branch> {
   return async (branch: any): Promise<Branch> => {
     const isDependabot: boolean = branch.name.startsWith('dependabot')
     let protections: BranchProtection | null = null
-    if ((branch.protected as boolean) && (branch.protections != null && (branch.protections.enabled as boolean))) {
+    if ((branch.protected as boolean) && (branch.protection != null && (branch.protection.enabled as boolean))) {
       protections = await getProtectionRules(repo.name, branch.name)
     }
 
@@ -231,7 +231,7 @@ export async function getOrgDependabotScanAlerts (): Promise<DependabotAlert[]> 
         summary: alert.security_advisory?.summary,
         description: alert.security_advisory?.description,
         severity: alert.security_vulnerability?.severity ?? 'none',
-        state: alert.state.type,
+        state: alert.state,
         repoName: alert.repository.name
       })
     }
@@ -266,7 +266,7 @@ export async function getOrgCodeScanAlerts (): Promise<CodeScanAlert[]> {
           message: alert.most_recent_instance.message.text,
           locationPath: alert.most_recent_instance.location.path
         },
-        state: alert.state.type,
+        state: alert.state,
         location: alert.most_recent_instance.location.path,
         repoName: alert.repository.name
       })
