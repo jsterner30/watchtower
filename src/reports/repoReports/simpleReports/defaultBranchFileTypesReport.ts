@@ -28,7 +28,7 @@ export class DefaultBranchFileTypesReport extends RepoReport<FileTypesReportData
           .join(',')
 
         // Create a report row
-        writers.defaultBranchFileTypeReportOutput.addRow({
+        writers.defaultBranchFileTypesReport.addRow({
           repoName: repo.name,
           percentageList: csvString
         })
