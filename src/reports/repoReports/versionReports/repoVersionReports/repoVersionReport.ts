@@ -90,6 +90,7 @@ export abstract class RepoVersionReport extends VersionReport<RepoVersionReportD
     }
     const overallRepoExtremes = getExtremeVersions(branchVersionLocations)
     writers.allBranchesRepoWriter.addRow({ ...{ repoName: repo.name }, ...overallRepoExtremes })
+    repo.healthScores[this.name] = await this.grade(overallRepoExtremes.lowestVersion)
     this.modifyReportRepoResults(overallRepoExtremes, repo)
   }
 
