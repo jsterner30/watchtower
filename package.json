@@ -18,7 +18,7 @@
     "lint:fix": "eslint . --fix",
     "test": "cross-env NODE_OPTIONS='--import=tsx' ava",
     "prepare": "husky install",
-    "genReportDocs": "node -r ts-node/register scripts/genReportDocs/index.ts"
+    "genReportDocs": "node -r ts-node/register scripts/genReportDocs/index.ts && git add reports.md"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.489.0",
