@@ -8,7 +8,7 @@ function generateReportDocs (): void {
   const parentDir = path.join(__dirname, '../..')
   const filePath = path.join(parentDir, 'reports.md')
 
-  fs.writeFile(filePath, getReportMarkdownFile(), (error) => {
+  fs.writeFile(filePath, getReportMarkdownFile(), { encoding: 'utf16le' }, (error) => {
     if (error != null) {
       let message
       if (error instanceof Error) message = error.message

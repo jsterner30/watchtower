@@ -53,8 +53,8 @@ Overall: Reports that output data about every repo based on the repo reports.
 | OrgTeamReport   | OrganizationReports | 1                                | Details about the organization members. |
     
 ## Overall Reports
-| Report                   | Output Directory | Number of Output Files Generated | Description of Output                                                                                                                                          |
-| ------------------------ | ---------------- | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| OverallBranchReport      | OverallReports   | 1                                | General details about every non-dependabot branch in the org                                                                                                   |
-| OverallRepoReport        | OverallReports   | 1                                | General details about the non archived repo in the org                                                                                                         |
-| OverallHealthScoreReport | OverallReports   | 1                                |  A healthscore assigned to each repo based on contributing repo reports. More info can be found in the "Overall Health Scoring" section of the README.md file. |
+| Report                   | Output Directory | Number of Output Files Generated | Description of Output                                                                                                                                         |
+| ------------------------ | ---------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| OverallBranchReport      | OverallReports   | 1                                | General details about every non-dependabot branch in the org                                                                                                  |
+| OverallRepoReport        | OverallReports   | 1                                | General details about the non archived repo in the org                                                                                                        |
+| OverallHealthScoreReport | OverallReports   | 1                                | A healthscore assigned to each repo based on contributing repo reports. More info can be found in the "Overall Health Scoring" section of the README.md file. |
