@@ -38,7 +38,7 @@ export async function fetchNodeLTSVersion (): Promise<string> {
       throw new Error(`Failed to fetch schedule data. Status: ${response.status}`)
     }
 
-    const scheduleData = await response.json()
+    const scheduleData: any = await response.json()
     for (const version in scheduleData) {
       if (new Date(scheduleData[version].lts) < new Date() && new Date(scheduleData[version].maintenance) > new Date()) {
         return version.split('v')[1]

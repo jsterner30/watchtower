@@ -28,7 +28,7 @@ A stale branch is a branch that is not a default branch, protected branch, deplo
 Some things, like the reporting if a repo is public or internal, can be represented in a single csv file very simply. Other things are more complicated. For example, when reporting on the lowest node version in a repo, which branch or branches should be considered in the report? And even more difficult is how to report on dependency versions when there are thousands of individual library dependencies in an org.
 
 To solve these issues, this script outputs different csv files in different ways:
-- Simple Reports: these reports can be output to a single csv file.
+- Simple Reports: these reports can be output to a set of csv files and are a simple data mapping.
 
 
 - Versioning Reports: these reports (like node and terraform version) are contained in a subdirectory that contains three files:
@@ -60,59 +60,7 @@ In s3 and locally, files are written to a structure like the following:
 
 ### Reports
 
-Reports are classes that aggregate the data gathered by a rule and output it to a csv and json file. They run very quickly and therefore have no need to be cached.
-
-There are three main types of reports: 
-
-Repo: Repo reports aggregate data on things we care about across repos in the org.
-Overall: Reports that output data about every repo based on the repo reports.
-Org: Reports on the organization the repos are found in.
-
-#### Repo Reports:
-| Report                   | Type        | OutputDir                      | Output Files Generated  | Description of Output                                                                                              | Contributes to Overall HealthScore Report | Weight |
-|--------------------------|-------------|--------------------------------|-------------------------|--------------------------------------------------------------------------------------------------------------------|-------------------------------------------|--------|
-| CodeScanAlertsCount      | Simple      | CodeScanAlertCountReports      | 4                       | The number of code scanning alerts at each level: critical, high, medium,and low for every repo.                   | Yes                                       | 5      |
-| CodeScanAlerts           | Simple      | CodeScanAlertReports           | 4                       | Detailed information about code scanning alerts at each level: critical, high, medium,and low, for every repo.     | No                                        | 0      |
-| DefaultBranchFileType    | Simple      | DefaultBranchFileTypesReport   | 1                       | The file type percentages of the files on the default branch of each repo.                                         | No                                        | 0      |
-| DependabotAlertCount     | Simple      | DependabotAlertScanCountReport | 4                       | The number of dependabot scanning alerts at each level: critical, high, medium,and low for every repo.             | Yes                                       | 5      |
-| DependabotAlert          | Simple      | DependabotAlertReport          | 4                       | Detailed information on dependabot scanning alerts at each level: critical, high, medium,and low for every repo.   | No                                        | 0      |
-| DependabotBranch         | Simple      | DependabotBranchReport         | 1                       | The number dependabot branches on every repo.                                                                      | Yes                                       | 4      |
-| DevPrdBranches           | Simple      | DevPrdBranchesReport           | 1                       | Repos without the standard "dev" and "prd" branch naming scheme.                                                   | No                                        | 0      |
-| DockerfileImage          | Dependency  | DockerfileImageReport          | 1 per image in the org  | Which repos use a given image.                                                                                     | Yes                                       | 3      |
-| GhActionModule           | Dependency  | GHActionModuleReport           | 1 per GHA module in org | Which repos use a given GHA module.                                                                                | No                                        | 0      |
-| LowFileBranch            | Simple      | LowFileBranchReport            | 1                       | The the branches with a low (<=5) file count.                                                                      | Yes                                       | 1      |
-| LowFilesRepo             | Simple      | LowFileRepoReport              | 2                       | The the repos with a low (<=5) file count on every branch.                                                         | Yes                                       | 1      |
-| NPMDependency            | Dependency  | NPMDependencyReport            | 1 per npm dep in org    | Which repos use a given npm dependency.                                                                            | Yes                                       | 3      |
-| NodeBranchVersion        | Version     | NodeVersionReport              | 2                       | Lowest and highest node versions on each branch in the org and the default branches of every repo in the org.      | No                                        | 0      |
-| NodeRepoVersion          | Version     | NodeVersionReport              | 1                       | Lowest and highest node versions on every repo in the org, considering every branch in the org.                    | Yes                                       | 5      |
-| PrimaryLanguage          | Simple      | PrimaryLanguageReport          | 1                       | The primary language for every repo in the org.                                                                    | No                                        | 0      |
-| PublicAndInternal        | Simple      | PublicAndInternalReport        | 1                       | Repos that are marked as public or internal.                                                                       | Yes                                       | 2      |
-| Readme                   | Simple      | ReadmeReport                   | 1                       | Whether repos have a readme, whether it includes a title, and how many required sections they are missing.         | Yes                                       | 3      |
-| FileTypeReport           | Simple      | FileTypesReport                | 2                       | Which repos contain a language, and the percentage of file extensions on each the default branch of each repo.     | No                                        | 0      |
-| ReposHasLanguage         | Simple      | ReposHasLanguageReport         | 1                       | The list of languages found on any branch of the repo, based on file extension.                                    | No                                        | 0      |
-| ReposWithoutNewCommits   | Simple      | ReposWithoutNewCommitsReport   | 1                       | Repos without a new commit in the last two years.                                                                  | Yes                                       | 3      |
-| SecretScanningAlertCount | Simple      | SecretScanningAlertCount       | 1                       | The number of secret scanning alerts for each repo.                                                                | Yes                                       | 5      |
-| SecretScanningAlert      | Simple      | SecretScanningAlert            | 1                       | Detailed information on every secret scanning alert for every repo in the org.                                     | No                                        | 0      |
-| StaleBranch              | Simple      | StaleBranchReport              | 1                       | The number of stale branches on every repo in the org.                                                             | Yes                                       | 2      |
-| TeamlessRepo             | Simple      | TeamlessRepoReport             | 1                       | The repos in the org that do not have an admin team in Github.                                                     | Yes                                       | 4      |
-| TerraformModule          | Dependency  | TerraformModuleReport          | 1 per tf module in org  | Which repos use a given terraform module.                                                                          | Yes                                       | 3      |
-| TerraformBranchVersion   | Version     | TerraformVersionReport         | 2                       | Lowest and highest terraform versions on each branch in the org and the default branches of every repo in the org. | No                                        | 0      |
-| TerraformRepoVersion     | Version     | TerraformVersionReport         | 1                       | Lowest and highest terraform versions on every repo in the org, considering every branch in the org.               | Yes                                       | 5      |
-
-#### Overall Reports
-| Report                   | OutputDir       | Output Files Generated | Description of Output                                                                                                     |
-|--------------------------|-----------------|------------------------|---------------------------------------------------------------------------------------------------------------------------|
-| OverallBranchReport      | OverallReports  | 1                      | General details about every non-dependabot branch in the org.                                                             |
-| OverallRepoReport        | OverallReports  | 1                      | General details about the non archived repo in the org.                                                                   |
-| OverallHealthScoreReport | OverallReports  | 1                      | A healthscore assigned to each repo based on contributing repo reports. See [here for more info](#overall-health-scoring) |
-
-
-#### Organization Reports
-| Report          | OutputDir     | Output Files Generated | Description of Output                   |
-|-----------------|---------------|------------------------|-----------------------------------------|
-| OrgReport       | Organization  | 1                      | Details about the organization.         |
-| OrgMemberReport | Organization  | 1                      | Details about the organization teams.   |
-| OrgTeamReport   | Organization  | 1                      | Details about the organization members. |
+For information on reports, [see the automatically generated reports.md file](reports.md)
 
 ### Overall Health Scoring
 

@@ -55,39 +55,39 @@ export interface RepoReports {
   secretScanAlertReport: SecretScanAlertReport
   staleBranchReport: StaleBranchReport
   teamlessRepoReport: TeamlessRepoReport
-  terraformBranchVersionReport: TerraformBranchVersionReport
   terraformModuleReport: TerraformModuleReport
+  terraformBranchVersionReport: TerraformBranchVersionReport
   terraformRepoVersionReport: TerraformRepoVersionReport
 }
 
 export function getRepoReports (): RepoReports {
   return {
-    codeScanAlertCountReport: new CodeScanAlertCountReport(5, 'CodeScanAlertCountReports'),
-    codeScanAlertReport: new CodeScanAlertReport(0, 'CodeScanAlertReports'),
-    defaultBranchFileTypesReport: new DefaultBranchFileTypesReport(0, 'DefaultBranchFileTypesReport'),
-    dependabotAlertReport: new DependabotAlertReport(0, 'DependabotAlertReport'),
-    dependabotAlertScanCountReport: new DependabotAlertScanCountReport(5, 'DependabotAlertCountReport'),
-    dependabotBranchReport: new DependabotBranchReport(4, 'DependabotBranchReport'),
-    devPrdBranchesReport: new DevPrdBranchesReport(0, 'DevPrdBranchesReport'),
-    dockerfileImageReport: new DockerfileImageReport(3, 'DockerfileImageReport'),
-    ghActionModuleReport: new GHActionModuleReport(3, 'GHActionModuleReport'),
-    lowFileBranchReport: new LowFileBranchReport(0, 'LowFileBranchReport'),
-    lowFileRepoReport: new LowFileRepoReport(1, 'LowFileRepoReport'),
-    npmDependencyReport: new NPMDependencyReport(3, 'NPMDependencyReport'),
-    nodeBranchVersionReport: new NodeBranchVersionReport(0, 'NodeVersionReport'),
-    nodeRepoVersionReport: new NodeRepoVersionReport(5, 'NodeVersionReport'),
-    primaryLanguageReport: new PrimaryLanguageReport(0, 'PrimaryLanguageReport'),
-    publicAndInternalReport: new PublicAndInternalReport(2, 'PublicAndInternalReport'),
-    readmeReport: new ReadmeReport(3, 'ReadmeReport'),
-    repoHasLanguageReport: new RepoHasLanguageReport(0, 'RepoHasLanguageReport'),
-    reposWithoutNewCommitsReport: new ReposWithoutNewCommitsReport(3, 'ReposWithoutNewCommitsReport'),
-    secretScanAlertCountReport: new SecretScanAlertCountReport(5, 'SecretScanAlertCountReport'),
-    secretScanAlertReport: new SecretScanAlertReport(0, 'SecretScanAlertReport'),
-    staleBranchReport: new StaleBranchReport(2, 'StaleBranchReport'),
-    teamlessRepoReport: new TeamlessRepoReport(4, 'TeamlessRepoReport'),
-    terraformBranchVersionReport: new TerraformBranchVersionReport(0, 'TerraformVersionReport'),
-    terraformModuleReport: new TerraformModuleReport(3, 'TerraformModuleReport'),
-    terraformRepoVersionReport: new TerraformRepoVersionReport(5, 'TerraformVersionReport')
+    codeScanAlertCountReport: new CodeScanAlertCountReport(5, 'CodeScanAlertCountReports', 'The number of code scanning alerts at each level: critical, high, medium,and low for every repo.', '4', 'simple'),
+    codeScanAlertReport: new CodeScanAlertReport(0, 'CodeScanAlertReports', 'Detailed information about code scanning alerts at each level: critical, high, medium,and low, for every repo.', '4', 'simple'),
+    defaultBranchFileTypesReport: new DefaultBranchFileTypesReport(0, 'DefaultBranchFileTypesReport', 'The file type percentages of the files on the default branch of each repo.', '1', 'simple'),
+    dependabotAlertReport: new DependabotAlertReport(0, 'DependabotAlertReport', 'The number of dependabot scanning alerts at each level: critical, high, medium,and low for every repo.', '4', 'simple'),
+    dependabotAlertScanCountReport: new DependabotAlertScanCountReport(5, 'DependabotAlertCountReport', 'Detailed information on dependabot scanning alerts at each level: critical, high, medium,and low for every repo.', '4', 'simple'),
+    dependabotBranchReport: new DependabotBranchReport(4, 'DependabotBranchReport', 'The number dependabot branches on every repo.', '1', 'simple'),
+    devPrdBranchesReport: new DevPrdBranchesReport(0, 'DevPrdBranchesReport', 'Repos without the standard "dev" and "prd" branch naming scheme.', '1', 'simple'),
+    dockerfileImageReport: new DockerfileImageReport(3, 'DockerfileImageReport', 'Which repos use a given image.', '1 per image in the org', 'dependency'),
+    ghActionModuleReport: new GHActionModuleReport(3, 'GHActionModuleReport', 'Which repos use a given GHA module.', '1 per GHA module in org', 'dependency'),
+    lowFileBranchReport: new LowFileBranchReport(0, 'LowFileBranchReport', 'The the branches with a low (<=5) file count.', '1', 'simple'),
+    lowFileRepoReport: new LowFileRepoReport(1, 'LowFileRepoReport', 'The the repos with a low (<=5) file count on every branch.', '1', 'simple'),
+    npmDependencyReport: new NPMDependencyReport(3, 'NPMDependencyReport', 'Which repos use a given npm dependency.', '1 per npm dependency in the org', 'dependency'),
+    nodeBranchVersionReport: new NodeBranchVersionReport(0, 'NodeVersionReport', 'Lowest and highest node versions on each branch in the org and the default branches of every repo in the org.', '2', 'version'),
+    nodeRepoVersionReport: new NodeRepoVersionReport(5, 'NodeVersionReport', 'Lowest and highest node versions on every repo in the org, considering every branch in the org.', '1', 'version'),
+    primaryLanguageReport: new PrimaryLanguageReport(0, 'PrimaryLanguageReport', 'The primary language for every repo in the org.', '1', 'simple'),
+    publicAndInternalReport: new PublicAndInternalReport(2, 'PublicAndInternalReport', 'Repos that are marked as public or internal.', '1', 'simple'),
+    readmeReport: new ReadmeReport(3, 'ReadmeReport', 'Whether repos have a readme, whether it includes a title, and how many required sections they are missing.', '1', 'simple'),
+    repoHasLanguageReport: new RepoHasLanguageReport(0, 'RepoHasLanguageReport', 'Which repos contain a language, and the percentage of file extensions on each the default branch of each repo.', '2', 'simple'),
+    reposWithoutNewCommitsReport: new ReposWithoutNewCommitsReport(3, 'ReposWithoutNewCommitsReport', 'Repos without a new commit in the last two years.', '1', 'simple'),
+    secretScanAlertCountReport: new SecretScanAlertCountReport(5, 'SecretScanAlertCountReport', 'The number of secret scanning alerts for each repo.', '1', 'simple'),
+    secretScanAlertReport: new SecretScanAlertReport(0, 'SecretScanAlertReport', 'Detailed information on every secret scanning alert for every repo in the org.', '1', 'simple'),
+    staleBranchReport: new StaleBranchReport(2, 'StaleBranchReport', 'The number of stale branches on every repo in the org.', '1', 'simple'),
+    teamlessRepoReport: new TeamlessRepoReport(4, 'TeamlessRepoReport', 'The repos in the org that do not have an admin team in Github, along with the user admins of the repo.', '1', 'simple'),
+    terraformModuleReport: new TerraformModuleReport(3, 'TerraformModuleReport', 'Which repos use a given terraform module.', '1 per terraform module in the org', 'dependency'),
+    terraformBranchVersionReport: new TerraformBranchVersionReport(0, 'TerraformVersionReport', 'Lowest and highest terraform versions on each branch in the org and the default branches of every repo in the org.', '2', 'version'),
+    terraformRepoVersionReport: new TerraformRepoVersionReport(5, 'TerraformVersionReport', 'Lowest and highest terraform versions on every repo in the org considering every branch in the org.', '1', 'version')
   }
 }
 
@@ -99,9 +99,9 @@ export interface OrgReports {
 
 export function getOrgReports (): OrgReports {
   return {
-    orgReport: new OrgReport(0, 'OrganizationReports'),
-    orgMemberReport: new OrgMemberReport(0, 'OrganizationReports'),
-    orgTeamReport: new OrgTeamReport(0, 'OrganizationReports')
+    orgReport: new OrgReport(0, 'OrganizationReports', 'Details about the organization.', '1', 'Organization'),
+    orgMemberReport: new OrgMemberReport(0, 'OrganizationReports', 'Details about the organization teams.', '1', 'Organization'),
+    orgTeamReport: new OrgTeamReport(0, 'OrganizationReports', 'Details about the organization members.', '1', 'Organization')
   }
 }
 
@@ -113,8 +113,8 @@ export interface OverallReports {
 
 export function getOverallReports (): OverallReports {
   return {
-    overallBranchReport: new OverallBranchReport(0, 'OverallReports'),
-    overallRepoReport: new OverallRepoReport(0, 'OverallReports'),
-    overallHealthScoreReport: new OverallHealthScoreReport(0, 'OverallReports')
+    overallBranchReport: new OverallBranchReport(0, 'OverallReports', 'General details about every non-dependabot branch in the org', '1', 'overall'),
+    overallRepoReport: new OverallRepoReport(0, 'OverallReports', 'General details about the non archived repo in the org', '1', 'overall'),
+    overallHealthScoreReport: new OverallHealthScoreReport(0, 'OverallReports', ' A healthscore assigned to each repo based on contributing repo reports. More info can be found in the "Overall Health Scoring" section of the README.md file.', '1', 'overall')
   }
 }

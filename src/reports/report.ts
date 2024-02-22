@@ -12,11 +12,17 @@ export abstract class Report<T extends ReportData, U extends Writers<T>, V exten
   protected _weight: number
   protected _outputDir: string
   protected _reportOutputDataWriters: Array<ReportWriter<T>>
+  protected _description: string
+  protected _numberOfFilesOutputDescription: string
+  protected _type: string
 
-  constructor (weight: number, outputDir: string) {
+  constructor (weight: number, outputDir: string, description: string, numberOfFilesOutputDescription: string, type: string) {
     this._weight = weight
     this._outputDir = outputDir
     this._reportOutputDataWriters = []
+    this._description = description
+    this._numberOfFilesOutputDescription = numberOfFilesOutputDescription
+    this._type = type
   }
 
   public async run (items: V[]): Promise<void> {
@@ -40,6 +46,22 @@ export abstract class Report<T extends ReportData, U extends Writers<T>, V exten
 
   public get reportOutputDataWriters (): Array<ReportWriter<T>> {
     return this._reportOutputDataWriters
+  }
+
+  get description (): string {
+    return this._description
+  }
+
+  get type (): string {
+    return this._type
+  }
+
+  get numberOfFilesOutputDescription (): string {
+    return this._numberOfFilesOutputDescription
+  }
+
+  get outputDir (): string {
+    return this._outputDir
   }
 
   public abstract get name (): string
