@@ -6,7 +6,7 @@ import { BranchRule } from '../rule'
 
 // this rule is for the "action.yml" file that defines what happens in a github action source code
 // for the rule associated with the CI and deployment workflows found in the .github dir look at the "dotGithubDirRule.ts" file
-export class GithubActionFileRule extends BranchRule {
+export class GithubActionSourceFileRule extends BranchRule {
   async run (repo: Repo, downloaded: JSZip, branchName: string, fileName: string): Promise<void> {
     try {
       if (!downloaded.files[fileName].dir) {
@@ -16,7 +16,7 @@ export class GithubActionFileRule extends BranchRule {
         }
       }
     } catch (error) {
-      errorHandler(error, GithubActionFileRule.name, repo.name, branchName, fileName)
+      errorHandler(error, GithubActionSourceFileRule.name, repo.name, branchName, fileName)
     }
   }
 

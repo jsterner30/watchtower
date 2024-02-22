@@ -4,7 +4,12 @@ import {
   DotGithubDirRule,
   FileCountRule,
   FileTypesRules,
-  GitignoreRule, PackageJsonRule, PackageLockRule, ReadmeRule, TerraformRule
+  GitignoreRule,
+  GithubActionSourceFileRule,
+  PackageJsonRule,
+  PackageLockRule,
+  ReadmeRule,
+  TerraformRule
 } from './branchRules'
 import { DeployedBranchRule, StaleBranchRule } from './secondaryBranchRules'
 import { AdminsRule, GithubActionRunRule, LatestCommitRule, OpenIssueRule, OpenPRRule, TeamsRule } from './repoRules'
@@ -16,6 +21,7 @@ export interface BranchRules {
   dotGithubDirRule: DotGithubDirRule
   fileCountRule: FileCountRule
   fileTypesRules: FileTypesRules
+  githubActionFileRule: GithubActionSourceFileRule
   gitignoreRule: GitignoreRule
   packageJsonRule: PackageJsonRule
   packageLockRule: PackageLockRule
@@ -30,6 +36,7 @@ export function getBranchRules (): BranchRules {
     dotGithubDirRule: new DotGithubDirRule(),
     fileCountRule: new FileCountRule(),
     fileTypesRules: new FileTypesRules(),
+    githubActionFileRule: new GithubActionSourceFileRule(),
     gitignoreRule: new GitignoreRule(),
     packageJsonRule: new PackageJsonRule(),
     packageLockRule: new PackageLockRule(),
