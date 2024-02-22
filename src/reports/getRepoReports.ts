@@ -12,12 +12,6 @@ import { LowFileRepoReport } from './repoReports/simpleReports/lowFileRepoReport
 import { NPMDependencyReport } from './repoReports/dependencyReports/npmDependencyReport'
 import { NodeBranchVersionReport } from './repoReports/versionReports/branchVersionReports/nodeBranchVersionReport'
 import { NodeRepoVersionReport } from './repoReports/versionReports/repoVersionReports/nodeRepoVersionReport'
-import { OrgMemberReport } from './orgReports/OrgMemberReport'
-import { OrgReport } from './orgReports/OrgReport'
-import { OrgTeamReport } from './orgReports/OrgTeamReport'
-import { OverallBranchReport } from './overallReports/overallBranchReport'
-import { OverallHealthScoreReport } from './overallReports/overallHealthScoreReport'
-import { OverallRepoReport } from './overallReports/overallRepoReport'
 import { PrimaryLanguageReport } from './repoReports/simpleReports/primaryLanguageReport'
 import { PublicAndInternalReport } from './repoReports/simpleReports/publicAndInternalReport'
 import { ReadmeReport } from './repoReports/simpleReports/readmeReport'
@@ -88,33 +82,5 @@ export function getRepoReports (): RepoReports {
     terraformModuleReport: new TerraformModuleReport(3, 'TerraformModuleReport', 'Which repos use a given terraform module.', '1 per terraform module in the org', 'dependency'),
     terraformBranchVersionReport: new TerraformBranchVersionReport(0, 'TerraformVersionReport', 'Lowest and highest terraform versions on each branch in the org and the default branches of every repo in the org.', '2', 'version'),
     terraformRepoVersionReport: new TerraformRepoVersionReport(5, 'TerraformVersionReport', 'Lowest and highest terraform versions on every repo in the org considering every branch in the org.', '1', 'version')
-  }
-}
-
-export interface OrgReports {
-  orgReport: OrgReport
-  orgMemberReport: OrgMemberReport
-  orgTeamReport: OrgTeamReport
-}
-
-export function getOrgReports (): OrgReports {
-  return {
-    orgReport: new OrgReport(0, 'OrganizationReports', 'Details about the organization.', '1', 'Organization'),
-    orgMemberReport: new OrgMemberReport(0, 'OrganizationReports', 'Details about the organization teams.', '1', 'Organization'),
-    orgTeamReport: new OrgTeamReport(0, 'OrganizationReports', 'Details about the organization members.', '1', 'Organization')
-  }
-}
-
-export interface OverallReports {
-  overallBranchReport: OverallBranchReport
-  overallRepoReport: OverallRepoReport
-  overallHealthScoreReport: OverallHealthScoreReport
-}
-
-export function getOverallReports (): OverallReports {
-  return {
-    overallBranchReport: new OverallBranchReport(0, 'OverallReports', 'General details about every non-dependabot branch in the org', '1', 'overall'),
-    overallRepoReport: new OverallRepoReport(0, 'OverallReports', 'General details about the non archived repo in the org', '1', 'overall'),
-    overallHealthScoreReport: new OverallHealthScoreReport(0, 'OverallReports', 'A healthscore assigned to each repo based on contributing repo reports. More info can be found in the "Overall Health Scoring" section of the README.md file.', '1', 'overall')
   }
 }

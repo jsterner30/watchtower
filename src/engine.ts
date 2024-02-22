@@ -19,7 +19,7 @@ import {
   OrgReports,
   OverallReports,
   RepoReports
-} from './reports/getReports'
+} from './reports/'
 import {
   BranchRules,
   getBranchRules,

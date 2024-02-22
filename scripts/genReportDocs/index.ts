@@ -1,4 +1,4 @@
-import { getRepoReports, OrgReports, OverallReports, RepoReports, getOrgReports, getOverallReports } from '../../src/reports/getReports'
+import { getRepoReports, OrgReports, OverallReports, RepoReports, getOrgReports, getOverallReports } from '../../src/reports'
 
 import { getMarkdownTable } from 'markdown-table-ts'
 import * as fs from 'fs'
