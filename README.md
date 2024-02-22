@@ -8,7 +8,7 @@ This repo is a tool for scanning Github organizations to gather large amounts of
 A rule is a class that gathers data. The data can be gathered from an API call, by scanning the downloaded zip file of a branch, or by other means. This data is then written to a JSON file to act as a cache.
 
 There are three types of rules: 
-- Branch Rules: Gather data on a branch 
+- Branch Rules: Gather data about a branch.
 
 
 - Secondary Branch Rules: Run after Branch Rules, rely on data gathered during branch rules (for example, we cannot tell if a branch is deployed through GH Actions until we parse GHA files using the dotGithubRule, therefore it is a secondary rule)
@@ -23,7 +23,7 @@ There are three types of rules:
 
 A stale branch is a branch that is not a default branch, protected branch, deployed branch, or a branch recently committed to. Default and protected branches are attributes set in a repo's settings. This script decides that a branch is "deployed" if the branch is listed in a GHA file called "deploy.yml" on the default branch. A branch is otherwise stale if it has not had a new commit in 30 days, although this 30 day value can be changed using the STALE_DAYS_THRESHOLD environment variable.
 
-### Report Outputs
+### Report Output Types
 
 Some things, like the reporting if a repo is public or internal, can be represented in a single csv file very simply. Other things are more complicated. For example, when reporting on the lowest node version in a repo, which branch or branches should be considered in the report? And even more difficult is how to report on dependency versions when there are thousands of individual library dependencies in an org.
 
@@ -62,9 +62,11 @@ In s3 and locally, files are written to a structure like the following:
 
 For information on reports, [see the automatically generated reports.md file](reports.md)
 
+If you add a report to the list of reports retrieved by the engine, the reports information should automatically be written to the reports.md file when you make your commit. Alternatively, you can run ```npm run genReportDocs``` to regenerate the reports.md file at any time. 
+
 ### Overall Health Scoring
 
-Most reports contribute to an overall heath score for each repo. These scores are calculated like GPA, where each contributing report has a weight and a letter grade associated with it.
+Many reports contribute to an overall heath score for each repo. These scores are calculated like GPA, where each contributing report has a weight and a letter grade associated with it.
 
 Each report calculates its own grade. Reports that do not apply to a repo do not affect the repo's overall score. The three report types generally calculate a grade in the following ways:
 
