@@ -1,7 +1,7 @@
-import { Writers } from '../../report'
-import { HeaderTitles, ReportWriter } from '../../../util'
-import { Repo } from '../../../types'
-import { RepoReport, RepoReportData } from '../repoReport'
+import { Writers } from '../report'
+import { HeaderTitles, ReportWriter } from '../../util'
+import { Repo } from '../../types'
+import { RepoReport, RepoReportData } from '../repoReports/repoReport'
 
 interface OverallBranchReportData extends RepoReportData {
   repoName: string

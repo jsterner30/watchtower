@@ -9,84 +9,36 @@ import {
   filteredWithBranchesCacheFileName,
   getOrgMembers, getOrg, getOrgTeams, getBranch, attachMetadataToCacheFile, getRepos, errorHandler
 } from './util'
-import { Writers } from './reports/report'
-import {
-  CodeScanAlertCountReport,
-  DependabotAlertScanCountReport,
-  SecretScanAlertCountReport,
-  CodeScanAlertReport,
-  SecretScanAlertReport,
-  DependabotBranchReport,
-  DependabotAlertReport,
-  StaleBranchReport,
-  DockerfileImageReport,
-  GHActionModuleReport,
-  NPMDependencyReport,
-  TerraformModuleReport,
-  BranchLowFilesReport,
-  DefaultBranchFileTypesReport,
-  DevPrdBranchesReport,
-  PrimaryLanguageReport,
-  PublicAndInternalReport,
-  ReadmeReport,
-  RepoHasLanguageReport,
-  RepoLowFilesReport,
-  ReposWithoutNewCommitsReport,
-  TeamlessRepoReport,
-  NodeBranchVersionReport,
-  TerraformBranchVersionReport,
-  NodeRepoVersionReport,
-  TerraformRepoVersionReport,
-  OverallBranchReport,
-  OverallRepoReport,
-  OverallHealthScoreReport
-} from './reports'
-import { BranchRule, OrgRule, RepoRule, SecondaryBranchRule } from './rules/rule'
-import {
-  DeployedBranchRule,
-  StaleBranchRule
-} from './rules/secondaryBranchRules'
-import {
-  DockerComposeRule,
-  DockerfileRule,
-  DotGithubDirRule,
-  FileCountRule,
-  FileTypesRules,
-  GitignoreRule,
-  PackageJsonRule,
-  PackageLockRule,
-  ReadmeRule,
-  TerraformRule
-} from './rules/branchRules'
-import {
-  AdminsRule,
-  GithubActionRunRule,
-  LatestCommitRule,
-  OpenIssueRule,
-  OpenPRRule,
-  TeamsRule
-} from './rules/repoRules'
-import {
-  CodeScanAlertsRule,
-  DependabotAlertsRule,
-  SecretScanAlertsRule
-} from './rules/orgRules'
 import { CacheFile, Repo } from './types'
 import JSZip from 'jszip'
 import { logger } from './util/logger'
-import { OrgReport } from './reports/orgReports/OrgReport'
-import { OrgTeamReport } from './reports/orgReports/OrgTeamReport'
-import { OrgMemberReport } from './reports/orgReports/OrgMemberReport'
-import { RepoReport, RepoReportData } from './reports/repoReports/repoReport'
+import {
+  getOrgReports,
+  getOverallReports,
+  getRepoReports,
+  OrgReports,
+  OverallReports,
+  RepoReports
+} from './reports/getReports'
+import {
+  BranchRules,
+  getBranchRules,
+  getSecondaryBranchRules,
+  SecondaryBranchRules,
+  RepoRules,
+  OrgRules,
+  getRepoRules, getOrgRules
+} from './rules/getRules'
 
 export class Engine {
   private readonly env: Environment
-  private readonly branchRules: BranchRule[] = []
-  private readonly secondaryBranchRules: SecondaryBranchRule[] = []
-  private readonly repoRules: RepoRule[] = []
-  private readonly orgRules: OrgRule[] = []
-  private readonly reports: Array<RepoReport<RepoReportData, Writers<RepoReportData>>> = []
-  private readonly overallReports: Array<RepoReport<RepoReportData, Writers<RepoReportData>>> = []
+  private readonly branchRules: BranchRules
+  private readonly secondaryBranchRules: SecondaryBranchRules
+  private readonly repoRules: RepoRules
+  private readonly orgRules: OrgRules
+  private readonly repoReports: RepoReports
+  private readonly overallReports: OverallReports
+  private readonly orgReports: OrgReports
   private readonly writer: Writer
   private readonly cache: Cache
   private readonly progress: ProgressBarManager
@@ -96,16 +48,16 @@ export class Engine {
     this.writer = writer
     this.cache = cache
     this.progress = new ProgressBarManager(env.showProgress)
-    this.registerBranchRules()
-    this.registerSecondaryBranchRules()
-    this.registerRepoRules()
-    this.registerOrgRules()
-    this.registerReports()
-    this.registerOverallReports()
+    this.branchRules = getBranchRules()
+    this.secondaryBranchRules = getSecondaryBranchRules()
+    this.repoRules = getRepoRules()
+    this.orgRules = getOrgRules()
+    this.repoReports = getRepoReports()
+    this.overallReports = getOverallReports()
+    this.orgReports = getOrgReports()
   }
 
   async run (): Promise<void> {
-    await this.getAndWriteOrgData()
     await this.cache.update()
     const allReposFile = await this.getReposCacheFile(this.cache.cache.allRepos)
     await this.cache.writeFileToCache(allReposCacheFileName, allReposFile)
@@ -118,89 +70,32 @@ export class Engine {
     await this.cache.setLastRunDate(new Date()) // we do this now because everything we are going to cache has now been cached
     await this.cache.update()
     const repos = this.cache.cache.repos
-    await this.runReports(repos)
-    await this.writeReportOutputs()
+
+    // just get rid of all reports
+    await this.writer.deleteAllFilesInDirectory('reports', '', '')
+    await this.runRepoReports(repos)
+    await this.runOrgReports()
     await this.runOverallReports(repos)
-    await this.writeOverallReports()
+
+    await this.writeReports()
   }
 
-  private registerBranchRules (): void {
-    this.branchRules.push(new DockerComposeRule())
-    this.branchRules.push(new DockerfileRule())
-    this.branchRules.push(new DotGithubDirRule())
-    this.branchRules.push(new FileCountRule())
-    this.branchRules.push(new FileTypesRules())
-    this.branchRules.push(new GitignoreRule())
-    this.branchRules.push(new PackageJsonRule())
-    this.branchRules.push(new PackageLockRule())
-    this.branchRules.push(new ReadmeRule())
-    this.branchRules.push(new TerraformRule())
-  }
+  private async getReposCacheFile (reposCacheFile: CacheFile | null): Promise<CacheFile> {
+    if (reposCacheFile != null && (Object.keys(reposCacheFile.info)).length > 0) {
+      return reposCacheFile
+    }
+    logger.info('Getting all repos in org')
+    try {
+      const repoInfoObj: Record<string, Repo> = {}
+      const repos = await getRepos()
+      for (const repo of repos) {
+        repoInfoObj[repo.name] = repo
+      }
 
-  private registerSecondaryBranchRules (): void {
-    this.secondaryBranchRules.push(new DeployedBranchRule())
-    this.secondaryBranchRules.push(new StaleBranchRule())
-  }
-
-  private registerRepoRules (): void {
-    this.repoRules.push(new LatestCommitRule())
-    this.repoRules.push(new AdminsRule())
-    this.repoRules.push(new TeamsRule())
-    this.repoRules.push(new OpenPRRule())
-    this.repoRules.push(new OpenIssueRule())
-    this.repoRules.push(new GithubActionRunRule())
-  }
-
-  private registerOrgRules (): void {
-    this.orgRules.push(new CodeScanAlertsRule())
-    this.orgRules.push(new DependabotAlertsRule())
-    this.orgRules.push(new SecretScanAlertsRule())
-  }
-
-  private registerReports (): void {
-    // reports with 0 weight do not contribute to the overall health report
-    this.reports.push(new CodeScanAlertCountReport(5, 'CodeScanAlertCountReports'))
-    this.reports.push(new DependabotAlertScanCountReport(5, 'DependabotAlertCountReport'))
-    this.reports.push(new SecretScanAlertCountReport(5, 'SecretScanAlertCountReport'))
-    this.reports.push(new CodeScanAlertReport(0, 'CodeScanAlertReports'))
-    this.reports.push(new DependabotAlertReport(0, 'DependabotAlertReport'))
-    this.reports.push(new SecretScanAlertReport(0, 'SecretScanAlertReport'))
-    this.reports.push(new DependabotBranchReport(4, 'DependabotBranchReport'))
-    this.reports.push(new StaleBranchReport(2, 'StaleBranchReport'))
-    this.reports.push(new DockerfileImageReport(3, 'DockerfileImageReport'))
-    this.reports.push(new GHActionModuleReport(3, 'GhActionModuleReport'))
-    this.reports.push(new NPMDependencyReport(3, 'NPMDependencyReport'))
-    this.reports.push(new TerraformModuleReport(3, 'TerraformModuleReport'))
-    this.reports.push(new BranchLowFilesReport(0, 'BranchLowFilesReport'))
-    this.reports.push(new DefaultBranchFileTypesReport(0, 'FileTypesReport'))
-    this.reports.push(new DevPrdBranchesReport(0, 'DevPrdBranchesReport'))
-    this.reports.push(new PrimaryLanguageReport(0, 'PrimaryLanguageReport'))
-    this.reports.push(new PublicAndInternalReport(2, 'PublicAndInternalReport'))
-    this.reports.push(new ReadmeReport(3, 'ReadmeReport'))
-    this.reports.push(new RepoHasLanguageReport(0, 'RepoHasLanguageReport'))
-    this.reports.push(new RepoLowFilesReport(1, 'RepoLowFilesReport'))
-    this.reports.push(new ReposWithoutNewCommitsReport(3, 'ReposWithoutNewCommitsReport'))
-    this.reports.push(new TeamlessRepoReport(4, 'TeamlessRepoReport'))
-    this.reports.push(new NodeBranchVersionReport(0, 'NodeVersionReport'))
-    this.reports.push(new TerraformBranchVersionReport(0, 'TerraformVersionReport'))
-    this.reports.push(new NodeRepoVersionReport(5, 'NodeVersionReport'))
-    this.reports.push(new TerraformRepoVersionReport(5, 'TerraformVersionReport'))
-  }
-
-  private registerOverallReports (): void {
-    this.overallReports.push(new OverallBranchReport(0, 'OverallReports'))
-    this.overallReports.push(new OverallRepoReport(0, 'OverallReports'))
-    this.overallReports.push(new OverallHealthScoreReport(0, 'OverallReports'))
-  }
-
-  private async getAndWriteOrgData (): Promise<void> {
-    logger.info('Getting and writing organization, org member, and org team reports')
-    const orgMembers = await getOrgMembers()
-    const orgTeams = await getOrgTeams()
-    const org = await getOrg(orgTeams.map(team => team.name), orgMembers.map(member => member.name))
-    await (new OrgReport(0, 'Organization')).run([org])
-    await (new OrgMemberReport(0, 'Organization')).run(orgMembers)
-    await (new OrgTeamReport(0, 'Organization')).run(orgTeams)
+      return attachMetadataToCacheFile(repoInfoObj)
+    } catch (error) {
+      throw new Error(`Error occurred while fetching repositories: ${error as string}`)
+    }
   }
 
   private async filterArchived (allReposFile: CacheFile): Promise<Repo[]> {
@@ -214,8 +109,37 @@ export class Engine {
     return filteredRepos
   }
 
+  private async getReposWithBranchesCacheFile (repos: Repo[], filteredWithBranches: CacheFile | null, progress: ProgressBarManager): Promise<CacheFile> {
+    if (filteredWithBranches != null && (Object.keys(filteredWithBranches.info)).length !== 0) {
+      return filteredWithBranches
+    }
+
+    logger.info('Getting all branches in org')
+    progress.reset(repos.length, 'Getting branch info for repos', [{ displayName: 'Current Repo', token: 'currentRepo' }])
+    progress.start()
+
+    const branchCount = 0
+    const reposWithBranches: Record<string, Repo> = {}
+
+    for (const repo of repos) {
+      try {
+        progress.update([{ displayName: 'Current Repo', token: 'currentRepo', value: repo.name }])
+
+        const branches = await getBranches(repo)
+        for (const branch of branches) {
+          repo.branches[branch.name] = branch
+        }
+      } catch (error: any) {
+        logger.error(`Error getting branch info for ${repo.name}: ${error as string}`)
+      }
+
+      reposWithBranches[repo.name] = repo
+    }
+    return attachMetadataToCacheFile(reposWithBranches, branchCount)
+  }
+
   private async runOrgRules (filteredWithBranchesFile: CacheFile): Promise<void> {
-    for (const orgRule of this.orgRules) {
+    for (const orgRule of Object.values(this.orgRules)) {
       await orgRule.run(filteredWithBranchesFile)
     }
   }
@@ -227,7 +151,7 @@ export class Engine {
 
     for (const repoName of repoNames) {
       this.progress.update([{ displayName: 'Current Repo', token: 'currentRepo', value: repoName }])
-      for (const repoRule of this.repoRules) {
+      for (const repoRule of Object.values(this.repoRules)) {
         await repoRule.run(repos[repoName])
       }
     }
@@ -274,92 +198,56 @@ export class Engine {
   }
 
   private async runBranchRules (repo: Repo, downloaded: JSZip, branchName: string, fileName: string): Promise<void> {
-    for (const branchRule of this.branchRules) {
+    for (const branchRule of Object.values(this.branchRules)) {
       await branchRule.run(repo, downloaded, branchName, fileName)
     }
   }
 
   private async runSecondaryBranchRules (repo: Repo, branchName: string): Promise<void> {
-    for (const secondaryBranchRule of this.secondaryBranchRules) {
+    for (const secondaryBranchRule of Object.values(this.secondaryBranchRules)) {
       await secondaryBranchRule.run(repo, branchName)
     }
   }
 
-  private async runReports (repos: Repo[]): Promise<void> {
-    for (const report of this.reports) {
+  private async runRepoReports (repos: Repo[]): Promise<void> {
+    for (const report of Object.values(this.repoReports)) {
       await report.run(repos)
     }
   }
 
-  private async writeReportOutputs (): Promise<void> {
-    // just get rid of all reports
-    await this.writer.deleteAllFilesInDirectory('reports', '', '')
-
-    for (const report of this.reports) {
-      for (const reportOutput of report.reportOutputDataWriters) {
-        await reportOutput.writeOutput(this.writer)
-      }
-    }
+  private async runOrgReports (): Promise<void> {
+    logger.info('Getting and writing organization, org member, and org team reports')
+    const orgMembers = await getOrgMembers()
+    const orgTeams = await getOrgTeams()
+    const org = await getOrg(orgTeams.map(team => team.name), orgMembers.map(member => member.name))
+    await this.orgReports.orgReport.run([org])
+    await this.orgReports.orgMemberReport.run(orgMembers)
+    await this.orgReports.orgTeamReport.run(orgTeams)
   }
 
   private async runOverallReports (repos: Repo[]): Promise<void> {
-    for (const report of this.overallReports) {
+    for (const report of Object.values(this.overallReports)) {
       await report.run(repos)
     }
   }
 
-  private async writeOverallReports (): Promise<void> {
-    for (const report of this.overallReports) {
+  private async writeReports (): Promise<void> {
+    for (const report of Object.values(this.repoReports)) {
       for (const reportOutput of report.reportOutputDataWriters) {
         await reportOutput.writeOutput(this.writer)
       }
     }
-  }
 
-  private async getReposWithBranchesCacheFile (repos: Repo[], filteredWithBranches: CacheFile | null, progress: ProgressBarManager): Promise<CacheFile> {
-    if (filteredWithBranches != null && (Object.keys(filteredWithBranches.info)).length !== 0) {
-      return filteredWithBranches
-    }
-
-    logger.info('Getting all branches in org')
-    progress.reset(repos.length, 'Getting branch info for repos', [{ displayName: 'Current Repo', token: 'currentRepo' }])
-    progress.start()
-
-    const branchCount = 0
-    const reposWithBranches: Record<string, Repo> = {}
-
-    for (const repo of repos) {
-      try {
-        progress.update([{ displayName: 'Current Repo', token: 'currentRepo', value: repo.name }])
-
-        const branches = await getBranches(repo)
-        for (const branch of branches) {
-          repo.branches[branch.name] = branch
-        }
-      } catch (error: any) {
-        logger.error(`Error getting branch info for ${repo.name}: ${error as string}`)
+    for (const report of Object.values(this.orgReports)) {
+      for (const reportOutput of report.reportOutputDataWriters) {
+        await reportOutput.writeOutput(this.writer)
       }
-
-      reposWithBranches[repo.name] = repo
     }
-    return attachMetadataToCacheFile(reposWithBranches, branchCount)
-  }
 
-  private async getReposCacheFile (reposCacheFile: CacheFile | null): Promise<CacheFile> {
-    if (reposCacheFile != null && (Object.keys(reposCacheFile.info)).length > 0) {
-      return reposCacheFile
-    }
-    logger.info('Getting all repos in org')
-    try {
-      const repoInfoObj: Record<string, Repo> = {}
-      const repos = await getRepos()
-      for (const repo of repos) {
-        repoInfoObj[repo.name] = repo
+    for (const report of Object.values(this.overallReports)) {
+      for (const reportOutput of report.reportOutputDataWriters) {
+        await reportOutput.writeOutput(this.writer)
       }
-
-      return attachMetadataToCacheFile(repoInfoObj)
-    } catch (error) {
-      throw new Error(`Error occurred while fetching repositories: ${error as string}`)
     }
   }
 }

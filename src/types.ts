@@ -463,6 +463,8 @@ export interface OctokitOptions {
   branch?: string
   state?: string
   alert_number?: number
+  permission?: string
+  affiliation?: string
 }
 
 export const CacheFileSchema = Type.Object({

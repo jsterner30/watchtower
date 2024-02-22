@@ -50,6 +50,6 @@ override.tf.json
 gen
 !/examples/**/gen
 
-**/data/
+**/data*/
 
 lastRunDate.json

@@ -80,7 +80,7 @@ export async function getRepos (): Promise<Repo[]> {
   }
 
   return await getGithubData<Repo>(true, 'org repos', 'GET /orgs/{org}/repos',
-    { org: (await getEnv()).githubOrg, per_page: 100 }, parser)
+    { org: (await getEnv()).githubOrg }, parser)
 }
 
 export async function getProtectionRules (repoName: string, branchName: string): Promise<BranchProtection> {
@@ -154,7 +154,7 @@ export async function getBranches (repo: Repo): Promise<Branch[]> {
   }
 
   return await getGithubData<Branch>(true, `branches for repo ${repo.name}`, 'GET /repos/{owner}/{repo}/branches',
-    { owner: (await getEnv()).githubOrg, repo: repo.name, per_page: 100 }, parser)
+    { owner: (await getEnv()).githubOrg, repo: repo.name }, parser)
 }
 
 function getCommitParser (): (commit: any) => Promise<Commit> {
@@ -200,10 +200,10 @@ export async function getRepoAdminTeams (repoName: string): Promise<string[]> {
   }
 
   return await getGithubData<string>(true, `admin teams for repo: ${repoName}`, 'GET /repos/{owner}/{repo}/teams',
-    { owner: (await getEnv()).githubOrg, repo: repoName, per_page: 100 }, parser)
+    { owner: (await getEnv()).githubOrg, repo: repoName }, parser)
 }
 
-export async function getOrgSecretScanAlerts (): Promise<SecretScanAlert[]> {
+export async function getOpenOrgSecretScanAlerts (): Promise<SecretScanAlert[]> {
   const parser = async (response: any): Promise<SecretScanAlert[]> => {
     const alerts: SecretScanAlert[] = []
     for (const alert of response.data) {
@@ -211,17 +211,17 @@ export async function getOrgSecretScanAlerts (): Promise<SecretScanAlert[]> {
         secretType: alert.secret_type,
         locations: await getSecretAlertLocation(alert.repository.name, alert.number),
         state: alert.state,
-        repoName: alert.repository
+        repoName: alert.repository.name
       })
     }
     return alerts
   }
 
   return await getGithubData<SecretScanAlert>(true, 'org secret scan alerts', 'GET /orgs/{org}/secret-scanning/alerts',
-    { org: (await getEnv()).githubOrg, per_page: 100 }, parser)
+    { org: (await getEnv()).githubOrg, state: 'open' }, parser)
 }
 
-export async function getOrgDependabotScanAlerts (): Promise<DependabotAlert[]> {
+export async function getOpenOrgDependabotScanAlerts (): Promise<DependabotAlert[]> {
   const parser = async (response: any): Promise<DependabotAlert[]> => {
     const alerts: DependabotAlert[] = []
     for (const alert of response.data) {
@@ -239,10 +239,10 @@ export async function getOrgDependabotScanAlerts (): Promise<DependabotAlert[]> 
   }
 
   return await getGithubData<DependabotAlert>(true, 'org secret scan alerts', 'GET /orgs/{org}/dependabot/alerts',
-    { org: (await getEnv()).githubOrg, per_page: 100 }, parser)
+    { org: (await getEnv()).githubOrg, state: 'open' }, parser)
 }
 
-export async function getOrgCodeScanAlerts (): Promise<CodeScanAlert[]> {
+export async function getOpenOrgCodeScanAlerts (): Promise<CodeScanAlert[]> {
   const parser = async (response: any): Promise<CodeScanAlert[]> => {
     const alerts: CodeScanAlert[] = []
     for (const alert of response.data) {
@@ -275,7 +275,7 @@ export async function getOrgCodeScanAlerts (): Promise<CodeScanAlert[]> {
   }
 
   return await getGithubData<CodeScanAlert>(true, 'org code scan alerts', 'GET /orgs/{org}/code-scanning/alerts',
-    { org: (await getEnv()).githubOrg, per_page: 100 }, parser)
+    { org: (await getEnv()).githubOrg, state: 'open' }, parser)
 }
 
 export async function getSecretAlertLocation (repoName: string, alertNumber: number): Promise<SecretAlertLocation[]> {
@@ -292,7 +292,7 @@ export async function getSecretAlertLocation (repoName: string, alertNumber: num
   }
 
   return await getGithubData<SecretAlertLocation>(true, `secret-scanning alert locations for repo: ${repoName}`, 'GET /repos/{owner}/{repo}/secret-scanning/alerts/{alert_number}/locations',
-    { owner: (await getEnv()).githubOrg, per_page: 100, repo: repoName, alert_number: alertNumber }, parser)
+    { owner: (await getEnv()).githubOrg, repo: repoName, alert_number: alertNumber }, parser)
 }
 
 export async function downloadRepoToMemory (repoName: string, branchName: string): Promise<JSZip> {
@@ -305,12 +305,11 @@ export async function downloadRepoToMemory (repoName: string, branchName: string
 
 export async function getRepoAdmins (repoName: string): Promise<string[]> {
   const parser = async (response: any): Promise<string[]> => {
-    const admins = response.data.filter((collaborator: any) => collaborator.permissions?.admin)
-    return admins.map((admin: any) => admin.login)
+    return response.data.map((admin: any) => admin.login)
   }
 
-  return await getGithubData<string>(true, `admins for repo: ${repoName}`, 'GET /repos/{owner}/{repo}/contributors',
-    { owner: (await getEnv()).githubOrg, repo: repoName }, parser)
+  return await getGithubData<string>(true, `admins for repo: ${repoName}`, 'GET /repos/{owner}/{repo}/collaborators',
+    { owner: (await getEnv()).githubOrg, repo: repoName, permission: 'admin', affiliation: 'direct' }, parser)
 }
 
 export async function getRepoGithubActionRuns (repoName: string): Promise<GithubActionRun[]> {
@@ -330,7 +329,7 @@ export async function getRepoGithubActionRuns (repoName: string): Promise<Github
     return runs
   }
   return await getGithubData<GithubActionRun>(false, `github action runs for repo: ${repoName}`, 'GET /repos/{owner}/{repo}/actions/runs',
-    { owner: (await getEnv()).githubOrg, repo: repoName, per_page: 100 }, parser, 'workflow_runs')
+    { owner: (await getEnv()).githubOrg, repo: repoName }, parser, 'workflow_runs')
 }
 
 export async function getRepoOpenIssues (repoName: string): Promise<Issue[]> {
@@ -352,7 +351,7 @@ export async function getRepoOpenIssues (repoName: string): Promise<Issue[]> {
   }
 
   return await getGithubData<Issue>(true, `issues for repo: ${repoName}`, '/repos/{owner}/{repo}/issues',
-    { owner: (await getEnv()).githubOrg, repo: repoName, state: 'open', per_page: 100 }, parser)
+    { owner: (await getEnv()).githubOrg, repo: repoName, state: 'open' }, parser)
 }
 
 export async function getRepoOpenPRs (repoName: string): Promise<PullRequest[]> {
@@ -387,7 +386,7 @@ export async function searchOrganizationForStrings (searchTerms: string[]): Prom
   const org = (await getEnv()).githubOrg
 
   for (const term of searchTerms) {
-    reposWithTerms.push(...await getGithubData<Record<string, any>>(true, `search strings: ${term}`, 'GET /search/code', { q: `${term}+org:${org}`, per_page: 100 }, parser, 'items'))
+    reposWithTerms.push(...await getGithubData<Record<string, any>>(true, `search strings: ${term}`, 'GET /search/code', { q: `${term}+org:${org}` }, parser, 'items'))
   }
   return reposWithTerms
 }
@@ -446,7 +445,7 @@ export async function getOrgMembers (): Promise<GithubMember[]> {
       name: member.login,
       type: member.type
     }))
-  return await getGithubData<GithubMember>(true, 'organization members', 'GET /orgs/{org}/members', { org: (await getEnv()).githubOrg, per_page: 100 }, parser)
+  return await getGithubData<GithubMember>(true, 'organization members', 'GET /orgs/{org}/members', { org: (await getEnv()).githubOrg }, parser)
 }
 
 export async function getOrgTeams (): Promise<GithubTeam[]> {
@@ -469,17 +468,17 @@ export async function getOrgTeams (): Promise<GithubTeam[]> {
     return teams
   }
 
-  return await getGithubData<GithubTeam>(true, 'organization teams', 'GET /orgs/{org}/teams', { org: (await getEnv()).githubOrg, per_page: 100 }, parser)
+  return await getGithubData<GithubTeam>(true, 'organization teams', 'GET /orgs/{org}/teams', { org: (await getEnv()).githubOrg }, parser)
 }
 
 async function getTeamMembers (teamSlug: string): Promise<string[]> {
   const parser = async (response: any): Promise<string[]> => response.data.map((member: any) => member.login)
-  return await getGithubData<string>(true, 'team members', 'GET /orgs/{org}/teams/{team_slug}/members', { org: (await getEnv()).githubOrg, per_page: 100, team_slug: teamSlug }, parser)
+  return await getGithubData<string>(true, 'team members', 'GET /orgs/{org}/teams/{team_slug}/members', { org: (await getEnv()).githubOrg, team_slug: teamSlug }, parser)
 }
 
 async function getTeamRepos (teamSlug: string): Promise<string[]> {
   const parser = async (response: any): Promise<string[]> => response.data.map((repo: any) => repo.name)
-  return await getGithubData<string>(true, 'team repos', 'GET /orgs/{org}/teams/{team_slug}/repos', { org: (await getEnv()).githubOrg, per_page: 100, team_slug: teamSlug }, parser)
+  return await getGithubData<string>(true, 'team repos', 'GET /orgs/{org}/teams/{team_slug}/repos', { org: (await getEnv()).githubOrg, team_slug: teamSlug }, parser)
 }
 
 async function getGithubData<T> (
@@ -494,6 +493,7 @@ async function getGithubData<T> (
     const octokit = await getOctokit()
     const data: T[] = []
     let page = 1
+    octokitOptions.per_page = octokitOptions.per_page == null && usePaging ? 100 : octokitOptions.per_page // if not passed in and we are paging, default to 100
     let response
     while (true) {
       response = await octokit.request(route, { ...octokitOptions, ...{ page } })

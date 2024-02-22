@@ -1,11 +1,11 @@
-import { Writers } from '../../report'
+import { Writers } from '../report'
 import {
   getOverallGPAScore,
   HeaderTitles,
   ReportWriter
-} from '../../../util'
-import { Repo } from '../../../types'
-import { RepoReport, RepoReportData } from '../repoReport'
+} from '../../util'
+import { Repo } from '../../types'
+import { RepoReport, RepoReportData } from '../repoReports/repoReport'
 
 interface OverallHealthScoreReportData extends RepoReportData {
   repoName: string

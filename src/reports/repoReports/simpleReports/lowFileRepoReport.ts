@@ -6,17 +6,17 @@ import { HeaderTitles, ReportWriter } from '../../../util'
 import { Writers } from '../../report'
 import { RepoReport, RepoReportData } from '../repoReport'
 
-interface RepoLowFileReportData extends RepoReportData {
+interface LowFileRepoReportData extends RepoReportData {
   repoName: string
   fileCount: number
 }
 
-interface RepoLowFileReportWriters extends Writers<RepoLowFileReportData> {
-  repoLowFileReportWriter: ReportWriter<RepoLowFileReportData>
+interface LowFileRepoReportWriters extends Writers<LowFileRepoReportData> {
+  lowFileRepoReportWriter: ReportWriter<LowFileRepoReportData>
 }
 
-export class RepoLowFilesReport extends RepoReport<RepoLowFileReportData, RepoLowFileReportWriters> {
-  protected async runReport (repo: Repo, writers: RepoLowFileReportWriters): Promise<void> {
+export class LowFileRepoReport extends RepoReport<LowFileRepoReportData, LowFileRepoReportWriters> {
+  protected async runReport (repo: Repo, writers: LowFileRepoReportWriters): Promise<void> {
     let someBranchHasFiles = false
     for (const branchName in repo.branches) {
       if (repo.branches[branchName].fileCount > 5 && !repo.branches[branchName].dependabot) {
@@ -24,22 +24,22 @@ export class RepoLowFilesReport extends RepoReport<RepoLowFileReportData, RepoLo
       }
     }
     if (!someBranchHasFiles && Object.keys(repo.branches).length !== 0) {
-      writers.repoLowFileReportWriter.addRow({
+      writers.lowFileRepoReportWriter.addRow({
         repoName: repo.name,
         fileCount: repo.branches[repo.defaultBranch].fileCount
       })
     }
 
-    repo.healthScores[RepoLowFilesReport.name] = await this.grade({ someBranchHasFiles, numberBranches: Object.keys(repo.branches).length })
+    repo.healthScores[LowFileRepoReport.name] = await this.grade({ someBranchHasFiles, numberBranches: Object.keys(repo.branches).length })
   }
 
-  protected getReportWriters (): RepoLowFileReportWriters {
+  protected getReportWriters (): LowFileRepoReportWriters {
     return {
-      repoLowFileReportWriter: new ReportWriter(this.getHeaderTitles(), this._outputDir, this.name)
+      lowFileRepoReportWriter: new ReportWriter(this.getHeaderTitles(), this._outputDir, this.name)
     }
   }
 
-  protected getHeaderTitles (): HeaderTitles<RepoLowFileReportData> {
+  protected getHeaderTitles (): HeaderTitles<LowFileRepoReportData> {
     return {
       repoName: 'Repo',
       fileCount: 'FileCount'
@@ -61,6 +61,6 @@ export class RepoLowFilesReport extends RepoReport<RepoLowFileReportData, RepoLo
   }
 
   public get name (): string {
-    return RepoLowFilesReport.name
+    return LowFileRepoReport.name
   }
 }
