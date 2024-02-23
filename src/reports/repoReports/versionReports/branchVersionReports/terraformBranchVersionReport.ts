@@ -9,7 +9,7 @@ import { gatherTerraformFiles } from '../../../../util'
 export class TerraformBranchVersionReport extends BranchVersionReport {
   protected modifyReportBranchResults = (branchExtremeVersions: ExtremeVersions, repo: Repo, branchName: string): void => {
     repo.branches[branchName].reportResults.lowTerraformVersion = branchExtremeVersions.lowestVersion
-    repo.branches[branchName].reportResults.lowTerraformVersion = branchExtremeVersions.highestVersion
+    repo.branches[branchName].reportResults.highTerraformVersion = branchExtremeVersions.highestVersion
   }
 
   protected gatherSoftwareFiles (repo: Repo, branchName: string): VersionLocation[] {

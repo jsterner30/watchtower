@@ -126,9 +126,9 @@ Step 0 (One time): Install awscli
 
 ```pip install awscli```
 
-Step 2: Log Into the ces-architects-prd AWS Account
+Step 1: Log Into the ces-architects-prd AWS Account
 
-Step 3: Download Data
+Step 2: Download Data
 
 ```aws s3 sync s3://watchtower-prd-output ./```
 
@@ -142,4 +142,6 @@ Step 3: Download Data
 6. access tokens/ non expiring tokens? 
 7. manually added org github users? 
 8. parse node versions from gha modules action.yml files
+9. replace sinon in tests with native ts-mockito implementation
+10. fix overall health score report
 
