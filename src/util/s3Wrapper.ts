@@ -22,7 +22,7 @@ export class S3Wrapper {
       return await data.Body.transformToString()
     } catch (e: any) {
       if (e.$metadata.httpStatusCode === 404) {
-        logger.error(`"${key}" not found in s3`)
+        logger.warn(`"${key}" not found in s3`)
       } else {
         logger.error(`There was an error getting config object from s3: ${e as string}`)
       }

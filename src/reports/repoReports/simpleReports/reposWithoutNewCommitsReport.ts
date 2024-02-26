@@ -4,7 +4,7 @@ import {
   GradeEnum, HealthScore
 } from '../../../types'
 import { Writers } from '../../report'
-import { ReportWriter, HeaderTitles } from '../../../util'
+import { ReportWriter, HeaderTitles, date1970 } from '../../../util'
 import { RepoReport, RepoReportData } from '../repoReport'
 
 export interface ReposWithoutNewCommitsReportData extends RepoReportData {
@@ -52,7 +52,6 @@ export class ReposWithoutNewCommitsReport extends RepoReport<ReposWithoutNewComm
     const dateSixMonthsAgo = new Date(new Date().setDate(currentDate.getDate() - 180)).toISOString()
     const dateOneYearAgo = new Date(new Date().setDate(currentDate.getDate() - 365)).toISOString()
     const dateTwoYearsAgo = new Date(new Date().setDate(currentDate.getDate() - 730)).toISOString()
-    const date1970 = '1970-01-01T00:00:00.000Z'
 
     const gradeMinValues: Record<string, Grade> = {
       [dateThirtyDaysAgo]: GradeEnum.A,

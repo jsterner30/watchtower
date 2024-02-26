@@ -14,3 +14,5 @@ export const defaultCommit: Commit = {
   date: '0000-00-00T00:00:00Z',
   message: ''
 }
+
+export const date1970: string = '1970-01-01T00:00:00Z'

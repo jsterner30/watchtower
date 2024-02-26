@@ -55,7 +55,7 @@ export class LocalWriter extends Writer {
       this.ensureDataTypeMatchesFileType(dataType, filePath)
       return await this.fileSystemWrapper.readFile(path.resolve('data', fileUsage, dataType, filePath))
     } catch (error) {
-      logger.error(`File: ${filePath} doesn't exist.`)
+      logger.warn(`File: ${filePath} doesn't exist.`)
       return null
     }
   }
@@ -84,7 +84,7 @@ export class LocalWriter extends Writer {
 
       return fileObject
     } catch (error: any) {
-      logger.error(`Error reading local files: ${error as string}`)
+      logger.warn(`Error reading local files: ${error as string}`)
       return null
     }
   }

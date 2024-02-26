@@ -183,7 +183,10 @@ export function gatherNodeFiles (repo: Repo, branchName: string): VersionLocatio
         }
       }
     } else if (validGHASourceFile.Check(dep) && dep.fileType === 'GITHUB_ACTION_SOURCE') {
-      // todo parse this file type for node version
+      if ((dep.contents?.runs?.using as string)?.includes('node')) {
+        const version = dep.contents.runs.using.split('node')[1]
+        branchNodeFiles.push({ filePath: dep.fileName, version, branch: branchName })
+      }
     }
   }
   return branchNodeFiles

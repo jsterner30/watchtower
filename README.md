@@ -120,6 +120,11 @@ or
 
 ```npm run dev```
 
+
+### Environments
+
+This repo has both dev and prd branches. The dev scheduled job is set to never run and the dev environment exists primarily to test new features. It should be invoked manually when needed. 
+
 ## Downloading Data
 
 Step 0 (One time): Install awscli
@@ -138,10 +143,8 @@ Step 2: Download Data
 2. Dynamic LTS versioning for things besides node
 3. Create rfc template and use in GH actions for standard change
 4. Get teams webhook url and use in GH actions for teams notification
-5. Update readme to match reality
-6. access tokens/ non expiring tokens? 
-7. manually added org github users? 
-8. parse node versions from gha modules action.yml files
-9. replace sinon in tests with native ts-mockito implementation
-10. fix overall health score report
-
+5. access tokens/ non expiring tokens? Is it even possible to get non fine grained tokens?
+6. manually added org github users? 
+7. parse node versions from gha modules action.yml files
+8. replace sinon in tests with native ts-mockito implementation
+. 

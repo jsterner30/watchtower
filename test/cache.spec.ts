@@ -6,7 +6,7 @@ import {
   S3Writer,
   lastRunDateFileName,
   filteredWithBranchesCacheFileName,
-  allReposCacheFileName
+  allReposCacheFileName, date1970
 } from '../src/util'
 import { mock, when, reset, anyString, verify, instance } from 'ts-mockito'
 import { fakeCacheFile, fakeRepo } from './helpers/dummyData'
@@ -35,7 +35,7 @@ test.beforeEach(t => {
  */
 // USE_CACHE = false tests
 const defaultCacheInfo: CacheInfo = {
-  lastRunDate: '1970-01-01T00:00:00Z',
+  lastRunDate: date1970,
   allRepos: null,
   filteredWithBranches: null,
   repos: []
@@ -96,7 +96,7 @@ test.serial('getLastRunDate() should get a lastRunDate of 1970 when writer retur
   when(mockWriter.readFile(fileUsage, dataType, lastRunDateFileName)).thenResolve(null)
   const date = await cache.getLastRunDate()
   verify(mockWriter.writeFile(anyString(), anyString(), anyString(), anyString())).times(1)
-  t.deepEqual(date, '1970-01-01T00:00:00Z')
+  t.deepEqual(date, date1970)
 })
 
 test.serial('getLastRunDate() should get a non-1970 lastRunDate when writer returns returns a date', async t => {

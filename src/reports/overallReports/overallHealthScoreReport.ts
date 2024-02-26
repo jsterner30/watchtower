@@ -33,7 +33,7 @@ export class OverallHealthScoreReport extends RepoReport<OverallHealthScoreRepor
       try {
         // only include contributing reports
         if (report.weight > 0) {
-          reportRow[report.name] = repo.healthScores[report.name].grade ?? GradeEnum.NotApplicable
+          reportRow[report.name] = repo.healthScores[report.name]?.grade ?? GradeEnum.NotApplicable
         }
       } catch (error) {
         logger.error(`Error adding row to overall health report for repo: ${repo.name}, report: ${report.name as string}, error: ${error as string}`)

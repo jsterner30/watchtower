@@ -2,7 +2,7 @@ import { Writer } from './writer'
 import { CacheFile, Repo, validRepo, validCacheFile } from '../types'
 import { logger } from './logger'
 import { errorHandler, stringifyJSON } from './util'
-import { allReposCacheFileName, filteredWithBranchesCacheFileName, lastRunDateFileName } from './constants'
+import { allReposCacheFileName, date1970, filteredWithBranchesCacheFileName, lastRunDateFileName } from './constants'
 
 export interface CacheInfo {
   lastRunDate: string
@@ -20,7 +20,7 @@ export class Cache {
     this._writer = writer
     this._useCache = useCache
     this._cache = {
-      lastRunDate: '1970-01-01T00:00:00Z',
+      lastRunDate: date1970,
       allRepos: null,
       filteredWithBranches: null,
       repos: []
@@ -50,7 +50,7 @@ export class Cache {
     const date = dateString == null ? null : JSON.parse(dateString)
 
     if (date == null) {
-      const date = { lastRunDate: '1970-01-01T00:00:00Z' }
+      const date = { lastRunDate: date1970 }
       await this._writer.writeFile('cache', 'json', lastRunDateFileName, stringifyJSON(date, lastRunDateFileName))
       return date.lastRunDate
     }
