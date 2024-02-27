@@ -144,7 +144,7 @@ Step 2: Download Data
 3. Create rfc template and use in GH actions for standard change
 4. Get teams webhook url and use in GH actions for teams notification
 5. access tokens/ non expiring tokens? Is it even possible to get non fine grained tokens?
-6. manually added org github users? 
-7. parse node versions from gha modules action.yml files
-8. replace sinon in tests with native ts-mockito implementation
-. 
+6. manually added org github users?
+7. replace sinon in tests with native ts-mockito implementation
+8. versions should be valid semver in version reports 
+9. paths should remove repo and commit hash in filePath in version reports
