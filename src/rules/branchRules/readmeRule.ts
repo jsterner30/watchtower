@@ -1,11 +1,11 @@
 import JSZip from 'jszip'
-import { ReadmeFile, FileTypeEnum, type RepoInfo } from '../../types'
+import { ReadmeFile, FileTypeEnum, type Repo } from '../../types'
 import { errorHandler } from '../../util'
 import MarkdownIt from 'markdown-it'
 import { BranchRule } from '../rule'
 
 export class ReadmeRule extends BranchRule {
-  async run (repo: RepoInfo, downloaded: JSZip, branchName: string, fileName: string): Promise<void> {
+  async run (repo: Repo, downloaded: JSZip, branchName: string, fileName: string): Promise<void> {
     try {
       if (downloaded.files[fileName].name.endsWith('README.md')) {
         const content = await downloaded.files[fileName].async('string')

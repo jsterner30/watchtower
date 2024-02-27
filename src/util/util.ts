@@ -1,6 +1,15 @@
 import { logger } from './logger'
 import { nodeLTSUrl, startingHighestVersion, startingLowestVersion } from './constants'
-import { ExtremeVersions, VersionLocation } from '../types'
+import {
+  CacheFile,
+  ExtremeVersions,
+  FileTypeEnum,
+  Repo,
+  validDockerfile,
+  validGHAFile, validGHASourceFile,
+  validTerraformFile,
+  VersionLocation
+} from '../types'
 import { compare, validate } from 'compare-versions'
 import stringify from 'json-stringify-safe'
 
@@ -29,7 +38,7 @@ export async function fetchNodeLTSVersion (): Promise<string> {
       throw new Error(`Failed to fetch schedule data. Status: ${response.status}`)
     }
 
-    const scheduleData = await response.json()
+    const scheduleData: any = await response.json()
     for (const version in scheduleData) {
       if (new Date(scheduleData[version].lts) < new Date() && new Date(scheduleData[version].maintenance) > new Date()) {
         return version.split('v')[1]
@@ -90,14 +99,27 @@ export function removeComparatorsInVersion (version: string): string {
   return curVer
 }
 
-export function getExtremeVersions (versionLocations: VersionLocation[], currentExtremeVersions: ExtremeVersions = { lowestVersion: startingLowestVersion, highestVersion: startingHighestVersion }): ExtremeVersions {
+export function getExtremeVersions (versionLocations: VersionLocation[],
+  currentExtremeVersions: ExtremeVersions = {
+    lowestVersion: startingLowestVersion,
+    lowestVersionBranch: '',
+    lowestVersionPath: '',
+    highestVersion: startingHighestVersion,
+    highestVersionPath: '',
+    highestVersionBranch: ''
+  }
+): ExtremeVersions {
   for (const versionLocation of versionLocations) {
     if (validate(versionLocation.version)) {
       if (compare(currentExtremeVersions.lowestVersion, versionLocation.version, '>')) {
         currentExtremeVersions.lowestVersion = versionLocation.version
+        currentExtremeVersions.lowestVersionPath = versionLocation.filePath
+        currentExtremeVersions.lowestVersionBranch = versionLocation.branch
       }
       if (compare(currentExtremeVersions.highestVersion, versionLocation.version, '<')) {
         currentExtremeVersions.highestVersion = versionLocation.version
+        currentExtremeVersions.highestVersionPath = versionLocation.filePath
+        currentExtremeVersions.highestVersionBranch = versionLocation.branch
       }
     }
   }
@@ -124,4 +146,69 @@ export function sortObjectKeys (unordered: Record<string, any>): Record<string, 
     {}
   )
   return ordered
+}
+
+export function attachMetadataToCacheFile (info: Record<string, Repo>, branchCount: number = 0): CacheFile {
+  return {
+    metadata: {
+      repoCount: Object.keys(info).length,
+      branchCount,
+      lastRunDate: new Date().toISOString()
+    },
+    info: sortObjectKeys(info)
+  }
+}
+
+export function gatherNodeFiles (repo: Repo, branchName: string): VersionLocation[] {
+  const branchNodeFiles: VersionLocation[] = []
+  for (const dep of repo.branches[branchName].deps) {
+    if (validDockerfile.Check(dep) && dep.fileType === FileTypeEnum.DOCKERFILE) {
+      if (dep.image.includes('node')) {
+        // The code below will return "-1" if the node version is simply "node". Else, it will return "18.13.18-slim" if the image is "node:18.13.18-slim"
+        const version = dep.image.split('node')[1] === '' ? '-1' : dep.image.split('node')[1].slice(1, dep.image.split('node')[1].length)
+        branchNodeFiles.push({ filePath: dep.fileName, version, branch: branchName })
+      }
+    } else if (validGHAFile.Check(dep) && dep.fileType === FileTypeEnum.GITHUB_ACTION) {
+      if (dep.contents.env?.node_version != null) {
+        branchNodeFiles.push({ filePath: dep.fileName, version: dep.contents.env.node_version, branch: branchName })
+      }
+    } else if (validTerraformFile.Check(dep) && dep.fileType === 'TERRAFORM') {
+      for (const moduleName in dep.contents.module) {
+        for (const subModule of dep.contents.module[moduleName]) {
+          if (subModule.runtime != null) {
+            if ((subModule.runtime as string).includes('nodejs')) {
+              branchNodeFiles.push({ filePath: dep.fileName, version: subModule.runtime.split('nodejs')[1], branch: branchName })
+            }
+          }
+        }
+      }
+    } else if (validGHASourceFile.Check(dep) && dep.fileType === 'GITHUB_ACTION_SOURCE') {
+      if ((dep.contents?.runs?.using as string)?.includes('node')) {
+        const version = dep.contents.runs.using.split('node')[1]
+        branchNodeFiles.push({ filePath: dep.fileName, version, branch: branchName })
+      }
+    }
+  }
+  return branchNodeFiles
+}
+
+export function gatherTerraformFiles (repo: Repo, branchName: string): VersionLocation[] {
+  const branchTerraformFiles: VersionLocation[] = []
+  for (const dep of repo.branches[branchName].deps) {
+    if (validTerraformFile.Check(dep) && dep.fileType === FileTypeEnum.TERRAFORM) {
+      // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+      if (dep.contents.terraform?.[0]?.required_version != null) {
+        branchTerraformFiles.push({
+          filePath: dep.fileName,
+          version: removeComparatorsInVersion(dep.contents.terraform?.[0].required_version),
+          branch: branchName
+        })
+      }
+    } else if (validGHAFile.Check(dep) && dep.fileType === FileTypeEnum.GITHUB_ACTION) {
+      if (dep.contents.env?.tf_version != null) {
+        branchTerraformFiles.push({ filePath: dep.fileName, version: removeComparatorsInVersion(dep.contents.env.tf_version), branch: branchName })
+      }
+    }
+  }
+  return branchTerraformFiles
 }

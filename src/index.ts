@@ -1,4 +1,4 @@
-import { getEnv, getOctokit, Cache, S3Writer, LocalWriter, Writer } from './util'
+import { getEnv, Cache, S3Writer, LocalWriter, Writer } from './util'
 import { Engine } from './engine'
 
 async function run (): Promise<void> {
@@ -7,9 +7,8 @@ async function run (): Promise<void> {
   if (env.writeFilesLocally) {
     writer = new LocalWriter()
   }
-  const octokit = await getOctokit()
   const cache = new Cache(writer, env.useCache)
-  const engine = new Engine(env, octokit, cache, writer)
+  const engine = new Engine(env, cache, writer)
   await engine.run()
 }
 

@@ -1,10 +1,11 @@
-import { CacheFile } from '../../src/types'
+import { Branch, CacheFile, Repo } from '../../src/types'
 
-export const fakeBranch = {
+export const fakeBranch: Branch = {
   name: 'feature/api-authentication',
   lastCommit: {
     author: 'Jesse Millar',
-    date: '2015-05-11T17:37:37Z'
+    date: '2015-05-11T17:37:37Z',
+    message: ''
   },
   dependabot: false,
   deps: [],
@@ -24,7 +25,7 @@ export const fakeBranch = {
     highTerraformVersion: '??'
   }
 }
-export const fakeRepo = {
+export const fakeRepo: Repo = {
   name: 'fakeRepo',
   private: true,
   url: 'https://api.github.com/repos/org/fakeRepo',
@@ -40,7 +41,8 @@ export const fakeRepo = {
   },
   lastCommit: {
     author: '',
-    date: '1971-01-01T00:00:00Z'
+    date: '1971-01-01T00:00:00Z',
+    message: ''
   },
   openPullRequests: [],
   openIssues: [],
@@ -59,7 +61,11 @@ export const fakeRepo = {
     none: []
   },
   secretScanAlerts: {
-    critical: []
+    low: [],
+    medium: [],
+    high: [],
+    critical: [],
+    none: []
   },
   teams: [],
   admins: [],

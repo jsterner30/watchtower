@@ -1,11 +1,11 @@
-import { DockerComposeFile, FileTypeEnum, RepoInfo } from '../../types'
+import { DockerComposeFile, FileTypeEnum, Repo } from '../../types'
 import { load } from 'js-yaml'
 import { errorHandler } from '../../util'
 import { BranchRule } from '../rule'
 import JSZip from 'jszip'
 
 export class DockerComposeRule extends BranchRule {
-  async run (repo: RepoInfo, downloaded: JSZip, branchName: string, fileName: string): Promise<void> {
+  async run (repo: Repo, downloaded: JSZip, branchName: string, fileName: string): Promise<void> {
     try {
       if (downloaded.files[fileName].name.endsWith('docker-compose.yml') || downloaded.files[fileName].name.endsWith('docker-compose.yaml')) {
         const content = await downloaded.files[fileName].async('string')

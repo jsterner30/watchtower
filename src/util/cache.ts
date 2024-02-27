@@ -1,14 +1,14 @@
 import { Writer } from './writer'
-import { CacheFile, RepoInfo, validRepoInfo, validCacheFile } from '../types'
+import { CacheFile, Repo, validRepo, validCacheFile } from '../types'
 import { logger } from './logger'
 import { errorHandler, stringifyJSON } from './util'
-import { allReposCacheFileName, filteredWithBranchesCacheFileName, lastRunDateFileName } from './constants'
+import { allReposCacheFileName, date1970, filteredWithBranchesCacheFileName, lastRunDateFileName } from './constants'
 
 export interface CacheInfo {
   lastRunDate: string
   allRepos: CacheFile | null
   filteredWithBranches: CacheFile | null
-  repos: RepoInfo[]
+  repos: Repo[]
 }
 
 export class Cache {
@@ -20,7 +20,7 @@ export class Cache {
     this._writer = writer
     this._useCache = useCache
     this._cache = {
-      lastRunDate: '1970-01-01T00:00:00Z',
+      lastRunDate: date1970,
       allRepos: null,
       filteredWithBranches: null,
       repos: []
@@ -50,7 +50,7 @@ export class Cache {
     const date = dateString == null ? null : JSON.parse(dateString)
 
     if (date == null) {
-      const date = { lastRunDate: '1970-01-01T00:00:00Z' }
+      const date = { lastRunDate: date1970 }
       await this._writer.writeFile('cache', 'json', lastRunDateFileName, stringifyJSON(date, lastRunDateFileName))
       return date.lastRunDate
     }
@@ -83,16 +83,16 @@ export class Cache {
     }
   }
 
-  async getRepoInfoCacheFiles (directoryName: string): Promise<RepoInfo[]> {
+  async getRepoInfoCacheFiles (directoryName: string): Promise<Repo[]> {
     const repoInfoCacheFiles = await this._writer.readAllFilesInDirectory('cache', 'json', directoryName)
-    const repos: RepoInfo[] = []
+    const repos: Repo[] = []
     if (repoInfoCacheFiles != null) {
       for (const repoInfoFile in repoInfoCacheFiles) {
         const repoInfoString = repoInfoCacheFiles[repoInfoFile]
         if (repoInfoString != null) {
           try {
             const repoInfo = JSON.parse(repoInfoString)
-            if (validRepoInfo.Check(repoInfo)) {
+            if (validRepo.Check(repoInfo)) {
               repos.push(repoInfo)
             } else {
               logger.error(`Invalid RepoInfo found for ${repoInfoFile}`)
@@ -106,7 +106,7 @@ export class Cache {
     return repos
   }
 
-  async writeFileToCache (filePath: string, body: CacheFile | RepoInfo): Promise<void> {
+  async writeFileToCache (filePath: string, body: CacheFile | Repo): Promise<void> {
     logger.info(`Writing file to cache: ${filePath}`)
     await this._writer.writeFile('cache', 'json', filePath, stringifyJSON(body, filePath))
   }

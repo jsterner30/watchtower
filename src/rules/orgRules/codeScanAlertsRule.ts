@@ -1,59 +1,16 @@
-import { errorHandler, getEnv } from '../../util'
-import type { CacheFile, CodeScanAlertBySeverityLevel } from '../../types'
+import { errorHandler, getOpenOrgCodeScanAlerts } from '../../util'
+import type { CacheFile } from '../../types'
 import { OrgRule } from '../rule'
 
 export class CodeScanAlertsRule extends OrgRule {
   async run (cacheFile: CacheFile): Promise<void> {
     try {
-      let alerts: any = []
-      let page = 1
-      while (true) {
-        const org = (await getEnv()).githubOrg
-        const { data } = await this.octokit.request(`GET /orgs/${org}/code-scanning/alerts`, {
-          org,
-          per_page: 100,
-          page
-        })
-
-        alerts = [...alerts, ...data]
-        if (data.length < 100) {
-          break
-        }
-        page++
-      }
-
+      const alerts = await getOpenOrgCodeScanAlerts()
       const repos = cacheFile.info
       for (const alert of alerts) {
-        if (alert.state === 'open') {
-          if (alert.repository?.name != null && repos[alert.repository.name] != null) {
-            try {
-              const securitySeverity = (alert.rule?.security_severity_level?.toLowerCase() ?? 'none') as keyof CodeScanAlertBySeverityLevel
-
-              repos[alert.repository.name].codeScanAlerts[securitySeverity].push({
-                rule: {
-                  id: alert.rule.id,
-                  severity: alert.rule.severity,
-                  description: alert.rule.description,
-                  tags: alert.rule.tags,
-                  securitySeverityLevel: alert.rule.security_severity_level ?? 'none'
-                },
-                tool: {
-                  name: alert.tool.name,
-                  version: alert.tool.version
-                },
-                mostRecentInstance: {
-                  ref: alert.most_recent_instance.ref,
-                  environment: alert.most_recent_instance.environment,
-                  category: alert.most_recent_instance.category,
-                  commitSha: alert.most_recent_instance.commit_sha,
-                  message: alert.most_recent_instance.message.text,
-                  locationPath: alert.most_recent_instance.location.path
-                }
-              })
-            } catch (error) {
-              errorHandler(error, CodeScanAlertsRule.name, alert.repository.name)
-            }
-          }
+        if (repos[alert.repoName] != null) {
+          const securitySeverity = alert.rule.securitySeverityLevel
+          repos[alert.repoName].codeScanAlerts[securitySeverity].push(alert)
         }
       }
     } catch (error) {

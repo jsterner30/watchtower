@@ -3,109 +3,66 @@ import {
   Writer,
   Cache,
   ProgressBarManager,
-  getOverallGPAScore,
-  ReportOutputData,
-  getAllReposInOrg,
   getBranches,
-  getBranchCommitInfo,
   downloadRepoToMemory,
   allReposCacheFileName,
   filteredWithBranchesCacheFileName,
-  startingLowestVersion,
-  startingHighestVersion
+  getOrgMembers, getOrg, getOrgTeams, getBranch, attachMetadataToCacheFile, getRepos, errorHandler
 } from './util'
-import { Report } from './reports/report'
-import {
-  CodeScanAlertCountReport,
-  CodeScanAlertReport,
-  DependabotAlertReport,
-  DependabotBranchReport,
-  DevPrdBranchesReport,
-  DockerfileImageReport,
-  FileTypesReport,
-  GhActionModuleReport,
-  LanguageReport,
-  LowFilesReport,
-  NPMDependencyReport,
-  NodeVersionReport,
-  PublicAndInternalReport,
-  ReadmeReport,
-  ReposWithoutNewCommitsReport,
-  SecretScanAlertReport,
-  SecretScanAlertCountReport,
-  StaleBranchReport,
-  TeamlessRepoReport,
-  TerraformModuleReport,
-  TerraformVersionReport
-} from './reports/reports'
-import { DependabotAlertCountReport } from './reports/reports/dependabotAlertCountReport'
-import { BranchRule, OrgRule, RepoRule, SecondaryBranchRule } from './rules/rule'
-import {
-  DeployedBranchRule,
-  StaleBranchRule
-} from './rules/secondaryBranchRules'
-import {
-  DockerComposeRule,
-  DockerfileRule,
-  DotGithubDirRule,
-  FileCountRule,
-  FileTypesRules,
-  GitignoreRule,
-  PackageJsonRule,
-  PackageLockRule,
-  ReadmeRule,
-  TerraformRule
-} from './rules/branchRules'
-import {
-  AdminsRule,
-  GithubActionRunRule,
-  LatestCommitRule,
-  OpenIssueRule,
-  OpenPRRule,
-  TeamsRule
-} from './rules/repoRules'
-import {
-  CodeScanAlertsRule,
-  DependabotAlertsRule,
-  SecretScanAlertsRule
-} from './rules/orgRules'
-import { Octokit } from '@octokit/rest'
-
-import { CacheFile, GradeEnum, RepoInfo } from './types'
+import { CacheFile, Repo } from './types'
 import JSZip from 'jszip'
 import { logger } from './util/logger'
+import {
+  getOrgReports,
+  getOverallReports,
+  getRepoReports,
+  OrgReports,
+  OverallReports,
+  RepoReports
+} from './reports/'
+import {
+  BranchRules,
+  getBranchRules,
+  getSecondaryBranchRules,
+  SecondaryBranchRules,
+  RepoRules,
+  OrgRules,
+  getRepoRules, getOrgRules
+} from './rules/getRules'
 
 export class Engine {
-  private readonly octokit: Octokit
   private readonly env: Environment
-  private readonly branchRules: BranchRule[] = []
-  private readonly secondaryBranchRules: SecondaryBranchRule[] = []
-  private readonly repoRules: RepoRule[] = []
-  private readonly orgRules: OrgRule[] = []
-  private readonly reports: Report[] = []
+  private readonly branchRules: BranchRules
+  private readonly secondaryBranchRules: SecondaryBranchRules
+  private readonly repoRules: RepoRules
+  private readonly orgRules: OrgRules
+  private readonly repoReports: RepoReports
+  private readonly overallReports: OverallReports
+  private readonly orgReports: OrgReports
   private readonly writer: Writer
   private readonly cache: Cache
   private readonly progress: ProgressBarManager
 
-  constructor (env: Environment, octokit: Octokit, cache: Cache, writer: Writer) {
+  constructor (env: Environment, cache: Cache, writer: Writer) {
     this.env = env
-    this.octokit = octokit
     this.writer = writer
     this.cache = cache
     this.progress = new ProgressBarManager(env.showProgress)
-    this.registerBranchRules(this.octokit)
-    this.registerSecondaryBranchRules(this.octokit)
-    this.registerRepoRules(this.octokit)
-    this.registerOrgRules(this.octokit)
-    this.registerReports()
+    this.branchRules = getBranchRules()
+    this.secondaryBranchRules = getSecondaryBranchRules()
+    this.repoRules = getRepoRules()
+    this.orgRules = getOrgRules()
+    this.repoReports = getRepoReports()
+    this.overallReports = getOverallReports()
+    this.orgReports = getOrgReports()
   }
 
   async run (): Promise<void> {
     await this.cache.update()
-    const allReposFile = await getAllReposInOrg(this.env.githubOrg, this.octokit, this.cache.cache.allRepos)
+    const allReposFile = await this.getReposCacheFile(this.cache.cache.allRepos)
     await this.cache.writeFileToCache(allReposCacheFileName, allReposFile)
     const filteredRepos = await this.filterArchived(allReposFile)
-    const filteredWithBranchesFile = await getBranches(this.octokit, filteredRepos, this.cache.cache.filteredWithBranches, this.progress)
+    const filteredWithBranchesFile = await this.getReposWithBranchesCacheFile(filteredRepos, this.cache.cache.filteredWithBranches, this.progress)
     await this.cache.writeFileToCache(filteredWithBranchesCacheFileName, filteredWithBranchesFile)
     await this.runOrgRules(filteredWithBranchesFile)
     await this.runRepoRules(filteredWithBranchesFile.info)
@@ -113,74 +70,36 @@ export class Engine {
     await this.cache.setLastRunDate(new Date()) // we do this now because everything we are going to cache has now been cached
     await this.cache.update()
     const repos = this.cache.cache.repos
-    await this.runReports(repos)
-    await this.writeReportOutputs()
-    await this.generateOverallHealthScoreReport(repos)
-    await this.generateOverallRepoReport(repos)
-    await this.generateOverallBranchReport(repos)
+
+    // just get rid of all reports
+    await this.writer.deleteAllFilesInDirectory('reports', '', '')
+    await this.runRepoReports(repos)
+    await this.runOrgReports()
+    await this.runOverallReports(repos)
+
+    await this.writeReports()
   }
 
-  private registerBranchRules (octokit: Octokit): void {
-    this.branchRules.push(new DockerComposeRule(octokit))
-    this.branchRules.push(new DockerfileRule(octokit))
-    this.branchRules.push(new DotGithubDirRule(octokit))
-    this.branchRules.push(new FileCountRule(octokit))
-    this.branchRules.push(new FileTypesRules(octokit))
-    this.branchRules.push(new GitignoreRule(octokit))
-    this.branchRules.push(new PackageJsonRule(octokit))
-    this.branchRules.push(new PackageLockRule(octokit))
-    this.branchRules.push(new ReadmeRule(octokit))
-    this.branchRules.push(new TerraformRule(octokit))
+  private async getReposCacheFile (reposCacheFile: CacheFile | null): Promise<CacheFile> {
+    if (reposCacheFile != null && (Object.keys(reposCacheFile.info)).length > 0) {
+      return reposCacheFile
+    }
+    logger.info('Getting all repos in org')
+    try {
+      const repoInfoObj: Record<string, Repo> = {}
+      const repos = await getRepos()
+      for (const repo of repos) {
+        repoInfoObj[repo.name] = repo
+      }
+
+      return attachMetadataToCacheFile(repoInfoObj)
+    } catch (error) {
+      throw new Error(`Error occurred while fetching repositories: ${error as string}`)
+    }
   }
 
-  private registerSecondaryBranchRules (octokit: Octokit): void {
-    this.secondaryBranchRules.push(new DeployedBranchRule(octokit))
-    this.secondaryBranchRules.push(new StaleBranchRule(octokit))
-  }
-
-  private registerRepoRules (octokit: Octokit): void {
-    this.repoRules.push(new LatestCommitRule(octokit))
-    this.repoRules.push(new AdminsRule(octokit))
-    this.repoRules.push(new TeamsRule(octokit))
-    this.repoRules.push(new OpenPRRule(octokit))
-    this.repoRules.push(new OpenIssueRule(octokit))
-    this.repoRules.push(new GithubActionRunRule(octokit))
-  }
-
-  private registerOrgRules (octokit: Octokit): void {
-    this.orgRules.push(new CodeScanAlertsRule(octokit))
-    this.orgRules.push(new DependabotAlertsRule(octokit))
-    this.orgRules.push(new SecretScanAlertsRule(octokit))
-  }
-
-  private registerReports (): void {
-    // reports with 0 weight do not contribute to the overall health report
-    this.reports.push(new CodeScanAlertCountReport(5, 'CodeScanAlertCountReports'))
-    this.reports.push(new CodeScanAlertReport(0, 'CodeScanAlertReports'))
-    this.reports.push(new DependabotAlertCountReport(5, 'DependabotAlertCountReport'))
-    this.reports.push(new DependabotAlertReport(0, 'DependabotAlertReport'))
-    this.reports.push(new DependabotBranchReport(4, 'DependabotBranchReport'))
-    this.reports.push(new DevPrdBranchesReport(0, 'DevPrdBranchesReport'))
-    this.reports.push(new DockerfileImageReport(3, 'DockerfileImageReport'))
-    this.reports.push(new FileTypesReport(0, 'FileTypesReport'))
-    this.reports.push(new GhActionModuleReport(3, 'GhActionModuleReport'))
-    this.reports.push(new LanguageReport(0, 'LanguageReport'))
-    this.reports.push(new LowFilesReport(1, 'LowFilesReport'))
-    this.reports.push(new NPMDependencyReport(3, 'NPMDependencyReport'))
-    this.reports.push(new NodeVersionReport(5, 'NodeVersionReport'))
-    this.reports.push(new PublicAndInternalReport(2, 'PublicAndInternalReport'))
-    this.reports.push(new ReadmeReport(3, 'ReadmeReport'))
-    this.reports.push(new ReposWithoutNewCommitsReport(3, 'ReposWithoutNewCommitsReport'))
-    this.reports.push(new SecretScanAlertCountReport(5, 'SecretScanAlertCountReport'))
-    this.reports.push(new SecretScanAlertReport(0, 'SecretScanAlertReport'))
-    this.reports.push(new StaleBranchReport(2, 'StaleBranchReport'))
-    this.reports.push(new TeamlessRepoReport(4, 'TeamlessRepoReport'))
-    this.reports.push(new TerraformModuleReport(3, 'TerraformModuleReport'))
-    this.reports.push(new TerraformVersionReport(5, 'TerraformVersionReport'))
-  }
-
-  private async filterArchived (allReposFile: CacheFile): Promise<RepoInfo[]> {
-    const filteredRepos: RepoInfo[] = []
+  private async filterArchived (allReposFile: CacheFile): Promise<Repo[]> {
+    const filteredRepos: Repo[] = []
     for (const repoName of Object.keys(allReposFile.info)) {
       const repo = allReposFile.info[repoName]
       if (!repo.archived) {
@@ -190,26 +109,55 @@ export class Engine {
     return filteredRepos
   }
 
+  private async getReposWithBranchesCacheFile (repos: Repo[], filteredWithBranches: CacheFile | null, progress: ProgressBarManager): Promise<CacheFile> {
+    if (filteredWithBranches != null && (Object.keys(filteredWithBranches.info)).length !== 0) {
+      return filteredWithBranches
+    }
+
+    logger.info('Getting all branches in org')
+    progress.reset(repos.length, 'Getting branch info for repos', [{ displayName: 'Current Repo', token: 'currentRepo' }])
+    progress.start()
+
+    const branchCount = 0
+    const reposWithBranches: Record<string, Repo> = {}
+
+    for (const repo of repos) {
+      try {
+        progress.update([{ displayName: 'Current Repo', token: 'currentRepo', value: repo.name }])
+
+        const branches = await getBranches(repo)
+        for (const branch of branches) {
+          repo.branches[branch.name] = branch
+        }
+      } catch (error: any) {
+        logger.error(`Error getting branch info for ${repo.name}: ${error as string}`)
+      }
+
+      reposWithBranches[repo.name] = repo
+    }
+    return attachMetadataToCacheFile(reposWithBranches, branchCount)
+  }
+
   private async runOrgRules (filteredWithBranchesFile: CacheFile): Promise<void> {
-    for (const orgRule of this.orgRules) {
+    for (const orgRule of Object.values(this.orgRules)) {
       await orgRule.run(filteredWithBranchesFile)
     }
   }
 
-  private async runRepoRules (repos: Record<string, RepoInfo>): Promise<void> {
+  private async runRepoRules (repos: Record<string, Repo>): Promise<void> {
     const repoNames = Object.keys(repos)
     this.progress.reset(repoNames.length, 'Running repo rules on', [{ displayName: 'Current Repo', token: 'currentRepo' }])
     this.progress.start()
 
     for (const repoName of repoNames) {
       this.progress.update([{ displayName: 'Current Repo', token: 'currentRepo', value: repoName }])
-      for (const repoRule of this.repoRules) {
+      for (const repoRule of Object.values(this.repoRules)) {
         await repoRule.run(repos[repoName])
       }
     }
   }
 
-  private async downloadAndRunBranchRules (repos: Record<string, RepoInfo>): Promise<void> {
+  private async downloadAndRunBranchRules (repos: Record<string, Repo>): Promise<void> {
     // get rid of the current cache repos
     await this.writer.deleteAllFilesInDirectory('cache', 'json', 'repos')
 
@@ -223,21 +171,25 @@ export class Engine {
 
       if (repo.lastCommit.date > this.cache.cache.lastRunDate) {
         for (const branchName of Object.keys(repo.branches)) {
-          // we don't run rules on dependabot branches
-          if (!repo.branches[branchName].dependabot) {
-            repo.branches[branchName].lastCommit = await getBranchCommitInfo(this.octokit, repoName, branchName)
-            if (repo.branches[branchName].lastCommit.date > this.cache.cache.lastRunDate) {
-              const downloaded = await downloadRepoToMemory(this.octokit, repoName, branchName)
-              if (downloaded != null) {
-                for (const fileName of Object.keys(downloaded.files)) {
-                  if (!downloaded.files[fileName].dir) { // only run rules on files, not dirs
-                    await this.runBranchRules(repo, downloaded, branchName, fileName)
+          try {
+            // we don't run rules on dependabot branches
+            if (!repo.branches[branchName].dependabot) {
+              repo.branches[branchName] = await getBranch(repo, branchName)
+              if (repo.branches[branchName].lastCommit.date > this.cache.cache.lastRunDate) {
+                const downloaded = await downloadRepoToMemory(repoName, branchName)
+                if (downloaded != null) {
+                  for (const fileName of Object.keys(downloaded.files)) {
+                    if (!downloaded.files[fileName].dir) { // only run rules on files, not dirs
+                      await this.runBranchRules(repo, downloaded, branchName, fileName)
+                    }
                   }
+                  // these are rules that rely on the initial branch rules
+                  await this.runSecondaryBranchRules(repo, branchName)
                 }
-                // these are rules that rely on the initial branch rules
-                await this.runSecondaryBranchRules(repo, branchName)
               }
             }
+          } catch (error) {
+            errorHandler(error, 'downloadAndRunBranchRules', repoName, branchName)
           }
         }
       }
@@ -245,183 +197,57 @@ export class Engine {
     }
   }
 
-  private async runBranchRules (repo: RepoInfo, downloaded: JSZip, branchName: string, fileName: string): Promise<void> {
-    for (const branchRule of this.branchRules) {
+  private async runBranchRules (repo: Repo, downloaded: JSZip, branchName: string, fileName: string): Promise<void> {
+    for (const branchRule of Object.values(this.branchRules)) {
       await branchRule.run(repo, downloaded, branchName, fileName)
     }
   }
 
-  private async runSecondaryBranchRules (repo: RepoInfo, branchName: string): Promise<void> {
-    for (const secondaryBranchRule of this.secondaryBranchRules) {
+  private async runSecondaryBranchRules (repo: Repo, branchName: string): Promise<void> {
+    for (const secondaryBranchRule of Object.values(this.secondaryBranchRules)) {
       await secondaryBranchRule.run(repo, branchName)
     }
   }
 
-  private async runReports (repos: RepoInfo[]): Promise<void> {
-    for (const report of this.reports) {
+  private async runRepoReports (repos: Repo[]): Promise<void> {
+    for (const report of Object.values(this.repoReports)) {
       await report.run(repos)
     }
   }
 
-  private async writeReportOutputs (): Promise<void> {
-    // just get rid of all reports
-    await this.writer.deleteAllFilesInDirectory('reports', '', '')
+  private async runOrgReports (): Promise<void> {
+    logger.info('Getting and writing organization, org member, and org team reports')
+    const orgMembers = await getOrgMembers()
+    const orgTeams = await getOrgTeams()
+    const org = await getOrg(orgTeams.map(team => team.name), orgMembers.map(member => member.name))
+    await this.orgReports.orgReport.run([org])
+    await this.orgReports.orgMemberReport.run(orgMembers)
+    await this.orgReports.orgTeamReport.run(orgTeams)
+  }
 
-    for (const report of this.reports) {
-      for (const reportOutput of report.reportOutputs) {
+  private async runOverallReports (repos: Repo[]): Promise<void> {
+    for (const report of Object.values(this.overallReports)) {
+      await report.run(repos)
+    }
+  }
+
+  private async writeReports (): Promise<void> {
+    for (const report of Object.values(this.repoReports)) {
+      for (const reportOutput of report.reportOutputDataWriters) {
         await reportOutput.writeOutput(this.writer)
       }
     }
-  }
 
-  private async generateOverallHealthScoreReport (repos: RepoInfo[]): Promise<void> {
-    const header = [
-      { id: 'repoName', title: 'Repo' },
-      { id: 'overallScore', title: 'Overall Score/Grade' },
-      { id: 'teams', title: 'Admin Teams' },
-      { id: 'lastCommitDate', title: 'Last Commit Date' },
-      { id: 'lastCommitAuthor', title: 'Last Commit User' }
-    ]
-
-    for (const report of this.reports) {
-      // only include contributing reports
-      if (report.weight > 0) {
-        header.push({
-          id: report.name,
-          title: report.name
-        })
+    for (const report of Object.values(this.orgReports)) {
+      for (const reportOutput of report.reportOutputDataWriters) {
+        await reportOutput.writeOutput(this.writer)
       }
     }
-    const overallHealthReportOutput = new ReportOutputData(header, 'OverallHealthReport', 'overallHealthReport')
-    for (const repo of repos) {
-      const overallScore = getOverallGPAScore(repo.healthScores)
-      const reportRow: Record<string, any> = {
-        repoName: repo.name,
-        overallScore,
-        teams: repo.teams,
-        lastCommitDate: repo.lastCommit.date,
-        lastCommitAuthor: repo.lastCommit.author
-      }
 
-      for (const report of this.reports) {
-        try {
-        // only include contributing reports
-          if (report.weight > 0) {
-            reportRow[report.name] = repo.healthScores[report.name].grade ?? GradeEnum.NotApplicable
-          }
-        } catch (error) {
-          logger.error(`Error adding row to overall health report for repo: ${repo.name}, report: ${report.name}, error: ${error as string}`)
-        }
-      }
-      overallHealthReportOutput.addRow(reportRow)
-    }
-    await overallHealthReportOutput.writeOutput(this.writer)
-  }
-
-  private async generateOverallRepoReport (repos: RepoInfo[]): Promise<void> {
-    const header = [
-      { id: 'repoName', title: 'Repo' },
-      { id: 'teams', title: 'Admin Teams' },
-      { id: 'lastCommitDate', title: 'Last Commit Date' },
-      { id: 'lastCommitAuthor', title: 'Last Commit User' },
-      { id: 'totalBranches', title: 'Total Number of Branches' },
-      { id: 'totalStaleBranches', title: 'Total Number of Stale Branches' },
-      { id: 'totalDependabotBranches', title: 'Total Number of Dependabot Branches' },
-      { id: 'defaultBranch', title: 'Default Branch Name' },
-      { id: 'lowNodeVersion', title: 'Lowest Node Version Across Any Branch' },
-      { id: 'highNodeVersion', title: 'Highest Node Version Across Any Branch' },
-      { id: 'lowTerraformVersion', title: 'Lowest Terraform Version Across Any Branch' },
-      { id: 'highTerraformVersion', title: 'Highest Terraform Version Across Any Branch' },
-      { id: 'followsDevPrdNamingScheme', title: 'Follows Standard Dev/Prd Naming Schema' },
-      { id: 'codeScanAlertCountCritical', title: 'Critical Code Scan Alert Count' },
-      { id: 'codeScanAlertCountHigh', title: 'High Code Scan Alert Count' },
-      { id: 'codeScanAlertCountMedium', title: 'Medium Code Scan Alert Count' },
-      { id: 'codeScanAlertCountLow', title: 'Low Code Scan Alert Count' },
-      { id: 'dependabotAlertCountCritical', title: 'Critical Dependabot Alert Count' },
-      { id: 'dependabotAlertCountHigh', title: 'High Dependabot Alert Count' },
-      { id: 'dependabotAlertCountMedium', title: 'Medium Dependabot Alert Count' },
-      { id: 'dependabotAlertCountLow', title: 'Low Dependabot Alert Count' },
-      { id: 'secretAlertCount', title: 'Secret Alert Count' },
-      { id: 'primaryLanguage', title: 'Primary Language' },
-      { id: 'visibility', title: 'Visibility' }
-    ]
-    const overallRepoReportOutput = new ReportOutputData(header, 'OverallRepoReport', 'overallRepoReport')
-
-    for (const repo of repos) {
-      const reportRow: Record<string, any> = {
-        repoName: repo.name,
-        teams: repo.teams,
-        lastCommitDate: repo.lastCommit.date,
-        lastCommitAuthor: repo.lastCommit.author,
-        totalBranches: Object.keys(repo.branches).length,
-        totalStaleBranches: repo.reportResults.staleBranchCount,
-        totalDependabotBranches: repo.reportResults.dependabotBranchCount,
-        defaultBranch: repo.defaultBranch,
-        lowNodeVersion: repo.reportResults.lowNodeVersion === startingLowestVersion ? '??' : repo.reportResults.lowNodeVersion,
-        highNodeVersion: repo.reportResults.highNodeVersion === startingHighestVersion ? '??' : repo.reportResults.highNodeVersion,
-        lowTerraformVersion: repo.reportResults.lowTerraformVersion === startingLowestVersion ? '??' : repo.reportResults.lowTerraformVersion,
-        highTerraformVersion: repo.reportResults.highTerraformVersion === startingHighestVersion ? '??' : repo.reportResults.highTerraformVersion,
-        followsDevPrdNamingScheme: repo.reportResults.followsDevPrdNamingScheme,
-        codeScanAlertCountCritical: repo.codeScanAlerts.critical.length,
-        codeScanAlertCountHigh: repo.codeScanAlerts.high.length,
-        codeScanAlertCountMedium: repo.codeScanAlerts.medium.length,
-        codeScanAlertCountLow: repo.codeScanAlerts.low.length,
-        dependabotAlertCountCritical: repo.dependabotScanAlerts.critical.length,
-        dependabotAlertCountHigh: repo.dependabotScanAlerts.high.length,
-        dependabotAlertCountMedium: repo.dependabotScanAlerts.medium.length,
-        dependabotAlertCountLow: repo.dependabotScanAlerts.low.length,
-        secretAlertCount: repo.secretScanAlerts.critical.length,
-        primaryLanguage: repo.language,
-        visibility: repo.visibility
-      }
-
-      overallRepoReportOutput.addRow(reportRow)
-    }
-    await overallRepoReportOutput.writeOutput(this.writer)
-  }
-
-  private async generateOverallBranchReport (repos: RepoInfo[]): Promise<void> {
-    const header = [
-      { id: 'repoName', title: 'Repo' },
-      { id: 'branchName', title: 'Branch' },
-      { id: 'teams', title: 'Admin Teams' },
-      { id: 'lastCommitDate', title: 'Last Commit Date' },
-      { id: 'lastCommitAuthor', title: 'Last Commit User' },
-      { id: 'lowNodeVersion', title: 'Lowest Node Version Across Any Branch' },
-      { id: 'highNodeVersion', title: 'Highest Node Version Across Any Branch' },
-      { id: 'lowTerraformVersion', title: 'Lowest Terraform Version Across Any Branch' },
-      { id: 'highTerraformVersion', title: 'Highest Terraform Version Across Any Branch' },
-      { id: 'default', title: 'Default Branch?' },
-      { id: 'stale', title: 'Stale Branch?' },
-      { id: 'deployed', title: 'Deployed Branch?' },
-      { id: 'protected', title: 'Protected Branch?' }
-    ]
-    const overallBranchReportOutput = new ReportOutputData(header, 'OverallBranchReport', 'overallBranchReport')
-
-    for (const repo of repos) {
-      for (const branchName in repo.branches) {
-        const branch = repo.branches[branchName]
-        if (!branch.dependabot) {
-          const reportRow: Record<string, any> = {
-            repoName: repo.name,
-            branchName,
-            teams: repo.teams,
-            lastCommitDate: branch.lastCommit.date,
-            lastCommitAuthor: branch.lastCommit.author,
-            lowNodeVersion: branch.reportResults.lowNodeVersion,
-            highNodeVersion: branch.reportResults.highNodeVersion,
-            lowTerraformVersion: branch.reportResults.lowTerraformVersion,
-            highTerraformVersion: branch.reportResults.highTerraformVersion,
-            default: repo.defaultBranch === branchName,
-            stale: branch.staleBranch,
-            deployed: branch.deployedBranch,
-            protected: branch.branchProtections.protected
-          }
-
-          overallBranchReportOutput.addRow(reportRow)
-        }
+    for (const report of Object.values(this.overallReports)) {
+      for (const reportOutput of report.reportOutputDataWriters) {
+        await reportOutput.writeOutput(this.writer)
       }
     }
-    await overallBranchReportOutput.writeOutput(this.writer)
   }
 }
