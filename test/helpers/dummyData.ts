@@ -22,7 +22,9 @@ export const fakeBranch: Branch = {
     lowNodeVersion: '??',
     highNodeVersion: '??',
     lowTerraformVersion: '??',
-    highTerraformVersion: '??'
+    highTerraformVersion: '??',
+    lowPythonVersion: '??',
+    highPythonVersion: '??'
   }
 }
 export const fakeRepo: Repo = {
@@ -77,6 +79,8 @@ export const fakeRepo: Repo = {
     highNodeVersion: '??',
     lowTerraformVersion: '??',
     highTerraformVersion: '??',
+    lowPythonVersion: '??',
+    highPythonVersion: '??',
     followsDevPrdNamingScheme: false
   }
 }
