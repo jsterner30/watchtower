@@ -26,6 +26,7 @@ import { TerraformModuleReport } from './repoReports/dependencyReports/terraform
 import { TerraformRepoVersionReport } from './repoReports/versionReports/repoVersionReports/terraformRepoVersionReport'
 import { PythonBranchVersionReport } from './repoReports/versionReports/branchVersionReports/pythonBranchVersionReport'
 import { PythonRepoVersionReport } from './repoReports/versionReports/repoVersionReports/repoPythonVersionReport'
+import { PIPDependencyReport } from './repoReports/dependencyReports/pipDependencyReport'
 
 export interface RepoReports {
   codeScanAlertCountReport: CodeScanAlertCountReport
@@ -42,6 +43,7 @@ export interface RepoReports {
   npmDependencyReport: NPMDependencyReport
   nodeBranchVersionReport: NodeBranchVersionReport
   nodeRepoVersionReport: NodeRepoVersionReport
+  pipDependencyReport: PIPDependencyReport
   primaryLanguageReport: PrimaryLanguageReport
   publicAndInternalReport: PublicAndInternalReport
   pythonBranchVersionReport: PythonBranchVersionReport
@@ -73,6 +75,7 @@ export function getRepoReports (): RepoReports {
     lowFileRepoReport: new LowFileRepoReport(1, 'LowFileRepoReport', 'The the repos with a low (<=5) file count on every branch.', '1', 'simple'),
     npmDependencyReport: new NPMDependencyReport(3, 'NPMDependencyReport', 'Which repos use a given npm dependency.', '1 per npm dependency in the org', 'dependency'),
     nodeBranchVersionReport: new NodeBranchVersionReport(0, 'NodeVersionReport', 'Lowest and highest node versions on each branch in the org and the default branches of every repo in the org.', '2', 'version'),
+    pipDependencyReport: new PIPDependencyReport(3, 'PIPDependencyReport', 'Which repos use a given pip dependency.', '1 per pip dependency in the org', 'dependency'),
     nodeRepoVersionReport: new NodeRepoVersionReport(5, 'NodeVersionReport', 'Lowest and highest node versions on every repo in the org, considering every branch in the org.', '1', 'version'),
     primaryLanguageReport: new PrimaryLanguageReport(0, 'PrimaryLanguageReport', 'The primary language for every repo in the org.', '1', 'simple'),
     publicAndInternalReport: new PublicAndInternalReport(2, 'PublicAndInternalReport', 'Repos that are marked as public or internal.', '1', 'simple'),

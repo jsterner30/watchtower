@@ -39,6 +39,7 @@ export type ReportJSONOutput = Static<typeof ReportJSONOutputSchema>
 export enum FileTypeEnum {
   PACKAGE_JSON = 'PACKAGE_LOCK',
   PACKAGE_LOCK = 'PACKAGE_JSON',
+  PIP_REQUIREMENTS = 'PIP_REQUIREMENTS',
   TERRAFORM = 'TERRAFORM',
   TFVARS = 'TFVARS',
   DOCKERFILE = 'DOCKERFILE',
@@ -107,7 +108,22 @@ export const GitignoreFileSchema = Type.Intersect([
 export type GitignoreFile = Static<typeof GitignoreFileSchema>
 export const validGitignoreFile = TypeCompiler.Compile(GitignoreFileSchema)
 
-export const PackageJsonFileSchema = Type.Intersect([
+const PIPDependencySchema = Type.Object({
+  dependency: Type.String(),
+  version: Type.String()
+})
+export type PIPDependency = Static<typeof PIPDependencySchema>
+
+export const PIPRequirementsFileSchema = Type.Intersect([
+  RuleFileSchema,
+  Type.Object({
+    dependencies: Type.Record(Type.String(), PIPDependencySchema)
+  })
+])
+export type PIPRequirementsFile = Static<typeof PIPRequirementsFileSchema>
+export const validPIPRequirementsFile = TypeCompiler.Compile(PIPRequirementsFileSchema)
+
+const PackageJsonFileSchema = Type.Intersect([
   RuleFileSchema,
   Type.Object({
     version: Type.String(),
@@ -121,7 +137,7 @@ export const PackageJsonFileSchema = Type.Intersect([
 export type PackageJsonFile = Static<typeof PackageJsonFileSchema>
 export const validPackageJsonFile = TypeCompiler.Compile(PackageJsonFileSchema)
 
-export const PackageLockDependencySchema = Type.Object({
+const PackageLockDependencySchema = Type.Object({
   version: Type.String(),
   resolved: Type.String(),
   integrity: Type.String(),
