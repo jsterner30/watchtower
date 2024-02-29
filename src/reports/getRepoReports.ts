@@ -24,6 +24,8 @@ import { TeamlessRepoReport } from './repoReports/simpleReports/teamlessRepoRepo
 import { TerraformBranchVersionReport } from './repoReports/versionReports/branchVersionReports/terraformBranchVersionReport'
 import { TerraformModuleReport } from './repoReports/dependencyReports/terraformModuleReport'
 import { TerraformRepoVersionReport } from './repoReports/versionReports/repoVersionReports/terraformRepoVersionReport'
+import { PythonBranchVersionReport } from './repoReports/versionReports/branchVersionReports/pythonBranchVersionReport'
+import { PythonRepoVersionReport } from './repoReports/versionReports/repoVersionReports/repoPythonVersionReport'
 
 export interface RepoReports {
   codeScanAlertCountReport: CodeScanAlertCountReport
@@ -42,6 +44,8 @@ export interface RepoReports {
   nodeRepoVersionReport: NodeRepoVersionReport
   primaryLanguageReport: PrimaryLanguageReport
   publicAndInternalReport: PublicAndInternalReport
+  pythonBranchVersionReport: PythonBranchVersionReport
+  pythonRepoVersionReport: PythonRepoVersionReport
   readmeReport: ReadmeReport
   repoHasLanguageReport: RepoHasLanguageReport
   reposWithoutNewCommitsReport: ReposWithoutNewCommitsReport
@@ -72,6 +76,8 @@ export function getRepoReports (): RepoReports {
     nodeRepoVersionReport: new NodeRepoVersionReport(5, 'NodeVersionReport', 'Lowest and highest node versions on every repo in the org, considering every branch in the org.', '1', 'version'),
     primaryLanguageReport: new PrimaryLanguageReport(0, 'PrimaryLanguageReport', 'The primary language for every repo in the org.', '1', 'simple'),
     publicAndInternalReport: new PublicAndInternalReport(2, 'PublicAndInternalReport', 'Repos that are marked as public or internal.', '1', 'simple'),
+    pythonBranchVersionReport: new PythonBranchVersionReport(0, 'PythonVersionReport', 'Lowest and highest python versions on each branch in the org and the default branches of every repo in the org.', '2', 'version'),
+    pythonRepoVersionReport: new PythonRepoVersionReport(5, 'PythonVersionReport', 'Lowest and highest python versions on every repo in the org, considering every branch in the org.', '1', 'version'),
     readmeReport: new ReadmeReport(3, 'ReadmeReport', 'Whether repos have a readme, whether it includes a title, and how many required sections they are missing.', '1', 'simple'),
     repoHasLanguageReport: new RepoHasLanguageReport(0, 'RepoHasLanguageReport', 'Which repos contain a language, and the percentage of file extensions on each the default branch of each repo.', '2', 'simple'),
     reposWithoutNewCommitsReport: new ReposWithoutNewCommitsReport(3, 'ReposWithoutNewCommitsReport', 'Repos without a new commit in the last two years.', '1', 'simple'),

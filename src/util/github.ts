@@ -72,6 +72,8 @@ export async function getRepos (): Promise<Repo[]> {
           highNodeVersion: '??',
           lowTerraformVersion: '??',
           highTerraformVersion: '??',
+          lowPythonVersion: '??',
+          highPythonVersion: '??',
           followsDevPrdNamingScheme: false
         }
       })
@@ -129,7 +131,9 @@ function getBranchParser (repo: Repo): (branch: any) => Promise<Branch> {
         lowNodeVersion: '??',
         highNodeVersion: '??',
         lowTerraformVersion: '??',
-        highTerraformVersion: '??'
+        highTerraformVersion: '??',
+        lowPythonVersion: '??',
+        highPythonVersion: '??'
       }
     }
   }

@@ -2,9 +2,11 @@ import { logger } from './logger'
 import { nodeLTSUrl, startingHighestVersion, startingLowestVersion } from './constants'
 import {
   CacheFile,
+  Dockerfile,
   ExtremeVersions,
   FileTypeEnum,
   Repo,
+  TerraformFile,
   validDockerfile,
   validGHAFile, validGHASourceFile,
   validTerraformFile,
@@ -163,24 +165,18 @@ export function gatherNodeFiles (repo: Repo, branchName: string): VersionLocatio
   const branchNodeFiles: VersionLocation[] = []
   for (const dep of repo.branches[branchName].deps) {
     if (validDockerfile.Check(dep) && dep.fileType === FileTypeEnum.DOCKERFILE) {
-      if (dep.image.includes('node')) {
-        // The code below will return "-1" if the node version is simply "node". Else, it will return "18.13.18-slim" if the image is "node:18.13.18-slim"
-        const version = dep.image.split('node')[1] === '' ? '-1' : dep.image.split('node')[1].slice(1, dep.image.split('node')[1].length)
-        branchNodeFiles.push({ filePath: dep.fileName, version, branch: branchName })
+      const versionLocation = getDockerfileImageVersion(dep, branchName, 'node')
+      if (versionLocation != null) {
+        branchNodeFiles.push(versionLocation)
       }
     } else if (validGHAFile.Check(dep) && dep.fileType === FileTypeEnum.GITHUB_ACTION) {
       if (dep.contents.env?.node_version != null) {
         branchNodeFiles.push({ filePath: dep.fileName, version: dep.contents.env.node_version, branch: branchName })
       }
     } else if (validTerraformFile.Check(dep) && dep.fileType === 'TERRAFORM') {
-      for (const moduleName in dep.contents.module) {
-        for (const subModule of dep.contents.module[moduleName]) {
-          if (subModule.runtime != null) {
-            if ((subModule.runtime as string).includes('nodejs')) {
-              branchNodeFiles.push({ filePath: dep.fileName, version: subModule.runtime.split('nodejs')[1], branch: branchName })
-            }
-          }
-        }
+      const versionLocation = getTerraformLambdaRuntimeVersion(dep, branchName, 'nodejs')
+      if (versionLocation != null) {
+        branchNodeFiles.push(versionLocation)
       }
     } else if (validGHASourceFile.Check(dep) && dep.fileType === 'GITHUB_ACTION_SOURCE') {
       if ((dep.contents?.runs?.using as string)?.includes('node')) {
@@ -211,4 +207,48 @@ export function gatherTerraformFiles (repo: Repo, branchName: string): VersionLo
     }
   }
   return branchTerraformFiles
+}
+
+export function gatherPythonFiles (repo: Repo, branchName: string): VersionLocation[] {
+  const branchPythonFiles: VersionLocation[] = []
+  for (const dep of repo.branches[branchName].deps) {
+    if (validDockerfile.Check(dep) && dep.fileType === FileTypeEnum.DOCKERFILE) {
+      const versionLocation = getDockerfileImageVersion(dep, branchName, 'python')
+      if (versionLocation != null) {
+        branchPythonFiles.push(versionLocation)
+      }
+    } else if (validTerraformFile.Check(dep) && dep.fileType === 'TERRAFORM') {
+      const versionLocation = getTerraformLambdaRuntimeVersion(dep, branchName, 'python')
+      if (versionLocation != null) {
+        branchPythonFiles.push(versionLocation)
+      }
+    }
+  }
+  return branchPythonFiles
+}
+
+export function getDockerfileImageVersion (dep: Dockerfile, branchName: string, depName: string): VersionLocation | null {
+  if (dep.image.includes(depName)) {
+    // The code below will return "-1" if the node version is simply "node". Else, it will return "18.13.18-slim" if the image is "node:18.13.18-slim"
+    const version = dep.image.split(depName)[1] === '' ? '-1' : dep.image.split(depName)[1].slice(1, dep.image.split(depName)[1].length)
+    return {
+      filePath: dep.fileName,
+      version,
+      branch: branchName
+    }
+  }
+  return null
+}
+
+export function getTerraformLambdaRuntimeVersion (dep: TerraformFile, branchName: string, depName: string): VersionLocation | null {
+  for (const moduleName in dep.contents.module) {
+    for (const subModule of dep.contents.module[moduleName]) {
+      if (subModule.runtime != null) {
+        if ((subModule.runtime as string).includes(depName)) {
+          return { filePath: dep.fileName, version: subModule.runtime.split(depName)[1], branch: branchName }
+        }
+      }
+    }
+  }
+  return null
 }

@@ -304,7 +304,9 @@ const BranchSchema = Type.Object({
     lowNodeVersion: Type.String(),
     highNodeVersion: Type.String(),
     lowTerraformVersion: Type.String(),
-    highTerraformVersion: Type.String()
+    highTerraformVersion: Type.String(),
+    lowPythonVersion: Type.String(),
+    highPythonVersion: Type.String()
   })
 })
 export type Branch = Static<typeof BranchSchema>
@@ -341,6 +343,8 @@ const RepoReportResultSchema = Type.Object({
   highNodeVersion: Type.String(),
   lowTerraformVersion: Type.String(),
   highTerraformVersion: Type.String(),
+  lowPythonVersion: Type.String(),
+  highPythonVersion: Type.String(),
   followsDevPrdNamingScheme: Type.Boolean()
 })
 export type RepoReportResult = Static<typeof RepoReportResultSchema>

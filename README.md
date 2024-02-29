@@ -148,3 +148,4 @@ Step 2: Download Data
 7. replace sinon in tests with native ts-mockito implementation
 8. versions should be valid semver in version reports 
 9. paths should remove repo and commit hash in filePath in version reports
+10. Make graded reports return a grading object with an abstract parent function
