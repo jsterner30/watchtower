@@ -80,6 +80,9 @@ export function arrayToObject (arr: Array<Record<string, any>>): Record<string, 
 }
 
 export function removeComparatorsInVersion (version: string): string {
+  if (version === '') {
+    return 'latest'
+  }
   let curVer = version
 
   const firstChar = version.at(0)
