@@ -19,6 +19,8 @@ interface OverallRepoReportData extends RepoReportData {
   highNodeVersion: string
   lowTerraformVersion: string
   highTerraformVersion: string
+  lowPythonVersion: string
+  highPythonVersion: string
   followsDevPrdNamingScheme: boolean
   codeScanAlertCountCritical: number
   codeScanAlertCountHigh: number
@@ -57,6 +59,8 @@ export class OverallRepoReport extends RepoReport<OverallRepoReportData, Overall
       highNodeVersion: repo.reportResults.highNodeVersion === startingHighestVersion ? '??' : repo.reportResults.highNodeVersion,
       lowTerraformVersion: repo.reportResults.lowTerraformVersion === startingLowestVersion ? '??' : repo.reportResults.lowTerraformVersion,
       highTerraformVersion: repo.reportResults.highTerraformVersion === startingHighestVersion ? '??' : repo.reportResults.highTerraformVersion,
+      lowPythonVersion: repo.reportResults.lowPythonVersion === startingLowestVersion ? '??' : repo.reportResults.lowPythonVersion,
+      highPythonVersion: repo.reportResults.highPythonVersion === startingHighestVersion ? '??' : repo.reportResults.highPythonVersion,
       followsDevPrdNamingScheme: repo.reportResults.followsDevPrdNamingScheme,
       codeScanAlertCountCritical: repo.codeScanAlerts.critical.length,
       codeScanAlertCountHigh: repo.codeScanAlerts.high.length,
@@ -98,6 +102,8 @@ export class OverallRepoReport extends RepoReport<OverallRepoReportData, Overall
       highNodeVersion: 'Highest Node Version Across Any Branch',
       lowTerraformVersion: 'Lowest Terraform Version Across Any Branch',
       highTerraformVersion: 'Highest Terraform Version Across Any Branch',
+      lowPythonVersion: 'Lowest Python Version Across Any Branch',
+      highPythonVersion: 'Highest Python Version Across Any Branch',
       followsDevPrdNamingScheme: 'Follows Standard Dev/Prd Naming Schema',
       codeScanAlertCountCritical: 'Critical Code Scan Alert Count',
       codeScanAlertCountHigh: 'High Code Scan Alert Count',

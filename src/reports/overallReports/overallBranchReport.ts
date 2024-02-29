@@ -14,6 +14,8 @@ interface OverallBranchReportData extends RepoReportData {
   highNodeVersion: string
   lowTerraformVersion: string
   highTerraformVersion: string
+  lowPythonVersion: string
+  highPythonVersion: string
   default: boolean
   stale: boolean
   deployed: boolean
@@ -39,6 +41,8 @@ export class OverallBranchReport extends RepoReport<OverallBranchReportData, Ove
           highNodeVersion: branch.reportResults.highNodeVersion,
           lowTerraformVersion: branch.reportResults.lowTerraformVersion,
           highTerraformVersion: branch.reportResults.highTerraformVersion,
+          lowPythonVersion: branch.reportResults.lowPythonVersion,
+          highPythonVersion: branch.reportResults.highPythonVersion,
           default: repo.defaultBranch === branchName,
           stale: branch.staleBranch,
           deployed: branch.deployedBranch,
@@ -68,6 +72,8 @@ export class OverallBranchReport extends RepoReport<OverallBranchReportData, Ove
       highNodeVersion: 'Highest Node Version Across Any Branch',
       lowTerraformVersion: 'Lowest Terraform Version Across Any Branch',
       highTerraformVersion: 'Highest Terraform Version Across Any Branch',
+      lowPythonVersion: 'Highest Python Version Across Any Branch',
+      highPythonVersion: 'Highest Python Version Across Any Branch',
       default: 'Default Branch?',
       stale: 'Stale Branch?',
       deployed: 'Deployed Branch?',
