@@ -1,5 +1,5 @@
 import { Octokit } from '@octokit/rest'
-import { throttling } from "@octokit/plugin-throttling"
+import { throttling } from '@octokit/plugin-throttling'
 import { retry } from '@octokit/plugin-retry'
 import { getEnv } from './env'
 
