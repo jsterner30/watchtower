@@ -21,7 +21,7 @@
     "genReportDocs": "node -r ts-node/register scripts/genReportDocs/index.ts && git add reports.md"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.489.0",
+    "@aws-sdk/client-s3": "^3.525.0",
     "@byu-oit/env-ssm": "^3.4.0",
     "@byu-oit/logger": "^0.4.0",
     "@cdktf/hcl2json": "^0.19.1",
@@ -53,16 +53,16 @@
     "cross-env": "^7.0.3",
     "eslint": "^8.41.0",
     "fetch-mock": "^9.11.0",
-    "husky": "^8.0.0",
+    "husky": "^9.0.11",
     "markdown-table-ts": "^1.0.3",
     "rimraf": "^4.4.1",
     "sinon": "^17.0.1",
     "snazzy": "^9.0.0",
     "standard": "^17.0.0",
     "ts-mockito": "^2.6.1",
-    "ts-node": "^10.9.1",
+    "ts-node": "^10.9.2",
     "ts-standard": "^12.0.1",
-    "tsx": "^4.7.0",
+    "tsx": "^4.7.1",
     "typescript": "5.0.4"
   },
   "standard": {
