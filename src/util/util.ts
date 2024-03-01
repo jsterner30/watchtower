@@ -165,22 +165,16 @@ export function attachMetadataToCacheFile (info: Record<string, Repo>, branchCou
 }
 
 export function gatherNodeFiles (repo: Repo, branchName: string): VersionLocation[] {
-  const branchNodeFiles: VersionLocation[] = []
+  let branchNodeFiles: VersionLocation[] = []
   for (const dep of repo.branches[branchName].deps) {
     if (validDockerfile.Check(dep) && dep.fileType === FileTypeEnum.DOCKERFILE) {
-      const versionLocation = getDockerfileImageVersion(dep, branchName, 'node')
-      if (versionLocation != null) {
-        branchNodeFiles.push(versionLocation)
-      }
+      branchNodeFiles = [...branchNodeFiles, ...getDockerfileImageVersion(dep, branchName, 'node')]
     } else if (validGHAFile.Check(dep) && dep.fileType === FileTypeEnum.GITHUB_ACTION) {
       if (dep.contents.env?.node_version != null) {
         branchNodeFiles.push({ filePath: dep.fileName, version: dep.contents.env.node_version, branch: branchName })
       }
     } else if (validTerraformFile.Check(dep) && dep.fileType === 'TERRAFORM') {
-      const versionLocation = getTerraformLambdaRuntimeVersion(dep, branchName, 'nodejs')
-      if (versionLocation != null) {
-        branchNodeFiles.push(versionLocation)
-      }
+      branchNodeFiles = [...branchNodeFiles, ...getTerraformLambdaRuntimeVersion(dep, branchName, 'nodejs')]
     } else if (validGHASourceFile.Check(dep) && dep.fileType === 'GITHUB_ACTION_SOURCE') {
       if ((dep.contents?.runs?.using as string)?.includes('node')) {
         const version = dep.contents.runs.using.split('node')[1]
@@ -213,45 +207,43 @@ export function gatherTerraformFiles (repo: Repo, branchName: string): VersionLo
 }
 
 export function gatherPythonFiles (repo: Repo, branchName: string): VersionLocation[] {
-  const branchPythonFiles: VersionLocation[] = []
+  let branchPythonFiles: VersionLocation[] = []
   for (const dep of repo.branches[branchName].deps) {
     if (validDockerfile.Check(dep) && dep.fileType === FileTypeEnum.DOCKERFILE) {
-      const versionLocation = getDockerfileImageVersion(dep, branchName, 'python')
-      if (versionLocation != null) {
-        branchPythonFiles.push(versionLocation)
-      }
+      branchPythonFiles = [...branchPythonFiles, ...getDockerfileImageVersion(dep, branchName, 'python')]
     } else if (validTerraformFile.Check(dep) && dep.fileType === 'TERRAFORM') {
-      const versionLocation = getTerraformLambdaRuntimeVersion(dep, branchName, 'python')
-      if (versionLocation != null) {
-        branchPythonFiles.push(versionLocation)
-      }
+      branchPythonFiles = [...branchPythonFiles, ...getTerraformLambdaRuntimeVersion(dep, branchName, 'python')]
     }
   }
   return branchPythonFiles
 }
 
-export function getDockerfileImageVersion (dep: Dockerfile, branchName: string, depName: string): VersionLocation | null {
+export function getDockerfileImageVersion (dep: Dockerfile, branchName: string, depName: string): VersionLocation[] {
+  const versions: VersionLocation[] = []
   if (dep.image.includes(depName)) {
     // The code below will return "-1" if the node version is simply "node". Else, it will return "18.13.18-slim" if the image is "node:18.13.18-slim"
     const version = dep.image.split(depName)[1] === '' ? '-1' : dep.image.split(depName)[1].slice(1, dep.image.split(depName)[1].length)
-    return {
+    versions.push({
       filePath: dep.fileName,
       version,
       branch: branchName
-    }
+    })
   }
-  return null
+  return versions
 }
 
-export function getTerraformLambdaRuntimeVersion (dep: TerraformFile, branchName: string, depName: string): VersionLocation | null {
-  for (const moduleName in dep.contents.module) {
-    for (const subModule of dep.contents.module[moduleName]) {
-      if (subModule.runtime != null) {
-        if ((subModule.runtime as string).includes(depName)) {
-          return { filePath: dep.fileName, version: subModule.runtime.split(depName)[1], branch: branchName }
-        }
-      }
+export function getTerraformLambdaRuntimeVersion (dep: TerraformFile, branchName: string, depName: string): VersionLocation[] {
+  const versions: VersionLocation[] = []
+  traverseObject(dep, 'runtime', depName, versions, dep.fileName, branchName)
+  return versions
+}
+
+function traverseObject (obj: Record<string, any>, targetString: string, searchString: string, versions: VersionLocation[], fileName: string, branchName: string): void {
+  for (const key in obj) {
+    if (typeof obj[key] === 'object' && obj[key] !== null) {
+      traverseObject(obj[key], targetString, searchString, versions, fileName, branchName)
+    } else if (key === targetString && typeof obj[key] === 'string' && (obj[key] as string).includes(searchString)) {
+      versions.push({ filePath: fileName, version: obj[key].split(searchString)[1], branch: branchName })
     }
   }
-  return null
 }

@@ -149,3 +149,5 @@ Step 2: Download Data
 8. versions should be valid semver in version reports 
 9. paths should remove repo and commit hash in filePath in version reports
 10. Make graded reports return a grading object with an abstract parent function
+11. parse codeowners files in a dotgithub rule
+12. parse tfvars files in terraform rule
