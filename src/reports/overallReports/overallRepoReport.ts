@@ -1,6 +1,6 @@
 import { Writers } from '../report'
 import { HeaderTitles, ReportWriter, startingHighestVersion, startingLowestVersion } from '../../util'
-import { Repo } from '../../types'
+import { Repo, RepoCustomProperty } from '../../types'
 import { RepoReport, RepoReportData } from '../repoReports/repoReport'
 
 interface OverallRepoReportData extends RepoReportData {
@@ -36,6 +36,9 @@ interface OverallRepoReportData extends RepoReportData {
   openIssues: number
   forksCount: number
   allowForking: boolean
+  customPropsPortfolio: string
+  customPropsType: string
+  allCustomProps: Record<string, RepoCustomProperty>
 }
 interface OverallRepoReportWriters extends Writers<OverallRepoReportData> {
   overallRepoReportWriter: ReportWriter<OverallRepoReportData>
@@ -75,7 +78,10 @@ export class OverallRepoReport extends RepoReport<OverallRepoReportData, Overall
       openPullRequests: repo.openPullRequests.length,
       openIssues: repo.openIssues.length,
       forksCount: repo.forksCount,
-      allowForking: repo.allowForking
+      allowForking: repo.allowForking,
+      customPropsPortfolio: repo.customProperties.Portfolio.value[0],
+      customPropsType: repo.customProperties.Type.value[0],
+      allCustomProps: repo.customProperties
     })
   }
 
@@ -118,7 +124,10 @@ export class OverallRepoReport extends RepoReport<OverallRepoReportData, Overall
       openPullRequests: 'Number of Open Pull Requests',
       openIssues: 'Number of Open Issues',
       forksCount: 'Number of Forks',
-      allowForking: 'Allows Forking'
+      allowForking: 'Allows Forking',
+      customPropsPortfolio: 'Portfolio (custom property)',
+      customPropsType: 'Type (custom property)',
+      allCustomProps: 'All Custom Properties'
     }
   }
 

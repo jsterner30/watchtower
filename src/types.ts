@@ -40,6 +40,7 @@ export enum FileTypeEnum {
   PACKAGE_JSON = 'PACKAGE_LOCK',
   PACKAGE_LOCK = 'PACKAGE_JSON',
   PIP_REQUIREMENTS = 'PIP_REQUIREMENTS',
+  POM_XML = 'POM_XML',
   TERRAFORM = 'TERRAFORM',
   TFVARS = 'TFVARS',
   DOCKERFILE = 'DOCKERFILE',
@@ -122,6 +123,33 @@ export const PIPRequirementsFileSchema = Type.Intersect([
 ])
 export type PIPRequirementsFile = Static<typeof PIPRequirementsFileSchema>
 export const validPIPRequirementsFile = TypeCompiler.Compile(PIPRequirementsFileSchema)
+
+const PomAsJsonSchema = Type.Object({
+  groupId: Type.String(),
+  artifactId: Type.String(),
+  version: Type.String(),
+  description: Type.Optional(Type.String()),
+  dependencies: Type.Optional(Type.Array(Type.Object({
+    groupId: Type.String(),
+    artifactId: Type.String(),
+    version: Type.String()
+  }))),
+  build: Type.Optional(Type.Object({
+    plugins: Type.Optional(Type.Array(Type.Object({
+      groupId: Type.String(),
+      artifactId: Type.String(),
+      version: Type.String(),
+      configuration: Type.Optional(Type.Any())
+    })))
+  }))
+})
+export type PomAsJson = Static<typeof PomAsJsonSchema>
+
+const PomXmlFileSchema = Type.Intersect([
+  RuleFileSchema,
+  PomAsJsonSchema
+])
+export type PomXmlFile = Static<typeof PomXmlFileSchema>
 
 const PackageJsonFileSchema = Type.Intersect([
   RuleFileSchema,
@@ -365,6 +393,12 @@ const RepoReportResultSchema = Type.Object({
 })
 export type RepoReportResult = Static<typeof RepoReportResultSchema>
 
+const RepoCustomPropertySchema = Type.Object({
+  propertyName: Type.String(),
+  value: Type.Array(Type.String()) // this is a type of array because the response can be a string or an array of string, so we code for the more general case
+})
+export type RepoCustomProperty = Static<typeof RepoCustomPropertySchema>
+
 const RepoSchema = Type.Object({
   name: Type.String(),
   private: Type.Boolean(),
@@ -386,7 +420,8 @@ const RepoSchema = Type.Object({
   teams: Type.Array(Type.String()),
   admins: Type.Array(Type.String()),
   healthScores: Type.Record(Type.String(), HealthScoreSchema),
-  reportResults: RepoReportResultSchema
+  reportResults: RepoReportResultSchema,
+  customProperties: Type.Record(Type.String(), RepoCustomPropertySchema)
 })
 export type Repo = Static<typeof RepoSchema>
 export const validRepo = TypeCompiler.Compile(RepoSchema)

@@ -14,7 +14,13 @@ import type {
   GithubOrganization,
   GithubTeam,
   Branch,
-  SecretScanAlert, CodeScanAlert, DependabotAlert, GithubActionRun, Issue, PullRequest
+  SecretScanAlert,
+  CodeScanAlert,
+  DependabotAlert,
+  GithubActionRun,
+  Issue,
+  PullRequest,
+  RepoCustomProperty
 } from '../types'
 import { SecretAlertLocation } from '../types'
 
@@ -22,6 +28,11 @@ export async function getRepos (): Promise<Repo[]> {
   const parser = async (response: any): Promise<Repo[]> => {
     const repos: Repo[] = []
     for (const repo of response.data) {
+      const customProps: Record<string, RepoCustomProperty> = (await getRepoCustomProperties(repo.name)).reduce((acc: Record<string, RepoCustomProperty>, prop) => {
+        acc[prop.propertyName] = prop
+        return acc
+      }, {})
+
       repos.push({
         name: repo.name,
         private: repo.private,
@@ -75,7 +86,8 @@ export async function getRepos (): Promise<Repo[]> {
           lowPythonVersion: '??',
           highPythonVersion: '??',
           followsDevPrdNamingScheme: false
-        }
+        },
+        customProperties: customProps
       })
     }
     return repos
@@ -316,6 +328,28 @@ export async function getRepoAdmins (repoName: string): Promise<string[]> {
     { owner: (await getEnv()).githubOrg, repo: repoName, permission: 'admin', affiliation: 'direct' }, parser)
 }
 
+async function getRepoCustomProperties (repoName: string): Promise<RepoCustomProperty[]> {
+  const parser = async (response: any): Promise<RepoCustomProperty[]> => {
+    const props: RepoCustomProperty[] = []
+    for (const prop of response.data) {
+      if (typeof prop.value === 'string') {
+        props.push({
+          propertyName: prop.property_name,
+          value: [prop.value]
+        })
+      } else if (Array.isArray(prop.value)) {
+        props.push({
+          propertyName: prop.property_name,
+          value: prop.value
+        })
+      }
+    }
+    return props
+  }
+
+  return await getGithubData<RepoCustomProperty>(false, `repo custom props for repo: ${repoName}`, 'GET /repos/{owner}/{repo}/properties/values', { owner: (await getEnv()).githubOrg, repo: repoName }, parser)
+}
+
 export async function getRepoGithubActionRuns (repoName: string): Promise<GithubActionRun[]> {
   // this function only gets the last 100 GHA
   const parser = async (response: any): Promise<GithubActionRun[]> => {
@@ -512,7 +546,7 @@ async function getGithubData<T> (
 
     return data
   } catch (error) {
-    logger.error(`Error getting ${itemsDescription}: (${error as string})`)
+    logger.error(`Error getting ${itemsDescription}: ${(error as Error).message}`)
     return []
   }
 }

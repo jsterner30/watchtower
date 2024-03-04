@@ -82,7 +82,8 @@ export const fakeRepo: Repo = {
     lowPythonVersion: '??',
     highPythonVersion: '??',
     followsDevPrdNamingScheme: false
-  }
+  },
+  customProperties: {}
 }
 export const fakeCacheFile: CacheFile = {
   metadata: {

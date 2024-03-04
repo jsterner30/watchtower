@@ -15,6 +15,7 @@ import { DeployedBranchRule, StaleBranchRule } from './secondaryBranchRules'
 import { AdminsRule, GithubActionRunRule, LatestCommitRule, OpenIssueRule, OpenPRRule, TeamsRule } from './repoRules'
 import { CodeScanAlertsRule, DependabotAlertsRule, SecretScanAlertsRule } from './orgRules'
 import { PIPRequirementsRule } from './branchRules/pipRequirementsRule'
+import { PomXmlRule } from './branchRules/pomXmlRule'
 
 export interface BranchRules {
   dockerComposeRule: DockerComposeRule
@@ -27,6 +28,7 @@ export interface BranchRules {
   packageJsonRule: PackageJsonRule
   packageLockRule: PackageLockRule
   pipRequirementsRule: PIPRequirementsRule
+  pomXmlRule: PomXmlRule
   readmeRule: ReadmeRule
   terraformRule: TerraformRule
 }
@@ -43,6 +45,7 @@ export function getBranchRules (): BranchRules {
     packageJsonRule: new PackageJsonRule(),
     packageLockRule: new PackageLockRule(),
     pipRequirementsRule: new PIPRequirementsRule(),
+    pomXmlRule: new PomXmlRule(),
     readmeRule: new ReadmeRule(),
     terraformRule: new TerraformRule()
   }
