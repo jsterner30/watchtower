@@ -48,7 +48,7 @@ export class OverallBranchReport extends RepoReport<OverallBranchReportData, Ove
           stale: branch.staleBranch,
           deployed: branch.deployedBranch,
           protected: branch.branchProtections.protected,
-          lastActionRunConclusion: branch.actionRuns[0].conclusion
+          lastActionRunConclusion: branch.actionRuns[0] != null ? branch.actionRuns[0].conclusion : 'none'
         }
 
         writers.overallBranchReportWriter.addRow(reportRow)
@@ -80,7 +80,6 @@ export class OverallBranchReport extends RepoReport<OverallBranchReportData, Ove
       stale: 'Stale Branch?',
       deployed: 'Deployed Branch?',
       protected: 'Protected Branch?',
-      actionRuns: 'Github Action Runs Associated With This Branch',
       lastActionRunConclusion: 'Conclusion of the Last Action Run on this Branch'
     }
   }

@@ -155,3 +155,5 @@ Step 2: Download Data
 10. Make graded reports return a grading object with an abstract parent function
 11. parse codeowners files in a dotgithub rule
 12. parse tfvars files in terraform rule
+13. Kotlin/java version reports
+14. pom.xml dependency report

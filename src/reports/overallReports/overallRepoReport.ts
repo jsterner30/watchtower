@@ -81,7 +81,7 @@ export class OverallRepoReport extends RepoReport<OverallRepoReportData, Overall
       allowForking: repo.allowForking,
       customPropsPortfolio: repo.customProperties.Portfolio.value[0],
       customPropsType: repo.customProperties.Type.value[0],
-      lastActionRunDefaultBranch: repo.branches[repo.defaultBranch].actionRuns[0].conclusion
+      lastActionRunDefaultBranch: repo.branches[repo.defaultBranch].actionRuns[0] != null ? repo.branches[repo.defaultBranch].actionRuns[0].conclusion : 'none'
     })
   }
 

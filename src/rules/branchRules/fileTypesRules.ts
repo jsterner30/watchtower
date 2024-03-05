@@ -7,15 +7,27 @@ export class FileTypesRules extends BranchRule {
   async run (repo: Repo, downloaded: JSZip, branchName: string, fileName: string): Promise<void> {
     try {
       if (!downloaded.files[fileName].dir) {
-        const extensions = fileName.split('.').filter(Boolean)
-        const fileType = extensions[extensions.length - 1]
-        if (repo.branches[branchName].fileTypes[fileType] == null) {
-          repo.branches[branchName].fileTypes[fileType] = 0
+        const fileType = this.getFileTypeFromPath(fileName)
+        if (fileType != null) {
+          if (repo.branches[branchName].fileTypes[fileType] == null) {
+            repo.branches[branchName].fileTypes[fileType] = 0
+          }
+          repo.branches[branchName].fileTypes[fileType] += 1
         }
-        repo.branches[branchName].fileTypes[fileType] += 1
       }
     } catch (error) {
       errorHandler(error, FileTypesRules.name, repo.name, branchName, fileName)
     }
+  }
+
+  getFileTypeFromPath (fileName: string): string | null {
+    let fileType: string | null = null
+    const extensions = fileName.split('.').filter(Boolean)
+    if (extensions.length === 1) { // this is a filetype with no extension like Dockerfile
+      fileType = (extensions[0].split('/')).pop() ?? null
+    } else {
+      fileType = extensions[extensions.length - 1]
+    }
+    return fileType
   }
 }

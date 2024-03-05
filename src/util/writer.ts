@@ -94,7 +94,7 @@ export class LocalWriter extends Writer {
       const directoryFullPath = path.resolve('data', fileUsage, dataType, directoryPath)
       // Remove the directory and its contents
       await this.fileSystemWrapper.rm(directoryFullPath)
-      logger.info(`Successfully deleted the directory and its contents: ${directoryPath}`)
+      logger.info(`Successfully deleted the directory and its contents: ${directoryFullPath}`)
     } catch (error: any) {
       logger.error(`Error deleting directory and its contents: ${(error as Error).message}`)
     }

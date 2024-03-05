@@ -16,11 +16,10 @@ export class PomXmlRule extends BranchRule {
   }
 
   parsePomXmlFile (pomFileContents: string, fileName: string): PomXmlFile {
-    const pomObj = convert.xml2js(pomFileContents) as PomAsJson
     return {
       fileName,
       fileType: FileTypeEnum.POM_XML,
-      ...pomObj
+      ...convert.xml2js(pomFileContents) as PomAsJson
     }
   }
 }
