@@ -11,6 +11,7 @@ interface DependabotAlertReportData extends RepoReportData {
   dependencyName: string
   dependencyEcosystem: string
   summary: string
+  createdAt: string
   description: string
 }
 
@@ -25,6 +26,7 @@ export class DependabotAlertReport extends AlertScanReport<DependabotAlertReport
   protected getHeaderTitles (): HeaderTitles<DependabotAlertReportData> {
     return {
       repoName: 'Repo',
+      createdAt: 'Created Date',
       dependencyName: 'Dependency me',
       dependencyEcosystem: 'Dependency Ecosystem',
       summary: 'Summary',
@@ -37,6 +39,7 @@ export class DependabotAlertReport extends AlertScanReport<DependabotAlertReport
     for (const alert of alerts) {
       rows.push({
         repoName,
+        createdAt: alert.createdAt,
         dependencyName: alert.dependencyName,
         dependencyEcosystem: alert.dependencyEcosystem,
         summary: alert.summary,

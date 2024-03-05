@@ -10,6 +10,7 @@ interface CodeScanReportData extends RepoReportData {
   repoName: string
   id: string
   description: string
+  createdAt: string
   locationPath: string
 }
 
@@ -25,6 +26,7 @@ export class CodeScanAlertReport extends AlertScanReport<CodeScanReportData> {
     return {
       repoName: 'Repo',
       id: 'ID',
+      createdAt: 'Created Date',
       description: 'Description',
       locationPath: 'Location Path'
     }
@@ -36,6 +38,7 @@ export class CodeScanAlertReport extends AlertScanReport<CodeScanReportData> {
       rows.push({
         repoName,
         id: alert.rule.id,
+        createdAt: alert.createdAt,
         description: alert.rule.description,
         locationPath: alert.mostRecentInstance.locationPath
       })

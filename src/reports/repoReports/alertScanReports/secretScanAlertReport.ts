@@ -9,6 +9,7 @@ import { RepoReportData } from '../repoReport'
 interface SecretAlertsReportData extends RepoReportData {
   repoName: string
   secretType: string
+  createdAt: string
   locationPaths: string[]
   locationUrls: string[]
 }
@@ -21,6 +22,7 @@ export class SecretScanAlertReport extends AlertScanReport<SecretAlertsReportDat
   protected getHeaderTitles (): HeaderTitles<SecretAlertsReportData> {
     return {
       repoName: 'Repo',
+      createdAt: 'Created Date',
       secretType: 'Secret Type',
       locationUrls: 'Location URL',
       locationPaths: 'Location Paths'
@@ -32,6 +34,7 @@ export class SecretScanAlertReport extends AlertScanReport<SecretAlertsReportDat
     for (const alert of alerts) {
       rows.push({
         repoName,
+        createdAt: alert.createdAt,
         secretType: alert.secretType,
         locationPaths: alert.locations.map(obj => obj.locationPath ?? ''),
         locationUrls: alert.locations.map(obj => obj.locationUrl)

@@ -240,6 +240,7 @@ export async function getOpenOrgSecretScanAlerts (): Promise<SecretScanAlert[]> 
     for (const alert of response.data) {
       alerts.push({
         secretType: alert.secret_type,
+        createdAt: alert.created_at,
         locations: await getSecretAlertLocation(alert.repository.name, alert.number),
         state: alert.state,
         repoName: alert.repository.name
@@ -258,6 +259,7 @@ export async function getOpenOrgDependabotScanAlerts (): Promise<DependabotAlert
     for (const alert of response.data) {
       alerts.push({
         dependencyName: alert.dependency?.package?.name,
+        createdAt: alert.created_at,
         dependencyEcosystem: alert.dependency?.package?.ecosystem,
         summary: alert.security_advisory?.summary,
         description: alert.security_advisory?.description,
@@ -299,7 +301,8 @@ export async function getOpenOrgCodeScanAlerts (): Promise<CodeScanAlert[]> {
         },
         state: alert.state,
         location: alert.most_recent_instance.location.path,
-        repoName: alert.repository.name
+        repoName: alert.repository.name,
+        createdAt: alert.created_at
       })
     }
     return alerts

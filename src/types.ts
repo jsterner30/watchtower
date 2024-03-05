@@ -223,6 +223,7 @@ export type SecretAlertLocation = Static<typeof SecretAlertLocationSchema>
 
 const ScanAlertSchema = Type.Object({
   state: Type.String(),
+  createdAt: Type.String(),
   repoName: Type.String()
 })
 export type ScanAlert = Static<typeof ScanAlertSchema>
