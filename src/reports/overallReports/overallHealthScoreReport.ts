@@ -36,7 +36,7 @@ export class OverallHealthScoreReport extends RepoReport<OverallHealthScoreRepor
           reportRow[report.name] = repo.healthScores[report.name]?.grade ?? GradeEnum.NotApplicable
         }
       } catch (error) {
-        logger.error(`Error adding row to overall health report for repo: ${repo.name}, report: ${report.name as string}, error: ${error as string}`)
+        logger.error(`Error adding row to overall health report for repo: ${repo.name}, report: ${report.name as string}, error: ${(error as Error).message}`)
       }
     }
 

@@ -24,77 +24,86 @@ import type {
 } from '../types'
 import { SecretAlertLocation } from '../types'
 
+function getRepoParser (): (repo: any) => Promise<Repo> {
+  return async (repo: any): Promise<Repo> => {
+    const customProps: Record<string, RepoCustomProperty> = (await getRepoCustomProperties(repo.name)).reduce((acc: Record<string, RepoCustomProperty>, prop) => {
+      acc[prop.propertyName] = prop
+      return acc
+    }, {})
+
+    return {
+      name: repo.name,
+      private: repo.private,
+      url: repo.url,
+      description: repo.description ?? '',
+      language: repo.language ?? '',
+      allowForking: repo.allow_forking,
+      visibility: repo.visibility,
+      forksCount: repo.forks_count,
+      archived: repo.archived,
+      defaultBranch: repo.default_branch,
+      branches: {},
+      lastCommit: defaultCommit,
+      openPullRequests: [],
+      openIssues: [],
+      codeScanAlerts: {
+        low: [],
+        medium: [],
+        high: [],
+        critical: [],
+        none: []
+      },
+      dependabotScanAlerts: {
+        low: [],
+        medium: [],
+        high: [],
+        critical: [],
+        none: []
+      },
+      secretScanAlerts: {
+        low: [],
+        medium: [],
+        high: [],
+        critical: [],
+        none: []
+      },
+      teams: [],
+      admins: [],
+      healthScores: {},
+      reportResults: {
+        staleBranchCount: -1,
+        dependabotBranchCount: -1,
+        lowNodeVersion: '??',
+        highNodeVersion: '??',
+        lowTerraformVersion: '??',
+        highTerraformVersion: '??',
+        lowPythonVersion: '??',
+        highPythonVersion: '??',
+        followsDevPrdNamingScheme: false
+      },
+      customProperties: customProps
+    }
+  }
+}
+export async function getRepo (repoName: string): Promise<Repo> {
+  const parser = async (response: any): Promise<Repo[]> => {
+    const repoParser = getRepoParser()
+    return [(await repoParser(response.data))]
+  }
+
+  return (await getGithubData<Repo>(false, `repo: ${repoName}`, 'GET /repos/{owner}/{repo}', { owner: (await getEnv()).githubOrg, repo: repoName }, parser))[0]
+}
 export async function getRepos (): Promise<Repo[]> {
   const parser = async (response: any): Promise<Repo[]> => {
     const repos: Repo[] = []
     for (const repo of response.data) {
-      const customProps: Record<string, RepoCustomProperty> = (await getRepoCustomProperties(repo.name)).reduce((acc: Record<string, RepoCustomProperty>, prop) => {
-        acc[prop.propertyName] = prop
-        return acc
-      }, {})
-
-      repos.push({
-        name: repo.name,
-        private: repo.private,
-        url: repo.url,
-        description: repo.description ?? '',
-        language: repo.language ?? '',
-        allowForking: repo.allow_forking,
-        visibility: repo.visibility,
-        forksCount: repo.forks_count,
-        archived: repo.archived,
-        defaultBranch: repo.default_branch,
-        branches: {},
-        lastCommit: {
-          author: defaultCommit.author,
-          date: defaultCommit.date,
-          message: defaultCommit.message
-        },
-        openPullRequests: [],
-        openIssues: [],
-        codeScanAlerts: {
-          low: [],
-          medium: [],
-          high: [],
-          critical: [],
-          none: []
-        },
-        dependabotScanAlerts: {
-          low: [],
-          medium: [],
-          high: [],
-          critical: [],
-          none: []
-        },
-        secretScanAlerts: {
-          low: [],
-          medium: [],
-          high: [],
-          critical: [],
-          none: []
-        },
-        teams: [],
-        admins: [],
-        healthScores: {},
-        reportResults: {
-          staleBranchCount: -1,
-          dependabotBranchCount: -1,
-          lowNodeVersion: '??',
-          highNodeVersion: '??',
-          lowTerraformVersion: '??',
-          highTerraformVersion: '??',
-          lowPythonVersion: '??',
-          highPythonVersion: '??',
-          followsDevPrdNamingScheme: false
-        },
-        customProperties: customProps
-      })
+      const repoParser = getRepoParser()
+      repos.push(await repoParser(repo))
     }
     return repos
   }
 
-  return await getGithubData<Repo>(true, 'org repos', 'GET /orgs/{org}/repos',
-    { org: (await getEnv()).githubOrg }, parser)
+  return await getGithubData<Repo>(true, 'org repos', 'GET /orgs/{org}/repos', { org: (await getEnv()).githubOrg }, parser)
 }
 
 export async function getProtectionRules (repoName: string, branchName: string): Promise<BranchProtection> {
@@ -178,7 +187,8 @@ function getCommitParser (): (commit: any) => Promise<Commit> {
     return {
       author: commit.commit.author.name ?? defaultCommit.author,
       date: commit.commit.author.date ?? defaultCommit.date,
-      message: commit.commit?.message ?? defaultCommit.message
+      message: commit.commit?.message ?? defaultCommit.message,
+      sha: commit.sha
     }
   }
 }
@@ -202,6 +212,11 @@ export async function getCommits (repoName: string): Promise<Commit[]> {
 
   return await getGithubData<Commit>(false, `commits for repo: ${repoName}`,
     'GET /repos/{owner}/{repo}/commits', { owner: (await getEnv()).githubOrg, repo: repoName }, parser)
+}
+
+export async function getBranchLastCommit (repo: Repo, branchName: string): Promise<Commit> {
+  const branch = await getBranch(repo, branchName)
+  return await getCommit(repo.name, branch.lastCommit.sha)
 }
 
 export async function getRepoAdminTeams (repoName: string): Promise<string[]> {
@@ -350,8 +365,8 @@ async function getRepoCustomProperties (repoName: string): Promise<RepoCustomPro
   return await getGithubData<RepoCustomProperty>(false, `repo custom props for repo: ${repoName}`, 'GET /repos/{owner}/{repo}/properties/values', { owner: (await getEnv()).githubOrg, repo: repoName }, parser)
 }
 
+// this function only gets the last 100 GHA
 export async function getRepoGithubActionRuns (repoName: string): Promise<GithubActionRun[]> {
-  // this function only gets the last 100 GHA
   const parser = async (response: any): Promise<GithubActionRun[]> => {
     const runs = []
     for (const run of response.data.workflow_runs) {
@@ -367,7 +382,7 @@ export async function getRepoGithubActionRuns (repoName: string): Promise<Github
     return runs
   }
   return await getGithubData<GithubActionRun>(false, `github action runs for repo: ${repoName}`, 'GET /repos/{owner}/{repo}/actions/runs',
-    { owner: (await getEnv()).githubOrg, repo: repoName }, parser, 'workflow_runs')
+    { owner: (await getEnv()).githubOrg, repo: repoName, per_page: 100 }, parser, 'workflow_runs')
 }
 
 export async function getRepoOpenIssues (repoName: string): Promise<Issue[]> {

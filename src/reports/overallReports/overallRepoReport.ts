@@ -1,6 +1,6 @@
 import { Writers } from '../report'
 import { HeaderTitles, ReportWriter, startingHighestVersion, startingLowestVersion } from '../../util'
-import { Repo, RepoCustomProperty } from '../../types'
+import { Repo } from '../../types'
 import { RepoReport, RepoReportData } from '../repoReports/repoReport'
 
 interface OverallRepoReportData extends RepoReportData {
@@ -38,7 +38,7 @@ interface OverallRepoReportData extends RepoReportData {
   allowForking: boolean
   customPropsPortfolio: string
   customPropsType: string
-  allCustomProps: Record<string, RepoCustomProperty>
+  lastActionRunDefaultBranch: string
 }
 interface OverallRepoReportWriters extends Writers<OverallRepoReportData> {
   overallRepoReportWriter: ReportWriter<OverallRepoReportData>
@@ -81,7 +81,7 @@ export class OverallRepoReport extends RepoReport<OverallRepoReportData, Overall
       allowForking: repo.allowForking,
       customPropsPortfolio: repo.customProperties.Portfolio.value[0],
       customPropsType: repo.customProperties.Type.value[0],
-      allCustomProps: repo.customProperties
+      lastActionRunDefaultBranch: repo.branches[repo.defaultBranch].actionRuns[0].conclusion
     })
   }
 
@@ -127,7 +127,7 @@ export class OverallRepoReport extends RepoReport<OverallRepoReportData, Overall
       allowForking: 'Allows Forking',
       customPropsPortfolio: 'Portfolio (custom property)',
       customPropsType: 'Type (custom property)',
-      allCustomProps: 'All Custom Properties'
+      lastActionRunDefaultBranch: 'Conclusion of Last Action Run on Default Branch'
     }
   }
 

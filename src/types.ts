@@ -302,7 +302,8 @@ export type ScanAlertBySeverityLevel = Static<typeof ScanAlertBySeverityLevelSch
 const CommitSchema = Type.Object({
   author: Type.String(),
   date: Type.String(),
-  message: Type.String()
+  message: Type.String(),
+  sha: Type.String()
 })
 export type Commit = Static<typeof CommitSchema>
 

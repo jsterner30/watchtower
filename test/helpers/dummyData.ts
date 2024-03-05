@@ -1,12 +1,9 @@
 import { Branch, CacheFile, Repo } from '../../src/types'
+import { defaultCommit } from '../../src/util'
 
 export const fakeBranch: Branch = {
   name: 'feature/api-authentication',
-  lastCommit: {
-    author: 'Jesse Millar',
-    date: '2015-05-11T17:37:37Z',
-    message: ''
-  },
+  lastCommit: defaultCommit,
   dependabot: false,
   deps: [],
   fileCount: 0,
@@ -41,11 +38,7 @@ export const fakeRepo: Repo = {
   branches: {
     fakeBranch
   },
-  lastCommit: {
-    author: '',
-    date: '1971-01-01T00:00:00Z',
-    message: ''
-  },
+  lastCommit: defaultCommit,
   openPullRequests: [],
   openIssues: [],
   codeScanAlerts: {

@@ -7,7 +7,14 @@ import {
   downloadRepoToMemory,
   allReposCacheFileName,
   filteredWithBranchesCacheFileName,
-  getOrgMembers, getOrg, getOrgTeams, getBranch, attachMetadataToCacheFile, getRepos, errorHandler
+  getOrgMembers,
+  getOrg,
+  getOrgTeams,
+  attachMetadataToCacheFile,
+  getRepos,
+  errorHandler,
+  getRepo,
+  getBranchLastCommit
 } from './util'
 import { CacheFile, Repo } from './types'
 import JSZip from 'jszip'
@@ -42,9 +49,16 @@ export class Engine {
   private readonly writer: Writer
   private readonly cache: Cache
   private readonly progress: ProgressBarManager
+  private readonly getReposFunction: (reposCacheFile: CacheFile | null) => Promise<CacheFile>
 
   constructor (env: Environment, cache: Cache, writer: Writer) {
     this.env = env
+    if (env.runLimitedTest && env.testRepoList.length > 0) {
+      this.getReposFunction = this.getLimitedNumberOfReposForTesting
+    } else {
+      this.getReposFunction = this.getReposCacheFile
+    }
+
     this.writer = writer
     this.cache = cache
     this.progress = new ProgressBarManager(env.showProgress)
@@ -59,7 +73,7 @@ export class Engine {
 
   async run (): Promise<void> {
     await this.cache.update()
-    const allReposFile = await this.getReposCacheFile(this.cache.cache.allRepos)
+    const allReposFile = await this.getReposFunction(this.cache.cache.allRepos)
     await this.cache.writeFileToCache(allReposCacheFileName, allReposFile)
     const filteredRepos = await this.filterArchived(allReposFile)
     const filteredWithBranchesFile = await this.getReposWithBranchesCacheFile(filteredRepos, this.cache.cache.filteredWithBranches, this.progress)
@@ -94,7 +108,24 @@ export class Engine {
 
       return attachMetadataToCacheFile(repoInfoObj)
     } catch (error) {
-      throw new Error(`Error occurred while fetching repositories: ${error as string}`)
+      throw new Error(`Error occurred while fetching repositories: ${(error as Error).message}`)
+    }
+  }
+
+  private async getLimitedNumberOfReposForTesting (_reposCacheFile: CacheFile | null): Promise<CacheFile> {
+    logger.warn('The full report will not run because the environment variable RUN_LIMITED_TEST was set to true and TEST_REPO_LIST was found')
+    logger.info('Getting the list of repos in found in the TEST_REPO_LIST environment variable')
+    logger.info(`Test repo list: [${this.env.testRepoList.join(',')}]`)
+    try {
+      const repoInfoObj: Record<string, Repo> = {}
+      for (const repoName of this.env.testRepoList) {
+        const repo = await getRepo(repoName)
+        repoInfoObj[repoName] = repo
+      }
+
+      return attachMetadataToCacheFile(repoInfoObj)
+    } catch (error) {
+      throw new Error(`Error occurred while fetching repositories: ${(error as Error).message}`)
     }
   }
 
@@ -130,7 +161,7 @@ export class Engine {
           repo.branches[branch.name] = branch
         }
       } catch (error: any) {
-        logger.error(`Error getting branch info for ${repo.name}: ${error as string}`)
+        logger.error(`Error getting branch info for ${repo.name}: ${(error as Error).message}`)
       }
 
       reposWithBranches[repo.name] = repo
@@ -174,7 +205,7 @@ export class Engine {
           try {
             // we don't run rules on dependabot branches
             if (!repo.branches[branchName].dependabot) {
-              repo.branches[branchName] = await getBranch(repo, branchName)
+              repo.branches[branchName].lastCommit = await getBranchLastCommit(repo, branchName)
               if (repo.branches[branchName].lastCommit.date > this.cache.cache.lastRunDate) {
                 const downloaded = await downloadRepoToMemory(repoName, branchName)
                 if (downloaded != null) {

@@ -9,6 +9,8 @@ export interface Environment {
   staleDaysThreshold: number
   useCache: boolean
   writeFilesLocally: boolean
+  runLimitedTest: boolean
+  testRepoList: string[]
 }
 
 let params: Environment | null = null
@@ -24,7 +26,9 @@ export async function getEnv (): Promise<Environment> {
       showProgress: env.get('SHOW_PROGRESS').default('false').asBool(),
       staleDaysThreshold: env.get('STALE_DAYS_THRESHOLD').default(30).asIntPositive(),
       useCache: env.get('USE_CACHE').default('false').asBool(),
-      writeFilesLocally: env.get('WRITE_FILES_LOCALLY').default('false').asBool()
+      writeFilesLocally: env.get('WRITE_FILES_LOCALLY').default('false').asBool(),
+      runLimitedTest: env.get('RUN_LIMITED_TEST').default('false').asBool(),
+      testRepoList: env.get('TEST_REPO_LIST').default([]).asArray()
     }
   }
   return params

@@ -84,7 +84,7 @@ export class LocalWriter extends Writer {
 
       return fileObject
     } catch (error: any) {
-      logger.warn(`Error reading local files: ${error as string}`)
+      logger.warn(`Error reading local files: ${(error as Error).message}`)
       return null
     }
   }
@@ -96,7 +96,7 @@ export class LocalWriter extends Writer {
       await this.fileSystemWrapper.rm(directoryFullPath)
       logger.info(`Successfully deleted the directory and its contents: ${directoryPath}`)
     } catch (error: any) {
-      logger.error(`Error deleting directory and its contents: ${error as string}`)
+      logger.error(`Error deleting directory and its contents: ${(error as Error).message}`)
     }
   }
 

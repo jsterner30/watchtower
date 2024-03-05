@@ -35,7 +35,7 @@ export class S3Wrapper {
       const params = { Bucket: this.bucketName, Key: key, Body: body }
       await this.client.send(new PutObjectCommand(params))
     } catch (error) {
-      logger.error(`Error writing file to S3: ${error as string}`)
+      logger.error(`Error writing file to S3: ${(error as Error).message}`)
     }
   }
 
@@ -51,7 +51,7 @@ export class S3Wrapper {
         return null
       }
     } catch (error) {
-      logger.error(`Error listing objects in S3: ${error as string}`)
+      logger.error(`Error listing objects in S3: ${(error as Error).message}`)
       return null
     }
   }
@@ -61,7 +61,7 @@ export class S3Wrapper {
       const params = { Bucket: this.bucketName, Key: key }
       await this.client.send(new DeleteObjectCommand(params))
     } catch (error) {
-      logger.error(`Error deleting object from S3: ${error as string}`)
+      logger.error(`Error deleting object from S3: ${(error as Error).message}`)
     }
   }
 }

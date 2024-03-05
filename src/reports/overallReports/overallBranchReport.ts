@@ -20,6 +20,7 @@ interface OverallBranchReportData extends RepoReportData {
   stale: boolean
   deployed: boolean
   protected: boolean
+  lastActionRunConclusion: string
 }
 interface OverallBranchReportWriters extends Writers<OverallBranchReportData> {
   overallBranchReportWriter: ReportWriter<OverallBranchReportData>
@@ -46,7 +47,8 @@ export class OverallBranchReport extends RepoReport<OverallBranchReportData, Ove
           default: repo.defaultBranch === branchName,
           stale: branch.staleBranch,
           deployed: branch.deployedBranch,
-          protected: branch.branchProtections.protected
+          protected: branch.branchProtections.protected,
+          lastActionRunConclusion: branch.actionRuns[0].conclusion
         }
 
         writers.overallBranchReportWriter.addRow(reportRow)
@@ -77,7 +79,9 @@ export class OverallBranchReport extends RepoReport<OverallBranchReportData, Ove
       default: 'Default Branch?',
       stale: 'Stale Branch?',
       deployed: 'Deployed Branch?',
-      protected: 'Protected Branch?'
+      protected: 'Protected Branch?',
+      actionRuns: 'Github Action Runs Associated With This Branch',
+      lastActionRunConclusion: 'Conclusion of the Last Action Run on this Branch'
     }
   }
 

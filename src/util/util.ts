@@ -137,7 +137,7 @@ export function stringifyJSON (json: Record<string, any> | Array<Record<string, 
   try {
     return stringify(json, null, 2)
   } catch (error) {
-    logger.error(`Error stringifying file to write to cache: ${error as string} with resource: ${resourceName}`)
+    logger.error(`Error stringifying file to write to cache: ${(error as Error).message} with resource: ${resourceName}`)
     return '{}'
   }
 }
