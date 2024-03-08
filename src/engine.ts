@@ -14,7 +14,8 @@ import {
   getRepos,
   errorHandler,
   getRepo,
-  getBranchLastCommit
+  getBranchLastCommit,
+  apiCallCounter, stringifyJSON
 } from './util'
 import { CacheFile, Repo } from './types'
 import JSZip from 'jszip'
@@ -92,6 +93,7 @@ export class Engine {
     await this.runOverallReports(repos)
 
     await this.writeReports()
+    await this.writer.writeFile('cache', 'json', 'apiCallCounter', stringifyJSON(apiCallCounter, 'apiCallCounter'))
   }
 
   private async getReposCacheFile (reposCacheFile: CacheFile | null): Promise<CacheFile> {
@@ -120,7 +122,9 @@ export class Engine {
       const repoInfoObj: Record<string, Repo> = {}
       for (const repoName of this.env.testRepoList) {
         const repo = await getRepo(repoName)
-        repoInfoObj[repoName] = repo
+        if (repo != null) {
+          repoInfoObj[repoName] = repo
+        }
       }
 
       return attachMetadataToCacheFile(repoInfoObj)
@@ -129,7 +133,12 @@ export class Engine {
     }
   }
 
+  // this function will skip filtering the archived repos in the org if the
   private async filterArchived (allReposFile: CacheFile): Promise<Repo[]> {
+    if (!this.env.filterArchived) {
+      // return list of repos that were passed in
+      Object.entries(allReposFile.info).map(([_, value]) => value)
+    }
     const filteredRepos: Repo[] = []
     for (const repoName of Object.keys(allReposFile.info)) {
       const repo = allReposFile.info[repoName]

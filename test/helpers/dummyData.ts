@@ -35,6 +35,11 @@ export const fakeRepo: Repo = {
   forksCount: 0,
   archived: true,
   defaultBranch: 'main',
+  licenseData: {
+    key: 'mit',
+    name: 'MIT License',
+    url: 'none'
+  },
   branches: {
     fakeBranch
   },

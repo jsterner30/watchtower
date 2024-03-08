@@ -234,15 +234,26 @@ export function getDockerfileImageVersion (dep: Dockerfile, branchName: string, 
 
 export function getTerraformLambdaRuntimeVersion (dep: TerraformFile, branchName: string, depName: string): VersionLocation[] {
   const versions: VersionLocation[] = []
-  traverseObject(dep, 'runtime', depName, versions, dep.fileName, branchName)
+  traverseObject(dep, ['runtime', 'zip_runtime'], depName, versions, dep.fileName, branchName)
   return versions
 }
 
-function traverseObject (obj: Record<string, any>, targetString: string, searchString: string, versions: VersionLocation[], fileName: string, branchName: string): void {
+function traverseObject (
+  obj: Record<string, any>,
+  targetStrings: string[],
+  searchString: string,
+  versions: VersionLocation[],
+  fileName: string,
+  branchName: string
+): void {
   for (const key in obj) {
     if (typeof obj[key] === 'object' && obj[key] !== null) {
-      traverseObject(obj[key], targetString, searchString, versions, fileName, branchName)
-    } else if (key === targetString && typeof obj[key] === 'string' && (obj[key] as string).includes(searchString)) {
+      traverseObject(obj[key], targetStrings, searchString, versions, fileName, branchName)
+    } else if (
+      targetStrings.includes(key) &&
+        typeof obj[key] === 'string' &&
+        (obj[key] as string).includes(searchString)
+    ) {
       versions.push({ filePath: fileName, version: obj[key].split(searchString)[1], branch: branchName })
     }
   }

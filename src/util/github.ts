@@ -20,9 +20,9 @@ import type {
   GithubActionRun,
   Issue,
   PullRequest,
-  RepoCustomProperty
+  RepoCustomProperty,
+  SecretAlertLocation
 } from '../types'
-import { SecretAlertLocation } from '../types'
 
 function getRepoParser (): (repo: any) => Promise<Repo> {
   return async (repo: any): Promise<Repo> => {
@@ -46,6 +46,11 @@ function getRepoParser (): (repo: any) => Promise<Repo> {
       lastCommit: defaultCommit,
       openPullRequests: [],
       openIssues: [],
+      licenseData: {
+        key: repo.license?.key != null ? repo.license.key : 'none',
+        name: repo.license?.name != null ? repo.license.name : '',
+        url: repo.license?.url != null ? repo.license.url : ''
+      },
       codeScanAlerts: {
         low: [],
         medium: [],
@@ -537,6 +542,16 @@ async function getTeamRepos (teamSlug: string): Promise<string[]> {
   return await getGithubData<string>(true, 'team repos', 'GET /orgs/{org}/teams/{team_slug}/repos', { org: (await getEnv()).githubOrg, team_slug: teamSlug }, parser)
 }
 
+export const apiCallCounter: Record<string, number> = {}
+
+function incrementApiCallCounter (route: string): void {
+  if (apiCallCounter[route] == null) {
+    apiCallCounter[route] = 0
+  } else {
+    apiCallCounter[route] += 1
+  }
+}
+
 async function getGithubData<T> (
   usePaging: boolean,
   itemsDescription: string,
@@ -546,6 +561,7 @@ async function getGithubData<T> (
   responseProperty: string | null = null
 ): Promise<T[]> {
   try {
+    incrementApiCallCounter(route)
     const octokit = await getOctokit()
     const data: T[] = []
     let page = 1

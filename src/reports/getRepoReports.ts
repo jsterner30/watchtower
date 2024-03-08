@@ -27,6 +27,7 @@ import { TerraformRepoVersionReport } from './repoReports/versionReports/repoVer
 import { PythonBranchVersionReport } from './repoReports/versionReports/branchVersionReports/pythonBranchVersionReport'
 import { PythonRepoVersionReport } from './repoReports/versionReports/repoVersionReports/repoPythonVersionReport'
 import { PIPDependencyReport } from './repoReports/dependencyReports/pipDependencyReport'
+import { LicenseReport } from './repoReports/simpleReports/LicenseReport'
 
 export interface RepoReports {
   codeScanAlertCountReport: CodeScanAlertCountReport
@@ -38,6 +39,7 @@ export interface RepoReports {
   devPrdBranchesReport: DevPrdBranchesReport
   dockerfileImageReport: DockerfileImageReport
   ghActionModuleReport: GHActionModuleReport
+  licenseReport: LicenseReport
   lowFileBranchReport: LowFileBranchReport
   lowFileRepoReport: LowFileRepoReport
   npmDependencyReport: NPMDependencyReport
@@ -71,6 +73,7 @@ export function getRepoReports (): RepoReports {
     devPrdBranchesReport: new DevPrdBranchesReport(0, 'DevPrdBranchesReport', 'Repos without the standard "dev" and "prd" branch naming scheme.', '1', 'simple'),
     dockerfileImageReport: new DockerfileImageReport(3, 'DockerfileImageReport', 'Which repos use a given image.', '1 per image in the org', 'dependency'),
     ghActionModuleReport: new GHActionModuleReport(3, 'GHActionModuleReport', 'Which repos use a given GHA module.', '1 per GHA module in org', 'dependency'),
+    licenseReport: new LicenseReport(0, 'LicenseReport', 'What licenses do repos with licenses use', '1', 'simple'),
     lowFileBranchReport: new LowFileBranchReport(0, 'LowFileBranchReport', 'The the branches with a low (<=5) file count.', '1', 'simple'),
     lowFileRepoReport: new LowFileRepoReport(1, 'LowFileRepoReport', 'The the repos with a low (<=5) file count on every branch.', '1', 'simple'),
     npmDependencyReport: new NPMDependencyReport(3, 'NPMDependencyReport', 'Which repos use a given npm dependency.', '1 per npm dependency in the org', 'dependency'),

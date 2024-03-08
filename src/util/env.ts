@@ -11,6 +11,7 @@ export interface Environment {
   writeFilesLocally: boolean
   runLimitedTest: boolean
   testRepoList: string[]
+  filterArchived: boolean
 }
 
 let params: Environment | null = null
@@ -28,7 +29,8 @@ export async function getEnv (): Promise<Environment> {
       useCache: env.get('USE_CACHE').default('false').asBool(),
       writeFilesLocally: env.get('WRITE_FILES_LOCALLY').default('false').asBool(),
       runLimitedTest: env.get('RUN_LIMITED_TEST').default('false').asBool(),
-      testRepoList: env.get('TEST_REPO_LIST').default([]).asArray()
+      testRepoList: env.get('TEST_REPO_LIST').default([]).asArray(),
+      filterArchived: env.get('FILTER_ARCHIVED').default('true').asBool()
     }
   }
   return params

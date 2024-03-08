@@ -49,7 +49,8 @@ export enum FileTypeEnum {
   GITHUB_ACTION = 'GITHUB_ACTION', // this is the file found in the /.github/ dir that defines workflow runs
   GITHUB_ACTION_SOURCE = 'GITHUB_ACTION_SOURCE', // this is the file found in the source code for github actions that we have written in a file called actions.yml
   CODEOWNERS = 'CODEOWNERS',
-  README = 'README'
+  README = 'README',
+  LICENSE = 'LICENSE'
 }
 
 const FileTypeSchema = Type.Enum(FileTypeEnum)
@@ -70,6 +71,15 @@ export const DockerComposeFileSchema = Type.Intersect([
 ])
 export type DockerComposeFile = Static<typeof DockerComposeFileSchema>
 export const validDockerComposeFile = TypeCompiler.Compile(DockerComposeFileSchema)
+
+export const LicenseFileSchema = Type.Intersect([
+  RuleFileSchema,
+  Type.Object({
+    contents: Type.Array(Type.String())
+  })
+])
+export type LicenseFile = Static<typeof LicenseFileSchema>
+export const validLicenseFile = TypeCompiler.Compile(LicenseFileSchema)
 
 export const DockerfileSchema = Type.Intersect([
   RuleFileSchema,
@@ -416,6 +426,11 @@ const RepoSchema = Type.Object({
   lastCommit: CommitSchema,
   openPullRequests: Type.Array(PullRequestSchema),
   openIssues: Type.Array(IssueSchema),
+  licenseData: Type.Object({
+    key: Type.String(),
+    name: Type.String(),
+    url: Type.String()
+  }),
   codeScanAlerts: GetScanAlertBySeverityLevel(CodeScanAlertSchema),
   dependabotScanAlerts: GetScanAlertBySeverityLevel(DependabotAlertSchema),
   secretScanAlerts: GetScanAlertBySeverityLevel(SecretScanAlertSchema),
