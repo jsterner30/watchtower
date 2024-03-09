@@ -93,7 +93,7 @@ export class Engine {
     await this.runOverallReports(repos)
 
     await this.writeReports()
-    await this.writer.writeFile('cache', 'json', 'apiCallCounter', stringifyJSON(apiCallCounter, 'apiCallCounter'))
+    await this.writer.writeFile('cache', 'json', 'apiCallCounter.json', stringifyJSON(apiCallCounter, 'apiCallCounter'))
   }
 
   private async getReposCacheFile (reposCacheFile: CacheFile | null): Promise<CacheFile> {

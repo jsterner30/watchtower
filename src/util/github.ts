@@ -546,7 +546,7 @@ export const apiCallCounter: Record<string, number> = {}
 
 function incrementApiCallCounter (route: string): void {
   if (apiCallCounter[route] == null) {
-    apiCallCounter[route] = 0
+    apiCallCounter[route] = 1
   } else {
     apiCallCounter[route] += 1
   }
