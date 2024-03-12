@@ -9,7 +9,7 @@ export class TerraformRule extends BranchRule {
     try {
       if (fileName.endsWith('.tf')) {
         const content = await downloaded.files[fileName].async('string')
-        repo.branches[branchName].deps.push(await this.parseTerraformFile(fileName, content))
+        repo.branches[branchName].ruleFiles.push(await this.parseTerraformFile(fileName, content))
       } else if (fileName.endsWith('.tfvars')) {
         // TODO parse tfvars file to ensure there are no secrets?
       }

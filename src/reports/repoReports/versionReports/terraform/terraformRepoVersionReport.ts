@@ -1,17 +1,13 @@
 import type {
   Repo,
-  VersionLocation,
   ExtremeVersions, Grade
 } from '../../../../types'
-import { RepoVersionReport } from './repoVersionReport'
-import { gatherTerraformFiles } from '../../../../util'
+import { RepoVersionReport } from '../repoVersionReport'
+import { TerraformVersionUtils } from './terraformVersionUtils'
 import { GradeEnum } from '../../../../types'
 
 export class TerraformRepoVersionReport extends RepoVersionReport {
-  protected gatherSoftwareFiles (repo: Repo, branchName: string): VersionLocation[] {
-    return gatherTerraformFiles(repo, branchName)
-  }
-
+  protected versionUtils = new TerraformVersionUtils()
   public get name (): string {
     return TerraformRepoVersionReport.name
   }

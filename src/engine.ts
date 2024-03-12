@@ -10,12 +10,13 @@ import {
   getOrgMembers,
   getOrg,
   getOrgTeams,
-  attachMetadataToCacheFile,
   getRepos,
   errorHandler,
   getRepo,
   getBranchLastCommit,
-  apiCallCounter, stringifyJSON
+  apiCallCounter,
+  stringifyJSON,
+  sortObjectKeys
 } from './util'
 import { CacheFile, Repo } from './types'
 import JSZip from 'jszip'
@@ -108,7 +109,7 @@ export class Engine {
         repoInfoObj[repo.name] = repo
       }
 
-      return attachMetadataToCacheFile(repoInfoObj)
+      return this.attachMetadataToCacheFile(repoInfoObj)
     } catch (error) {
       throw new Error(`Error occurred while fetching repositories: ${(error as Error).message}`)
     }
@@ -127,7 +128,7 @@ export class Engine {
         }
       }
 
-      return attachMetadataToCacheFile(repoInfoObj)
+      return this.attachMetadataToCacheFile(repoInfoObj)
     } catch (error) {
       throw new Error(`Error occurred while fetching repositories: ${(error as Error).message}`)
     }
@@ -175,7 +176,7 @@ export class Engine {
 
       reposWithBranches[repo.name] = repo
     }
-    return attachMetadataToCacheFile(reposWithBranches, branchCount)
+    return this.attachMetadataToCacheFile(reposWithBranches, branchCount)
   }
 
   private async runOrgRules (filteredWithBranchesFile: CacheFile): Promise<void> {
@@ -288,6 +289,17 @@ export class Engine {
       for (const reportOutput of report.reportOutputDataWriters) {
         await reportOutput.writeOutput(this.writer)
       }
+    }
+  }
+
+  private attachMetadataToCacheFile (info: Record<string, Repo>, branchCount: number = 0): CacheFile {
+    return {
+      metadata: {
+        repoCount: Object.keys(info).length,
+        branchCount,
+        lastRunDate: new Date().toISOString()
+      },
+      info: sortObjectKeys(info)
     }
   }
 }

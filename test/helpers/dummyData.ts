@@ -5,7 +5,7 @@ export const fakeBranch: Branch = {
   name: 'feature/api-authentication',
   lastCommit: defaultCommit,
   dependabot: false,
-  deps: [],
+  ruleFiles: [],
   fileCount: 0,
   fileTypes: {},
   branchProtections: {

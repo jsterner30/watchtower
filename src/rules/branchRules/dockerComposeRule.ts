@@ -9,7 +9,7 @@ export class DockerComposeRule extends BranchRule {
     try {
       if (downloaded.files[fileName].name.endsWith('docker-compose.yml') || downloaded.files[fileName].name.endsWith('docker-compose.yaml')) {
         const content = await downloaded.files[fileName].async('string')
-        repo.branches[branchName].deps.push(this.parseDockerCompose(content, fileName))
+        repo.branches[branchName].ruleFiles.push(this.parseDockerCompose(content, fileName))
       }
     } catch (error) {
       errorHandler(error, DockerComposeRule.name, repo.name, branchName, fileName)

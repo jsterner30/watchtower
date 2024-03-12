@@ -142,7 +142,7 @@ function getBranchParser (repo: Repo): (branch: any) => Promise<Branch> {
       name: branch.name,
       lastCommit: await getCommit(repo.name, branch.commit.sha),
       dependabot: isDependabot,
-      deps: [],
+      ruleFiles: [],
       fileCount: 0,
       fileTypes: {},
       branchProtections: {
@@ -379,12 +379,13 @@ export async function getRepoGithubActionRuns (repoName: string): Promise<Github
     const runs = []
     for (const run of response.data.workflow_runs) {
       runs.push({
-        id: run.id ?? '',
-        status: run.status ?? '',
-        conclusion: run.conclusion ?? '',
-        created_at: run.created_at ?? '',
-        updated_at: run.updated_at ?? '',
-        branch: run.head_branch
+        id: run.id,
+        status: run.status,
+        conclusion: run.conclusion,
+        created_at: run.created_at,
+        updated_at: run.updated_at,
+        branch: run.head_branch,
+        event: run.event
       })
     }
     return runs

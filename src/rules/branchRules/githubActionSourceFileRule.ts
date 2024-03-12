@@ -12,7 +12,7 @@ export class GithubActionSourceFileRule extends BranchRule {
       if (!downloaded.files[fileName].dir) {
         if (downloaded.files[fileName].name.endsWith('action.yml') || downloaded.files[fileName].name.endsWith('action.yaml')) { // this is a github action source code action file
           const content = await downloaded.files[fileName].async('string')
-          repo.branches[branchName].deps.push(this.parseYmlGHA(content, fileName))
+          repo.branches[branchName].ruleFiles.push(this.parseYmlGHA(content, fileName))
         }
       }
     } catch (error) {

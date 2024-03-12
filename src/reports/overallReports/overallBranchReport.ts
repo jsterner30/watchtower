@@ -20,7 +20,9 @@ interface OverallBranchReportData extends RepoReportData {
   stale: boolean
   deployed: boolean
   protected: boolean
-  lastActionRunConclusion: string
+  lastPushActionRunConclusion: string
+  lastPushActionRunDate: string
+  lastSuccessfulPushActionRunDate: string
 }
 interface OverallBranchReportWriters extends Writers<OverallBranchReportData> {
   overallBranchReportWriter: ReportWriter<OverallBranchReportData>
@@ -30,6 +32,9 @@ export class OverallBranchReport extends RepoReport<OverallBranchReportData, Ove
   protected async runReport (repo: Repo, writers: OverallBranchReportWriters): Promise<void> {
     for (const branchName in repo.branches) {
       const branch = repo.branches[branchName]
+      const pushActions = branch.actionRuns.filter(obj => obj.event === 'push')
+      const successfulPushActions = pushActions.filter(obj => obj.conclusion === 'success')
+
       if (!branch.dependabot) {
         const reportRow = {
           repoName: repo.name,
@@ -48,7 +53,9 @@ export class OverallBranchReport extends RepoReport<OverallBranchReportData, Ove
           stale: branch.staleBranch,
           deployed: branch.deployedBranch,
           protected: branch.branchProtections.protected,
-          lastActionRunConclusion: branch.actionRuns[0] != null ? branch.actionRuns[0].conclusion : 'none'
+          lastPushActionRunConclusion: pushActions[0] != null ? pushActions[0].conclusion : 'none',
+          lastPushActionRunDate: pushActions[0] != null ? pushActions[0].created_at : 'none',
+          lastSuccessfulPushActionRunDate: successfulPushActions[0] != null ? successfulPushActions[0].created_at : 'none'
         }
 
         writers.overallBranchReportWriter.addRow(reportRow)
@@ -80,7 +87,9 @@ export class OverallBranchReport extends RepoReport<OverallBranchReportData, Ove
       stale: 'Stale Branch?',
       deployed: 'Deployed Branch?',
       protected: 'Protected Branch?',
-      lastActionRunConclusion: 'Conclusion of the Last Action Run on this Branch'
+      lastPushActionRunConclusion: 'Conclusion of the Push Last Action Run on this Branch',
+      lastPushActionRunDate: 'Date of the Last Push Action Run on this Branch',
+      lastSuccessfulPushActionRunDate: 'Date of the Last Successful Push Action Run on this Branch'
     }
   }
 

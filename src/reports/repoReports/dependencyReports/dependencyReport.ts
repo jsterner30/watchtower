@@ -11,11 +11,11 @@ import { GradeEnum, HealthScore, Repo } from '../../../types'
 import { compare, validate } from 'compare-versions'
 import { RepoReport, RepoReportData } from '../repoReport'
 
-export interface DependencyReportWriters<T extends RepoReportData> extends Writers<T> {}
+export interface DependencyInstanceReportWriters<T extends RepoReportData> extends Writers<T> {}
 
-export abstract class DependencyReport<T extends RepoReportData> extends RepoReport<T, DependencyReportWriters<T>> {
+export abstract class DependencyReport<T extends RepoReportData> extends RepoReport<T, DependencyInstanceReportWriters<T>> {
   public async run (repos: Repo[]): Promise<void> {
-    const writers: DependencyReportWriters<T> = this.getReportWriters()
+    const writers: DependencyInstanceReportWriters<T> = this.getReportWriters()
     for (const repo of repos) {
       try {
         await this.runReport(repo, writers)
@@ -32,7 +32,7 @@ export abstract class DependencyReport<T extends RepoReportData> extends RepoRep
     this.getRelativeReportGrades(writers, repos, this.name, this._weight)
   }
 
-  protected getReportWriters (): DependencyReportWriters<T> {
+  protected getReportWriters (): DependencyInstanceReportWriters<T> {
     return {}
   }
 
@@ -159,5 +159,5 @@ export abstract class DependencyReport<T extends RepoReportData> extends RepoRep
   }
   abstract get name (): string
   protected abstract getHeaderTitles (): HeaderTitles<T>
-  protected abstract runReport (repo: Repo, writers: DependencyReportWriters<T>): Promise<void>
+  protected abstract runReport (repo: Repo, writers: DependencyInstanceReportWriters<T>): Promise<void>
 }

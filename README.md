@@ -131,6 +131,15 @@ or
 
 This repo has both dev and prd branches. The dev scheduled job is set to never run and the dev environment exists primarily to test new features. It should be invoked manually when needed. 
 
+## Scripts
+The ```scripts``` directory is for scripts users can run that are helpful for condensing information or outputting documentation. Current scripts include:
+
+| Script Name    | Description                                                                                                          | Output                                                             |
+|----------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------|
+| genReportDocs  | Runs on commit, generates the reports.md doc file                                                                    | ```reports.md```                                                   |
+
+If you add a script, please remember to add its info to the above table
+
 ## Downloading Data
 
 Step 0 (One time): Install awscli

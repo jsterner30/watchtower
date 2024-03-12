@@ -8,7 +8,7 @@ export class LicenseFileRule extends BranchRule {
     try {
       if (downloaded.files[fileName].name.endsWith('LICENSE') && !downloaded.files[fileName].name.includes('node_modules')) {
         const content = await downloaded.files[fileName].async('string')
-        repo.branches[branchName].deps.push(this.parseLicense(content, fileName))
+        repo.branches[branchName].ruleFiles.push(this.parseLicense(content, fileName))
       }
     } catch (error) {
       errorHandler(error, LicenseFileRule.name, repo.name, branchName, fileName)

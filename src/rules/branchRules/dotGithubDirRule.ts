@@ -10,7 +10,7 @@ export class DotGithubDirRule extends BranchRule {
       if (downloaded.files[fileName].name.includes('/.github/') && !downloaded.files[fileName].dir) { // we are in the .github directory
         if (downloaded.files[fileName].name.endsWith('.yml') || downloaded.files[fileName].name.endsWith('.yaml')) { // this is a GHA file
           const content = await downloaded.files[fileName].async('string')
-          repo.branches[branchName].deps.push(this.parseYmlGHA(content, fileName))
+          repo.branches[branchName].ruleFiles.push(this.parseYmlGHA(content, fileName))
         } else if (downloaded.files[fileName].name.endsWith('CODEOWNERS')) {
           // TODO parse and store codeowners info
         }

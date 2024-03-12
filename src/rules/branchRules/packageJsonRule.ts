@@ -7,7 +7,7 @@ export class PackageJsonRule extends BranchRule {
   async run (repo: Repo, downloaded: JSZip, branchName: string, fileName: string): Promise<void> {
     try {
       if (downloaded.files[fileName].name.endsWith('package.json') && !downloaded.files[fileName].name.includes('node_modules')) {
-        repo.branches[branchName].deps.push(this.parsePackageJson(await downloaded.files[fileName].async('string'), fileName))
+        repo.branches[branchName].ruleFiles.push(this.parsePackageJson(await downloaded.files[fileName].async('string'), fileName))
       }
     } catch (error) {
       errorHandler(error, PackageJsonRule.name, repo.name, branchName, fileName)

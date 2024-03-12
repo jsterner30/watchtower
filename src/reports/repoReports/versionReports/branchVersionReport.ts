@@ -1,11 +1,11 @@
-import { Writers } from '../../../report'
-import { ExtremeVersions, Repo, VersionLocation } from '../../../../types'
+import { Writers } from '../../report'
+import { ExtremeVersions, Repo } from '../../../types'
 import {
   ReportWriter,
   HeaderTitles
-} from '../../../../util'
-import { VersionReport } from '../versionReport'
-import { RepoReportData } from '../../repoReport'
+} from '../../../util'
+import { VersionReport } from './versionReport'
+import { RepoReportData } from '../repoReport'
 
 interface BranchVersionReportData extends RepoReportData {
   repoName: string
@@ -40,7 +40,7 @@ export abstract class BranchVersionReport extends VersionReport<BranchVersionRep
   }
 
   protected async runReport (repo: Repo, writers: BranchVersionReportWriters): Promise<void> {
-    const allBranchVersionExtremes = this.getBranchLowAndHighVersions(repo)
+    const allBranchVersionExtremes = this.versionUtils.getBranchLowAndHighVersions(repo)
     if (Object.keys(allBranchVersionExtremes).length === 0) {
       return
     }
@@ -69,6 +69,5 @@ export abstract class BranchVersionReport extends VersionReport<BranchVersionRep
     }
   }
   abstract get name (): string
-  protected abstract gatherSoftwareFiles (repo: Repo, branchName: string): VersionLocation[]
   protected abstract modifyReportBranchResults (branchExtremeVersions: ExtremeVersions, repo: Repo, branchName: string): void
 }

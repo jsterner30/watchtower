@@ -7,7 +7,7 @@ export class PIPRequirementsRule extends BranchRule {
   async run (repo: Repo, downloaded: JSZip, branchName: string, fileName: string): Promise<void> {
     try {
       if (downloaded.files[fileName].name.endsWith('requirements.txt')) {
-        repo.branches[branchName].deps.push(this.parseRequirementsTXT(await downloaded.files[fileName].async('string'), fileName))
+        repo.branches[branchName].ruleFiles.push(this.parseRequirementsTXT(await downloaded.files[fileName].async('string'), fileName))
       }
     } catch (error) {
       errorHandler(error, PIPRequirementsRule.name, repo.name, branchName, fileName)

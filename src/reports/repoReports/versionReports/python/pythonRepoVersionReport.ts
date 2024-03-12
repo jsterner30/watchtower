@@ -1,16 +1,13 @@
 import type {
   Repo,
-  VersionLocation,
   ExtremeVersions, Grade
 } from '../../../../types'
-import { RepoVersionReport } from './repoVersionReport'
-import { gatherPythonFiles } from '../../../../util'
+import { RepoVersionReport } from '../repoVersionReport'
 import { GradeEnum } from '../../../../types'
+import { PythonVersionUtils } from './pythonVersionUtils'
 
 export class PythonRepoVersionReport extends RepoVersionReport {
-  protected gatherSoftwareFiles (repo: Repo, branchName: string): VersionLocation[] {
-    return gatherPythonFiles(repo, branchName)
-  }
+  protected versionUtils = new PythonVersionUtils()
 
   public get name (): string {
     return PythonRepoVersionReport.name

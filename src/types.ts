@@ -33,6 +33,14 @@ const ReportJSONOutputSchema = Type.Object({
 })
 export type ReportJSONOutput = Static<typeof ReportJSONOutputSchema>
 
+export enum ReportType {
+  SIMPLE = 'simple',
+  DEPENDENCY = 'dependency',
+  VERSION = 'version',
+  OVERALL = 'overall',
+  ORGANIZATION = 'organization'
+}
+
 /**
  * FileType Schemas
  */
@@ -337,7 +345,8 @@ const GithubActionRunSchema = Type.Object({
   conclusion: Type.String(),
   created_at: Type.String(),
   updated_at: Type.String(),
-  branch: Type.String()
+  branch: Type.String(),
+  event: Type.String()
 })
 export type GithubActionRun = Static<typeof GithubActionRunSchema>
 
@@ -345,7 +354,7 @@ const BranchSchema = Type.Object({
   name: Type.String(),
   lastCommit: CommitSchema,
   dependabot: Type.Boolean(),
-  deps: Type.Array(RuleFileSchema),
+  ruleFiles: Type.Array(RuleFileSchema),
   fileCount: Type.Number(),
   fileTypes: Type.Record(Type.String(), Type.Number()),
   deployedBranch: Type.Boolean(),
