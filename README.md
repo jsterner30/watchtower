@@ -81,21 +81,21 @@ Each report calculates its own grade. Reports that do not apply to a repo do not
 ## Running Locally
 
 Env Vars: 
-You can copy the below environment variables into your run configuration
+You can copy the below environment variables into your `.env` file.
 ```
-AWS_REGION=us-west-2;
+AWS_REGION=us-west-2
 AWS_PROFILE=<aws-account-name>
-BUCKET_NAME=watchtower-dev-output;
+BUCKET_NAME=watchtower-dev-output
 ENVIRONMENT_NAME=dev
-GITHUB_ORG=<your-org>;
-GITHUB_TOKEN=<your-token>;
-STALE_DAYS_THRESHOLD=30;
-SHOW_PROGRESS=true;
-USE_CACHE=true;
-WRITE_FILES_LOCALLY=true;
-RUN_LIMITED_TEST=false;
-TEST_REPO_LIST=watchtower2,persons-v3;
-FILTER_ARCHIVED=true;
+GITHUB_ORG=<your-org>
+GITHUB_TOKEN=<your-token>
+STALE_DAYS_THRESHOLD=30
+SHOW_PROGRESS=true
+USE_CACHE=true
+WRITE_FILES_LOCALLY=true
+RUN_LIMITED_TEST=false
+TEST_REPO_LIST=watchtower2,persons-v3
+FILTER_ARCHIVED=true
 ```
 
 | Env Var Name         | Description                                                                                                                                                                                                                      | Required | Default Value |
@@ -126,6 +126,7 @@ or
 
 ```npm run dev```
 
+> If you get an error that says `node: bad option: --env-file=.env`, make sure you are using Node.js v20
 
 ### Environments
 
