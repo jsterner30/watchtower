@@ -83,18 +83,18 @@ Each report calculates its own grade. Reports that do not apply to a repo do not
 Env Vars: 
 You can copy the below environment variables into your run configuration
 ```
-AWS_REGION=us-west-2;
+AWS_REGION=us-west-2
 AWS_PROFILE=<aws-account-name>
-BUCKET_NAME=watchtower-dev-output;
+BUCKET_NAME=watchtower-dev-output
 ENVIRONMENT_NAME=dev
-GITHUB_ORG=<your-org>;
-GITHUB_TOKEN=<your-token>;
-STALE_DAYS_THRESHOLD=30;
-SHOW_PROGRESS=true;
-USE_CACHE=true;
-WRITE_FILES_LOCALLY=true;
-RUN_LIMITED_TEST=false;
-TEST_REPO_LIST=watchtower2,persons-v3;
+GITHUB_ORG=<your-org>
+GITHUB_TOKEN=<your-token>
+STALE_DAYS_THRESHOLD=30
+SHOW_PROGRESS=true
+USE_CACHE=true
+WRITE_FILES_LOCALLY=true
+RUN_LIMITED_TEST=false
+TEST_REPO_LIST=watchtower2,persons-v3
 ```
 
 | Env Var Name         | Description                                                                                                                                                                                                                  | Required | Default Value |
