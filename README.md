@@ -81,7 +81,7 @@ Each report calculates its own grade. Reports that do not apply to a repo do not
 ## Running Locally
 
 Env Vars: 
-You can copy the below environment variables into your run configuration
+You can copy the below environment variables into your `.env` file.
 ```
 AWS_REGION=us-west-2
 AWS_PROFILE=<aws-account-name>
