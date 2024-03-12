@@ -124,6 +124,7 @@ or
 
 ```npm run dev```
 
+> If you get an error that says `node: bad option: --env-file=.env`, make sure you are using Node.js v20
 
 ### Environments
 
