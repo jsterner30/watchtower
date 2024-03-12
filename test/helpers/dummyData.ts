@@ -5,7 +5,7 @@ export const fakeBranch: Branch = {
   name: 'feature/api-authentication',
   lastCommit: defaultCommit,
   dependabot: false,
-  deps: [],
+  ruleFiles: [],
   fileCount: 0,
   fileTypes: {},
   branchProtections: {
@@ -35,6 +35,11 @@ export const fakeRepo: Repo = {
   forksCount: 0,
   archived: true,
   defaultBranch: 'main',
+  licenseData: {
+    key: 'mit',
+    name: 'MIT License',
+    url: 'none'
+  },
   branches: {
     fakeBranch
   },

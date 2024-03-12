@@ -1,4 +1,5 @@
 import { Data, errorHandler, HeaderTitles, ReportWriter } from '../util'
+import { ReportType } from '../types'
 
 export interface ReportData extends Data {}
 export interface Writers<T extends ReportData> extends Record<string, ReportWriter<T>> {}
@@ -14,9 +15,9 @@ export abstract class Report<T extends ReportData, U extends Writers<T>, V exten
   protected _reportOutputDataWriters: Array<ReportWriter<T>>
   protected _description: string
   protected _numberOfFilesOutputDescription: string
-  protected _type: string
+  protected _type: ReportType
 
-  constructor (weight: number, outputDir: string, description: string, numberOfFilesOutputDescription: string, type: string) {
+  constructor (weight: number, outputDir: string, description: string, numberOfFilesOutputDescription: string, type: ReportType) {
     this._weight = weight
     this._outputDir = outputDir
     this._reportOutputDataWriters = []

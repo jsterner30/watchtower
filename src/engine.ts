@@ -10,11 +10,13 @@ import {
   getOrgMembers,
   getOrg,
   getOrgTeams,
-  attachMetadataToCacheFile,
   getRepos,
   errorHandler,
   getRepo,
-  getBranchLastCommit
+  getBranchLastCommit,
+  apiCallCounter,
+  stringifyJSON,
+  sortObjectKeys
 } from './util'
 import { CacheFile, Repo } from './types'
 import JSZip from 'jszip'
@@ -92,6 +94,7 @@ export class Engine {
     await this.runOverallReports(repos)
 
     await this.writeReports()
+    await this.writer.writeFile('cache', 'json', 'apiCallCounter.json', stringifyJSON(apiCallCounter, 'apiCallCounter'))
   }
 
   private async getReposCacheFile (reposCacheFile: CacheFile | null): Promise<CacheFile> {
@@ -106,7 +109,7 @@ export class Engine {
         repoInfoObj[repo.name] = repo
       }
 
-      return attachMetadataToCacheFile(repoInfoObj)
+      return this.attachMetadataToCacheFile(repoInfoObj)
     } catch (error) {
       throw new Error(`Error occurred while fetching repositories: ${(error as Error).message}`)
     }
@@ -120,16 +123,23 @@ export class Engine {
       const repoInfoObj: Record<string, Repo> = {}
       for (const repoName of this.env.testRepoList) {
         const repo = await getRepo(repoName)
-        repoInfoObj[repoName] = repo
+        if (repo != null) {
+          repoInfoObj[repoName] = repo
+        }
       }
 
-      return attachMetadataToCacheFile(repoInfoObj)
+      return this.attachMetadataToCacheFile(repoInfoObj)
     } catch (error) {
       throw new Error(`Error occurred while fetching repositories: ${(error as Error).message}`)
     }
   }
 
+  // this function will skip filtering the archived repos in the org if the
   private async filterArchived (allReposFile: CacheFile): Promise<Repo[]> {
+    if (!this.env.filterArchived) {
+      // return list of repos that were passed in
+      Object.entries(allReposFile.info).map(([_, value]) => value)
+    }
     const filteredRepos: Repo[] = []
     for (const repoName of Object.keys(allReposFile.info)) {
       const repo = allReposFile.info[repoName]
@@ -166,7 +176,7 @@ export class Engine {
 
       reposWithBranches[repo.name] = repo
     }
-    return attachMetadataToCacheFile(reposWithBranches, branchCount)
+    return this.attachMetadataToCacheFile(reposWithBranches, branchCount)
   }
 
   private async runOrgRules (filteredWithBranchesFile: CacheFile): Promise<void> {
@@ -279,6 +289,17 @@ export class Engine {
       for (const reportOutput of report.reportOutputDataWriters) {
         await reportOutput.writeOutput(this.writer)
       }
+    }
+  }
+
+  private attachMetadataToCacheFile (info: Record<string, Repo>, branchCount: number = 0): CacheFile {
+    return {
+      metadata: {
+        repoCount: Object.keys(info).length,
+        branchCount,
+        lastRunDate: new Date().toISOString()
+      },
+      info: sortObjectKeys(info)
     }
   }
 }

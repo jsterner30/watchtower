@@ -1,13 +1,12 @@
-import { Writers } from '../../../report'
-import { ExtremeVersions, Grade, GradeEnum, HealthScore, Repo, VersionLocation } from '../../../../types'
+import { Writers } from '../../report'
+import { ExtremeVersions, Grade, GradeEnum, HealthScore, Repo, VersionLocation } from '../../../types'
 import {
-  getExtremeVersions,
   ReportWriter,
   HeaderTitles
-} from '../../../../util'
-import { VersionReport } from '../versionReport'
+} from '../../../util'
+import { VersionReport } from './versionReport'
 import { compare, validate } from 'compare-versions'
-import { RepoReportData } from '../../repoReport'
+import { RepoReportData } from '../repoReport'
 
 interface RepoVersionReportData extends RepoReportData {
   repoName: string
@@ -24,7 +23,6 @@ interface RepoVersionReportWriters extends Writers<RepoVersionReportData> {
 
 export abstract class RepoVersionReport extends VersionReport<RepoVersionReportData, RepoVersionReportWriters> {
   abstract get name (): string
-  protected abstract gatherSoftwareFiles (repo: Repo, branchName: string): VersionLocation[]
   protected abstract getGradeMinValues (): Promise<Record<string, Grade>>
 
   protected getHeaderTitles (): HeaderTitles<RepoVersionReportData> {
@@ -70,7 +68,7 @@ export abstract class RepoVersionReport extends VersionReport<RepoVersionReportD
 
   protected async runReport (repo: Repo, writers: RepoVersionReportWriters): Promise<void> {
     // we add each most extreme version on every branch to these arrays, then use them to get the highest and lowest versions in the whole repo
-    const allBranchVersionExtremes = this.getBranchLowAndHighVersions(repo)
+    const allBranchVersionExtremes = this.versionUtils.getBranchLowAndHighVersions(repo)
     if (Object.keys(allBranchVersionExtremes).length === 0) {
       return
     }
@@ -88,7 +86,7 @@ export abstract class RepoVersionReport extends VersionReport<RepoVersionReportD
         branch: allBranchVersionExtremes[branchName].highestVersionBranch
       })
     }
-    const overallRepoExtremes = getExtremeVersions(branchVersionLocations)
+    const overallRepoExtremes = this.versionUtils.getExtremeVersions(branchVersionLocations)
     writers.allBranchesRepoWriter.addRow({ ...{ repoName: repo.name }, ...overallRepoExtremes })
     repo.healthScores[this.name] = await this.grade(overallRepoExtremes.lowestVersion)
     this.modifyReportRepoResults(overallRepoExtremes, repo)

@@ -33,6 +33,14 @@ const ReportJSONOutputSchema = Type.Object({
 })
 export type ReportJSONOutput = Static<typeof ReportJSONOutputSchema>
 
+export enum ReportType {
+  SIMPLE = 'simple',
+  DEPENDENCY = 'dependency',
+  VERSION = 'version',
+  OVERALL = 'overall',
+  ORGANIZATION = 'organization'
+}
+
 /**
  * FileType Schemas
  */
@@ -49,7 +57,8 @@ export enum FileTypeEnum {
   GITHUB_ACTION = 'GITHUB_ACTION', // this is the file found in the /.github/ dir that defines workflow runs
   GITHUB_ACTION_SOURCE = 'GITHUB_ACTION_SOURCE', // this is the file found in the source code for github actions that we have written in a file called actions.yml
   CODEOWNERS = 'CODEOWNERS',
-  README = 'README'
+  README = 'README',
+  LICENSE = 'LICENSE'
 }
 
 const FileTypeSchema = Type.Enum(FileTypeEnum)
@@ -70,6 +79,15 @@ export const DockerComposeFileSchema = Type.Intersect([
 ])
 export type DockerComposeFile = Static<typeof DockerComposeFileSchema>
 export const validDockerComposeFile = TypeCompiler.Compile(DockerComposeFileSchema)
+
+export const LicenseFileSchema = Type.Intersect([
+  RuleFileSchema,
+  Type.Object({
+    contents: Type.Array(Type.String())
+  })
+])
+export type LicenseFile = Static<typeof LicenseFileSchema>
+export const validLicenseFile = TypeCompiler.Compile(LicenseFileSchema)
 
 export const DockerfileSchema = Type.Intersect([
   RuleFileSchema,
@@ -327,7 +345,8 @@ const GithubActionRunSchema = Type.Object({
   conclusion: Type.String(),
   created_at: Type.String(),
   updated_at: Type.String(),
-  branch: Type.String()
+  branch: Type.String(),
+  event: Type.String()
 })
 export type GithubActionRun = Static<typeof GithubActionRunSchema>
 
@@ -335,7 +354,7 @@ const BranchSchema = Type.Object({
   name: Type.String(),
   lastCommit: CommitSchema,
   dependabot: Type.Boolean(),
-  deps: Type.Array(RuleFileSchema),
+  ruleFiles: Type.Array(RuleFileSchema),
   fileCount: Type.Number(),
   fileTypes: Type.Record(Type.String(), Type.Number()),
   deployedBranch: Type.Boolean(),
@@ -416,6 +435,11 @@ const RepoSchema = Type.Object({
   lastCommit: CommitSchema,
   openPullRequests: Type.Array(PullRequestSchema),
   openIssues: Type.Array(IssueSchema),
+  licenseData: Type.Object({
+    key: Type.String(),
+    name: Type.String(),
+    url: Type.String()
+  }),
   codeScanAlerts: GetScanAlertBySeverityLevel(CodeScanAlertSchema),
   dependabotScanAlerts: GetScanAlertBySeverityLevel(DependabotAlertSchema),
   secretScanAlerts: GetScanAlertBySeverityLevel(SecretScanAlertSchema),

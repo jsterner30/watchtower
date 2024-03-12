@@ -9,7 +9,7 @@ export class ReadmeRule extends BranchRule {
     try {
       if (downloaded.files[fileName].name.endsWith('README.md')) {
         const content = await downloaded.files[fileName].async('string')
-        repo.branches[branchName].deps.push(this.parseReadmeFile(content, fileName))
+        repo.branches[branchName].ruleFiles.push(this.parseReadmeFile(content, fileName))
       }
     } catch (error) {
       errorHandler(error, ReadmeRule.name, repo.name, branchName, fileName)

@@ -8,7 +8,7 @@ export class DockerfileRule extends BranchRule {
     try {
       if (downloaded.files[fileName].name.endsWith('Dockerfile')) {
         const content = await downloaded.files[fileName].async('string')
-        repo.branches[branchName].deps.push(this.parseDockerfile(content, fileName))
+        repo.branches[branchName].ruleFiles.push(this.parseDockerfile(content, fileName))
       }
     } catch (error) {
       errorHandler(error, DockerfileRule.name, repo.name, branchName, fileName)

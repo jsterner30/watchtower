@@ -1,20 +1,27 @@
 import { Writers } from '../../report'
-import { ExtremeVersions, Repo, VersionLocation } from '../../../types'
+import { Dockerfile, ExtremeVersions, Repo, TerraformFile, VersionLocation } from '../../../types'
 import {
-  getExtremeVersions,
   startingLowestVersion,
   startingHighestVersion,
   errorHandler, HeaderTitles
 } from '../../../util'
 import { RepoReport, RepoReportData } from '../repoReport'
+import { compare, validate } from 'compare-versions'
 
 export abstract class VersionReport<T extends RepoReportData, U extends Writers<T>> extends RepoReport<T, U> {
+  protected abstract readonly versionUtils: VersionUtils
   abstract get name (): string
   protected abstract runReport (repo: Repo, writers: U): Promise<void>
   protected abstract getReportWriters (): U
   protected abstract getHeaderTitles (): HeaderTitles<T>
-  protected abstract gatherSoftwareFiles (repo: Repo, branchName: string): VersionLocation[]
-  getBranchLowAndHighVersions (repo: Repo): Record<string, ExtremeVersions> {
+}
+
+// helper class used to run version reports
+export abstract class VersionUtils {
+  abstract gatherSoftwareFiles (repo: Repo, branchName: string): VersionLocation[]
+  abstract get name (): string
+
+  public getBranchLowAndHighVersions (repo: Repo): Record<string, ExtremeVersions> {
     const allBranchVersionExtremes: Record<string, ExtremeVersions> = {}
     for (const branchName in repo.branches) {
       try {
@@ -25,7 +32,7 @@ export abstract class VersionReport<T extends RepoReportData, U extends Writers<
         }
 
         // get the lowest and highest version on the branch
-        const branchExtremeVersions = getExtremeVersions(branchFiles)
+        const branchExtremeVersions = this.getExtremeVersions(branchFiles)
         // if the lowest and highest versions have not changed, there was version on the branch
         if (branchExtremeVersions.lowestVersion !== startingLowestVersion && branchExtremeVersions.highestVersion !== startingHighestVersion) {
           allBranchVersionExtremes[branchName] = branchExtremeVersions
@@ -35,5 +42,73 @@ export abstract class VersionReport<T extends RepoReportData, U extends Writers<
       }
     }
     return allBranchVersionExtremes
+  }
+
+  public getExtremeVersions (versionLocations: VersionLocation[],
+    currentExtremeVersions: ExtremeVersions = {
+      lowestVersion: startingLowestVersion,
+      lowestVersionBranch: '',
+      lowestVersionPath: '',
+      highestVersion: startingHighestVersion,
+      highestVersionPath: '',
+      highestVersionBranch: ''
+    }
+  ): ExtremeVersions {
+    for (const versionLocation of versionLocations) {
+      if (validate(versionLocation.version)) {
+        if (compare(currentExtremeVersions.lowestVersion, versionLocation.version, '>')) {
+          currentExtremeVersions.lowestVersion = versionLocation.version
+          currentExtremeVersions.lowestVersionPath = versionLocation.filePath
+          currentExtremeVersions.lowestVersionBranch = versionLocation.branch
+        }
+        if (compare(currentExtremeVersions.highestVersion, versionLocation.version, '<')) {
+          currentExtremeVersions.highestVersion = versionLocation.version
+          currentExtremeVersions.highestVersionPath = versionLocation.filePath
+          currentExtremeVersions.highestVersionBranch = versionLocation.branch
+        }
+      }
+    }
+    return currentExtremeVersions
+  }
+
+  protected getDockerfileImageVersion (dockerFile: Dockerfile, branchName: string, depName: string): VersionLocation[] {
+    const versions: VersionLocation[] = []
+    if (dockerFile.image.includes(depName)) {
+      // The code below will return "-1" if the node version is simply "node". Else, it will return "18.13.18-slim" if the image is "node:18.13.18-slim"
+      const version = dockerFile.image.split(depName)[1] === '' ? '-1' : dockerFile.image.split(depName)[1].slice(1, dockerFile.image.split(depName)[1].length)
+      versions.push({
+        filePath: dockerFile.fileName,
+        version,
+        branch: branchName
+      })
+    }
+    return versions
+  }
+
+  protected getTerraformLambdaRuntimeVersion (dep: TerraformFile, branchName: string, depName: string): VersionLocation[] {
+    const versions: VersionLocation[] = []
+    this.traverseObject(dep, ['runtime', 'zip_runtime'], depName, versions, dep.fileName, branchName)
+    return versions
+  }
+
+  protected traverseObject (
+    obj: Record<string, any>,
+    targetStrings: string[],
+    searchString: string,
+    versions: VersionLocation[],
+    fileName: string,
+    branchName: string
+  ): void {
+    for (const key in obj) {
+      if (typeof obj[key] === 'object' && obj[key] !== null) {
+        this.traverseObject(obj[key], targetStrings, searchString, versions, fileName, branchName)
+      } else if (
+        targetStrings.includes(key) &&
+          typeof obj[key] === 'string' &&
+          (obj[key] as string).includes(searchString)
+      ) {
+        versions.push({ filePath: fileName, version: obj[key].split(searchString)[1], branch: branchName })
+      }
+    }
   }
 }

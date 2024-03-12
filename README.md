@@ -95,22 +95,24 @@ USE_CACHE=true
 WRITE_FILES_LOCALLY=true
 RUN_LIMITED_TEST=false
 TEST_REPO_LIST=watchtower2,persons-v3
+FILTER_ARCHIVED=true
 ```
 
-| Env Var Name         | Description                                                                                                                                                                                                                  | Required | Default Value |
-|----------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|---------------|
-| AWS_REGION           | Not positive this is necessary, but may be needed to access s3 bucket                                                                                                                                                        | true     |               |
-| AWS_PROFILE          | Needed to access s3 bucket                                                                                                                                                                                                   | true     |               |
-| BUCKET_NAME          | The bucket where the cache and report outputs will be written (if WRITE_FILES_LOCALLY is set to false)                                                                                                                       | true     |               |
-| ENVIRONMENT_NAME     | Either 'dev' or 'prd'                                                                                                                                                                                                        | false    | dev           |
-| GITHUB_ORG           | The name of the Github organization to scan                                                                                                                                                                                  | true     |               |
+| Env Var Name         | Description                                                                                                                                                                                                                      | Required | Default Value |
+|----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|---------------|
+| AWS_REGION           | Not positive this is necessary, but may be needed to access s3 bucket                                                                                                                                                            | true     |               |
+| AWS_PROFILE          | Needed to access s3 bucket                                                                                                                                                                                                       | true     |               |
+| BUCKET_NAME          | The bucket where the cache and report outputs will be written (if WRITE_FILES_LOCALLY is set to false)                                                                                                                           | true     |               |
+| ENVIRONMENT_NAME     | Either 'dev' or 'prd'                                                                                                                                                                                                            | false    | dev           |
+| GITHUB_ORG           | The name of the Github organization to scan                                                                                                                                                                                      | true     |               |
 | GITHUB_TOKEN         | This tool will work best if your GITHUB_TOKEN is a token associated with admin privileges over your organization, otherwise certain rules (getting Code Scanning results and admin teams for example) may not function properly. | true     |               |
-| STALE_DAYS_THRESHOLD | The amount of time in days until a non-deployed, unprotected, and non-default branch is considered "stale".                                                                                                                  | false    | 30            |
-| SHOW_PROGRESS        | A boolean that, if set to true, allows the progress bar to be shown in the console during long operations.                                                                                                                   | false    | false         |
-| USE_CACHE            | A boolean that, if set to true, tells the tool to use data cached from previous runs to decrease runtime.                                                                                                                    | false    | false         |
-| WRITE_FILES_LOCALLY  | A boolean that, if set to true, tells the script to write output files to your local machine. Otherwise the script will attempt to output them to the s3 bucket defined in the BUCKET_NAME variable.                         | false    | false         |
-| RUN_LIMITED_TEST     | A boolean that, if set to true, tells the script to only get the repos you list in the TEST_REPO_LIST variable for faster testing                                                                                            | false    | false         |
-| TEST_REPO_LIST       | A comma seperated list of repo names that, if the RUN_LIMITED_TEST variable is set to true, will cause the script to run on only the repos you list for testing purposes.                                            | false    | []            |
+| STALE_DAYS_THRESHOLD | The amount of time in days until a non-deployed, unprotected, and non-default branch is considered "stale".                                                                                                                      | false    | 30            |
+| SHOW_PROGRESS        | A boolean that, if set to true, allows the progress bar to be shown in the console during long operations.                                                                                                                       | false    | false         |
+| USE_CACHE            | A boolean that, if set to true, tells the tool to use data cached from previous runs to decrease runtime.                                                                                                                        | false    | false         |
+| WRITE_FILES_LOCALLY  | A boolean that, if set to true, tells the script to write output files to your local machine. Otherwise the script will attempt to output them to the s3 bucket defined in the BUCKET_NAME variable.                             | false    | false         |
+| RUN_LIMITED_TEST     | A boolean that, if set to true, tells the script to only get the repos you list in the TEST_REPO_LIST variable for faster testing                                                                                                | false    | false         |
+| TEST_REPO_LIST       | A comma seperated list of repo names that, if the RUN_LIMITED_TEST variable is set to true, will cause the script to run on only the repos you list for testing purposes.                                                        | false    | []            |
+| FILTER_ARCHIVED      | A boolean that, if set to true, tell the script to filter archived repositories                                                                                                                                                  | false    | true          |
 
 After adding these environment variables to your run configuration, you should log into the AWS account where your s3 bucket is stored if you plan on using that feature:
 
@@ -129,6 +131,15 @@ or
 ### Environments
 
 This repo has both dev and prd branches. The dev scheduled job is set to never run and the dev environment exists primarily to test new features. It should be invoked manually when needed. 
+
+## Scripts
+The ```scripts``` directory is for scripts users can run that are helpful for condensing information or outputting documentation. Current scripts include:
+
+| Script Name    | Description                                                                                                          | Output                                                             |
+|----------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------|
+| genReportDocs  | Runs on commit, generates the reports.md doc file                                                                    | ```reports.md```                                                   |
+
+If you add a script, please remember to add its info to the above table
 
 ## Downloading Data
 

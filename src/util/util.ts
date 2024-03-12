@@ -1,18 +1,4 @@
 import { logger } from './logger'
-import { nodeLTSUrl, startingHighestVersion, startingLowestVersion } from './constants'
-import {
-  CacheFile,
-  Dockerfile,
-  ExtremeVersions,
-  FileTypeEnum,
-  Repo,
-  TerraformFile,
-  validDockerfile,
-  validGHAFile, validGHASourceFile,
-  validTerraformFile,
-  VersionLocation
-} from '../types'
-import { compare, validate } from 'compare-versions'
 import stringify from 'json-stringify-safe'
 
 export function errorHandler (error: unknown, functionName: string, repoName: string = '', branchName: string = '', fileName: string = ''): void {
@@ -30,27 +16,6 @@ export function errorHandler (error: unknown, functionName: string, repoName: st
     }
   } else {
     logger.error(`Error in ${functionName}, error: ${errorMessage}`)
-  }
-}
-
-export async function fetchNodeLTSVersion (): Promise<string> {
-  try {
-    const response = await fetch(nodeLTSUrl)
-    if (!response.ok) {
-      throw new Error(`Failed to fetch schedule data. Status: ${response.status}`)
-    }
-
-    const scheduleData: any = await response.json()
-    for (const version in scheduleData) {
-      if (new Date(scheduleData[version].lts) < new Date() && new Date(scheduleData[version].maintenance) > new Date()) {
-        return version.split('v')[1]
-      }
-    }
-
-    return '20'
-  } catch (error) {
-    errorHandler(error, fetchNodeLTSVersion.name)
-    return '20'
   }
 }
 
@@ -79,6 +44,26 @@ export function arrayToObject (arr: Array<Record<string, any>>): Record<string, 
   }, {})
 }
 
+export function stringifyJSON (json: Record<string, any> | Array<Record<string, any>>, resourceName: string): string {
+  try {
+    return stringify(json, null, 2)
+  } catch (error) {
+    logger.error(`Error stringifying file to write to cache: ${(error as Error).message} with resource: ${resourceName}`)
+    return '{}'
+  }
+}
+
+export function sortObjectKeys (unordered: Record<string, any>): Record<string, any> {
+  const ordered: Record<string, any> = Object.keys(unordered).sort().reduce(
+    (obj: Record<string, any>, key) => {
+      obj[key] = unordered[key]
+      return obj
+    },
+    {}
+  )
+  return ordered
+}
+
 export function removeComparatorsInVersion (version: string): string {
   if (version === '') {
     return 'latest'
@@ -104,146 +89,4 @@ export function removeComparatorsInVersion (version: string): string {
   return curVer
 }
 
-export function getExtremeVersions (versionLocations: VersionLocation[],
-  currentExtremeVersions: ExtremeVersions = {
-    lowestVersion: startingLowestVersion,
-    lowestVersionBranch: '',
-    lowestVersionPath: '',
-    highestVersion: startingHighestVersion,
-    highestVersionPath: '',
-    highestVersionBranch: ''
-  }
-): ExtremeVersions {
-  for (const versionLocation of versionLocations) {
-    if (validate(versionLocation.version)) {
-      if (compare(currentExtremeVersions.lowestVersion, versionLocation.version, '>')) {
-        currentExtremeVersions.lowestVersion = versionLocation.version
-        currentExtremeVersions.lowestVersionPath = versionLocation.filePath
-        currentExtremeVersions.lowestVersionBranch = versionLocation.branch
-      }
-      if (compare(currentExtremeVersions.highestVersion, versionLocation.version, '<')) {
-        currentExtremeVersions.highestVersion = versionLocation.version
-        currentExtremeVersions.highestVersionPath = versionLocation.filePath
-        currentExtremeVersions.highestVersionBranch = versionLocation.branch
-      }
-    }
-  }
-  return currentExtremeVersions
-}
-
-function isNumericChar (c: string): boolean { return /\d/.test(c) }
-
-export function stringifyJSON (json: Record<string, any> | Array<Record<string, any>>, resourceName: string): string {
-  try {
-    return stringify(json, null, 2)
-  } catch (error) {
-    logger.error(`Error stringifying file to write to cache: ${(error as Error).message} with resource: ${resourceName}`)
-    return '{}'
-  }
-}
-
-export function sortObjectKeys (unordered: Record<string, any>): Record<string, any> {
-  const ordered: Record<string, any> = Object.keys(unordered).sort().reduce(
-    (obj: Record<string, any>, key) => {
-      obj[key] = unordered[key]
-      return obj
-    },
-    {}
-  )
-  return ordered
-}
-
-export function attachMetadataToCacheFile (info: Record<string, Repo>, branchCount: number = 0): CacheFile {
-  return {
-    metadata: {
-      repoCount: Object.keys(info).length,
-      branchCount,
-      lastRunDate: new Date().toISOString()
-    },
-    info: sortObjectKeys(info)
-  }
-}
-
-export function gatherNodeFiles (repo: Repo, branchName: string): VersionLocation[] {
-  let branchNodeFiles: VersionLocation[] = []
-  for (const dep of repo.branches[branchName].deps) {
-    if (validDockerfile.Check(dep) && dep.fileType === FileTypeEnum.DOCKERFILE) {
-      branchNodeFiles = [...branchNodeFiles, ...getDockerfileImageVersion(dep, branchName, 'node')]
-    } else if (validGHAFile.Check(dep) && dep.fileType === FileTypeEnum.GITHUB_ACTION) {
-      if (dep.contents.env?.node_version != null) {
-        branchNodeFiles.push({ filePath: dep.fileName, version: dep.contents.env.node_version, branch: branchName })
-      }
-    } else if (validTerraformFile.Check(dep) && dep.fileType === 'TERRAFORM') {
-      branchNodeFiles = [...branchNodeFiles, ...getTerraformLambdaRuntimeVersion(dep, branchName, 'nodejs')]
-    } else if (validGHASourceFile.Check(dep) && dep.fileType === 'GITHUB_ACTION_SOURCE') {
-      if ((dep.contents?.runs?.using as string)?.includes('node')) {
-        const version = dep.contents.runs.using.split('node')[1]
-        branchNodeFiles.push({ filePath: dep.fileName, version, branch: branchName })
-      }
-    }
-  }
-  return branchNodeFiles
-}
-
-export function gatherTerraformFiles (repo: Repo, branchName: string): VersionLocation[] {
-  const branchTerraformFiles: VersionLocation[] = []
-  for (const dep of repo.branches[branchName].deps) {
-    if (validTerraformFile.Check(dep) && dep.fileType === FileTypeEnum.TERRAFORM) {
-      // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
-      if (dep.contents.terraform?.[0]?.required_version != null) {
-        branchTerraformFiles.push({
-          filePath: dep.fileName,
-          version: removeComparatorsInVersion(dep.contents.terraform?.[0].required_version),
-          branch: branchName
-        })
-      }
-    } else if (validGHAFile.Check(dep) && dep.fileType === FileTypeEnum.GITHUB_ACTION) {
-      if (dep.contents.env?.tf_version != null) {
-        branchTerraformFiles.push({ filePath: dep.fileName, version: removeComparatorsInVersion(dep.contents.env.tf_version), branch: branchName })
-      }
-    }
-  }
-  return branchTerraformFiles
-}
-
-export function gatherPythonFiles (repo: Repo, branchName: string): VersionLocation[] {
-  let branchPythonFiles: VersionLocation[] = []
-  for (const dep of repo.branches[branchName].deps) {
-    if (validDockerfile.Check(dep) && dep.fileType === FileTypeEnum.DOCKERFILE) {
-      branchPythonFiles = [...branchPythonFiles, ...getDockerfileImageVersion(dep, branchName, 'python')]
-    } else if (validTerraformFile.Check(dep) && dep.fileType === 'TERRAFORM') {
-      branchPythonFiles = [...branchPythonFiles, ...getTerraformLambdaRuntimeVersion(dep, branchName, 'python')]
-    }
-  }
-  return branchPythonFiles
-}
-
-export function getDockerfileImageVersion (dep: Dockerfile, branchName: string, depName: string): VersionLocation[] {
-  const versions: VersionLocation[] = []
-  if (dep.image.includes(depName)) {
-    // The code below will return "-1" if the node version is simply "node". Else, it will return "18.13.18-slim" if the image is "node:18.13.18-slim"
-    const version = dep.image.split(depName)[1] === '' ? '-1' : dep.image.split(depName)[1].slice(1, dep.image.split(depName)[1].length)
-    versions.push({
-      filePath: dep.fileName,
-      version,
-      branch: branchName
-    })
-  }
-  return versions
-}
-
-export function getTerraformLambdaRuntimeVersion (dep: TerraformFile, branchName: string, depName: string): VersionLocation[] {
-  const versions: VersionLocation[] = []
-  traverseObject(dep, 'runtime', depName, versions, dep.fileName, branchName)
-  return versions
-}
-
-function traverseObject (obj: Record<string, any>, targetString: string, searchString: string, versions: VersionLocation[], fileName: string, branchName: string): void {
-  for (const key in obj) {
-    if (typeof obj[key] === 'object' && obj[key] !== null) {
-      traverseObject(obj[key], targetString, searchString, versions, fileName, branchName)
-    } else if (key === targetString && typeof obj[key] === 'string' && (obj[key] as string).includes(searchString)) {
-      versions.push({ filePath: fileName, version: obj[key].split(searchString)[1], branch: branchName })
-    }
-  }
-}
+export function isNumericChar (c: string): boolean { return /\d/.test(c) }

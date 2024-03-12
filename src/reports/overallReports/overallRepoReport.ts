@@ -38,7 +38,9 @@ interface OverallRepoReportData extends RepoReportData {
   allowForking: boolean
   customPropsPortfolio: string
   customPropsType: string
-  lastActionRunDefaultBranch: string
+  lastPushActionRunDefaultBranchConclusion: string
+  lastPushActionRunDefaultBranchDate: string
+  lastSuccessfulPushActionRunDefaultBranchDate: string
 }
 interface OverallRepoReportWriters extends Writers<OverallRepoReportData> {
   overallRepoReportWriter: ReportWriter<OverallRepoReportData>
@@ -46,6 +48,9 @@ interface OverallRepoReportWriters extends Writers<OverallRepoReportData> {
 
 export class OverallRepoReport extends RepoReport<OverallRepoReportData, OverallRepoReportWriters> {
   protected async runReport (repo: Repo, writers: OverallRepoReportWriters): Promise<void> {
+    const pushActions = repo.branches[repo.defaultBranch].actionRuns.filter(obj => obj.event === 'push')
+    const successfulPushActions = pushActions.filter(obj => obj.conclusion === 'success')
+
     writers.overallRepoReportWriter.addRow({
       repoName: repo.name,
       teams: repo.teams,
@@ -81,7 +86,9 @@ export class OverallRepoReport extends RepoReport<OverallRepoReportData, Overall
       allowForking: repo.allowForking,
       customPropsPortfolio: repo.customProperties.Portfolio.value[0],
       customPropsType: repo.customProperties.Type.value[0],
-      lastActionRunDefaultBranch: repo.branches[repo.defaultBranch].actionRuns[0] != null ? repo.branches[repo.defaultBranch].actionRuns[0].conclusion : 'none'
+      lastPushActionRunDefaultBranchConclusion: pushActions[0] != null ? pushActions[0].conclusion : 'none',
+      lastPushActionRunDefaultBranchDate: pushActions[0] != null ? pushActions[0].created_at : 'none',
+      lastSuccessfulPushActionRunDefaultBranchDate: successfulPushActions[0] != null ? successfulPushActions[0].created_at : 'none'
     })
   }
 
@@ -127,7 +134,9 @@ export class OverallRepoReport extends RepoReport<OverallRepoReportData, Overall
       allowForking: 'Allows Forking',
       customPropsPortfolio: 'Portfolio (custom property)',
       customPropsType: 'Type (custom property)',
-      lastActionRunDefaultBranch: 'Conclusion of Last Action Run on Default Branch'
+      lastPushActionRunDefaultBranchConclusion: 'Conclusion of Last Push Action Run on Default Branch',
+      lastPushActionRunDefaultBranchDate: 'Date of Last Push Action Run on Default Branch',
+      lastSuccessfulPushActionRunDefaultBranchDate: 'Date of Last Successful Push Action Run on Default Branch'
     }
   }
 

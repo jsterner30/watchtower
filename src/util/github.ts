@@ -20,9 +20,9 @@ import type {
   GithubActionRun,
   Issue,
   PullRequest,
-  RepoCustomProperty
+  RepoCustomProperty,
+  SecretAlertLocation
 } from '../types'
-import { SecretAlertLocation } from '../types'
 
 function getRepoParser (): (repo: any) => Promise<Repo> {
   return async (repo: any): Promise<Repo> => {
@@ -46,6 +46,11 @@ function getRepoParser (): (repo: any) => Promise<Repo> {
       lastCommit: defaultCommit,
       openPullRequests: [],
       openIssues: [],
+      licenseData: {
+        key: repo.license?.key != null ? repo.license.key : 'none',
+        name: repo.license?.name != null ? repo.license.name : '',
+        url: repo.license?.url != null ? repo.license.url : ''
+      },
       codeScanAlerts: {
         low: [],
         medium: [],
@@ -137,7 +142,7 @@ function getBranchParser (repo: Repo): (branch: any) => Promise<Branch> {
       name: branch.name,
       lastCommit: await getCommit(repo.name, branch.commit.sha),
       dependabot: isDependabot,
-      deps: [],
+      ruleFiles: [],
       fileCount: 0,
       fileTypes: {},
       branchProtections: {
@@ -374,12 +379,13 @@ export async function getRepoGithubActionRuns (repoName: string): Promise<Github
     const runs = []
     for (const run of response.data.workflow_runs) {
       runs.push({
-        id: run.id ?? '',
-        status: run.status ?? '',
-        conclusion: run.conclusion ?? '',
-        created_at: run.created_at ?? '',
-        updated_at: run.updated_at ?? '',
-        branch: run.head_branch
+        id: run.id,
+        status: run.status,
+        conclusion: run.conclusion,
+        created_at: run.created_at,
+        updated_at: run.updated_at,
+        branch: run.head_branch,
+        event: run.event
       })
     }
     return runs
@@ -537,6 +543,16 @@ async function getTeamRepos (teamSlug: string): Promise<string[]> {
   return await getGithubData<string>(true, 'team repos', 'GET /orgs/{org}/teams/{team_slug}/repos', { org: (await getEnv()).githubOrg, team_slug: teamSlug }, parser)
 }
 
+export const apiCallCounter: Record<string, number> = {}
+
+function incrementApiCallCounter (route: string): void {
+  if (apiCallCounter[route] == null) {
+    apiCallCounter[route] = 1
+  } else {
+    apiCallCounter[route] += 1
+  }
+}
+
 async function getGithubData<T> (
   usePaging: boolean,
   itemsDescription: string,
@@ -546,6 +562,7 @@ async function getGithubData<T> (
   responseProperty: string | null = null
 ): Promise<T[]> {
   try {
+    incrementApiCallCounter(route)
     const octokit = await getOctokit()
     const data: T[] = []
     let page = 1

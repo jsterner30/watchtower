@@ -10,9 +10,9 @@ export class DeployedBranchRule extends SecondaryBranchRule {
   async run (repo: Repo, branchName: string): Promise<void> {
     try {
       if (repo.branches[branchName].defaultBranch) {
-        for (const dep of repo.branches[branchName].deps) {
-          if (validGHAFile.Check(dep) && dep.fileType === FileTypeEnum.GITHUB_ACTION && dep.fileName.includes('deploy.yml')) {
-            const deployedBranches = dep.contents?.on?.push?.branches
+        for (const ruleFile of repo.branches[branchName].ruleFiles) {
+          if (validGHAFile.Check(ruleFile) && ruleFile.fileType === FileTypeEnum.GITHUB_ACTION && ruleFile.fileName.includes('deploy.yml')) {
+            const deployedBranches = ruleFile.contents?.on?.push?.branches
             if (deployedBranches != null) {
               for (const branch of deployedBranches) {
                 if (repo.branches[branch] != null) {

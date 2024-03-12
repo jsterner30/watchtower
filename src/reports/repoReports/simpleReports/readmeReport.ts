@@ -25,9 +25,9 @@ export class ReadmeReport extends RepoReport<ReadmeReportData, ReadmeReportWrite
     let hasTitleTemp = false
     let numMissingSections: number = Math.max(appSections.length, libSections.length)
 
-    for (const dep of repo.branches[repo.defaultBranch].deps) {
-      if (validReadmeFile.Check(dep) && dep.fileType === 'README') {
-        const readmeContent = dep.contents
+    for (const ruleFile of repo.branches[repo.defaultBranch].ruleFiles) {
+      if (validReadmeFile.Check(ruleFile) && ruleFile.fileType === 'README') {
+        const readmeContent = ruleFile.contents
 
         if (readmeContent.length > 0) {
           hasReadme = true

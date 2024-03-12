@@ -6,16 +6,17 @@ import {
   FileTypesRules,
   GitignoreRule,
   GithubActionSourceFileRule,
+  LicenseFileRule,
   PackageJsonRule,
   PackageLockRule,
+  PIPRequirementsRule,
+  PomXmlRule,
   ReadmeRule,
   TerraformRule
 } from './branchRules'
 import { DeployedBranchRule, StaleBranchRule } from './secondaryBranchRules'
 import { AdminsRule, GithubActionRunRule, LatestCommitRule, OpenIssueRule, OpenPRRule, TeamsRule } from './repoRules'
 import { CodeScanAlertsRule, DependabotAlertsRule, SecretScanAlertsRule } from './orgRules'
-import { PIPRequirementsRule } from './branchRules/pipRequirementsRule'
-import { PomXmlRule } from './branchRules/pomXmlRule'
 
 export interface BranchRules {
   dockerComposeRule: DockerComposeRule
@@ -25,6 +26,7 @@ export interface BranchRules {
   fileTypesRules: FileTypesRules
   githubActionFileRule: GithubActionSourceFileRule
   gitignoreRule: GitignoreRule
+  licenseRule: LicenseFileRule
   packageJsonRule: PackageJsonRule
   packageLockRule: PackageLockRule
   pipRequirementsRule: PIPRequirementsRule
@@ -42,6 +44,7 @@ export function getBranchRules (): BranchRules {
     fileTypesRules: new FileTypesRules(),
     githubActionFileRule: new GithubActionSourceFileRule(),
     gitignoreRule: new GitignoreRule(),
+    licenseRule: new LicenseFileRule(),
     packageJsonRule: new PackageJsonRule(),
     packageLockRule: new PackageLockRule(),
     pipRequirementsRule: new PIPRequirementsRule(),

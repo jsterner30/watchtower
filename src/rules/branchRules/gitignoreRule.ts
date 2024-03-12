@@ -8,7 +8,7 @@ export class GitignoreRule extends BranchRule {
     try {
       if (downloaded.files[fileName].name.endsWith('.gitignore')) {
         const content = await downloaded.files[fileName].async('string')
-        repo.branches[branchName].deps.push(this.parseGitignore(content, fileName))
+        repo.branches[branchName].ruleFiles.push(this.parseGitignore(content, fileName))
       }
     } catch (error) {
       errorHandler(error, GitignoreRule.name, repo.name, branchName, fileName)
