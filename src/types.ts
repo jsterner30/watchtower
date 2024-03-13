@@ -58,7 +58,8 @@ export enum FileTypeEnum {
   GITHUB_ACTION_SOURCE = 'GITHUB_ACTION_SOURCE', // this is the file found in the source code for github actions that we have written in a file called actions.yml
   CODEOWNERS = 'CODEOWNERS',
   README = 'README',
-  LICENSE = 'LICENSE'
+  LICENSE = 'LICENSE',
+  BABEL_CONFIG_JS = 'BABEL_CONFIG_JS'
 }
 
 const FileTypeSchema = Type.Enum(FileTypeEnum)
@@ -88,6 +89,15 @@ export const LicenseFileSchema = Type.Intersect([
 ])
 export type LicenseFile = Static<typeof LicenseFileSchema>
 export const validLicenseFile = TypeCompiler.Compile(LicenseFileSchema)
+
+export const BabelConfigJsSchema = Type.Intersect([
+  RuleFileSchema,
+  Type.Object({
+    contents: Type.Array(Type.String())
+  })
+])
+export type BabelConfigJs = Static<typeof BabelConfigJsSchema>
+export const validBabelConfigJs = TypeCompiler.Compile(BabelConfigJsSchema)
 
 export const DockerfileSchema = Type.Intersect([
   RuleFileSchema,
