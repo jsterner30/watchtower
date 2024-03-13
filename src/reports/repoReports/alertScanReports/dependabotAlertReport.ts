@@ -27,7 +27,7 @@ export class DependabotAlertReport extends AlertScanReport<DependabotAlertReport
     return {
       repoName: 'Repo',
       createdAt: 'Created Date',
-      dependencyName: 'Dependency me',
+      dependencyName: 'Dependency Name',
       dependencyEcosystem: 'Dependency Ecosystem',
       summary: 'Summary',
       description: 'Description'
