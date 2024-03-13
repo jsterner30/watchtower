@@ -12,7 +12,8 @@ import {
   PIPRequirementsRule,
   PomXmlRule,
   ReadmeRule,
-  TerraformRule
+  TerraformRule,
+  BabelConfigJsRule
 } from './branchRules'
 import { DeployedBranchRule, StaleBranchRule } from './secondaryBranchRules'
 import { AdminsRule, GithubActionRunRule, LatestCommitRule, OpenIssueRule, OpenPRRule, TeamsRule } from './repoRules'
@@ -33,6 +34,7 @@ export interface BranchRules {
   pomXmlRule: PomXmlRule
   readmeRule: ReadmeRule
   terraformRule: TerraformRule
+  babelConfigJsRule: BabelConfigJsRule
 }
 
 export function getBranchRules (): BranchRules {
@@ -50,7 +52,8 @@ export function getBranchRules (): BranchRules {
     pipRequirementsRule: new PIPRequirementsRule(),
     pomXmlRule: new PomXmlRule(),
     readmeRule: new ReadmeRule(),
-    terraformRule: new TerraformRule()
+    terraformRule: new TerraformRule(),
+    babelConfigJsRule: new BabelConfigJsRule()
   }
 }
 

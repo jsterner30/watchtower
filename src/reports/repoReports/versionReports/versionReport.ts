@@ -91,10 +91,17 @@ export abstract class VersionUtils {
     return versions
   }
 
+  /**
+   * Traverse the file, looking for particular key-value pairs.
+   * If they are found, it adds them to the passed-in 'versions' array
+   *
+   * If the value doesn't matter, and you want to only get the value based on the key, then pass in `null` for searchString
+   * If the value must contain a certain string, pass that string in for the searchString
+   */
   protected traverseObject (
     obj: Record<string, any>,
     targetStrings: string[],
-    searchString: string,
+    searchString: string | null,
     versions: VersionLocation[],
     fileName: string,
     branchName: string
@@ -103,9 +110,13 @@ export abstract class VersionUtils {
       if (typeof obj[key] === 'object' && obj[key] !== null) {
         this.traverseObject(obj[key], targetStrings, searchString, versions, fileName, branchName)
       } else if (
-        targetStrings.includes(key) &&
+        // if searchString is null, just check to see if targetStrings includes the key
+        (searchString === null && targetStrings.includes(key)) ||
+        // if searchString is a string, check that the value includes that searchString as well.
+        (searchString !== null &&
+          targetStrings.includes(key) &&
           typeof obj[key] === 'string' &&
-          (obj[key] as string).includes(searchString)
+          (obj[key] as string).includes(searchString))
       ) {
         versions.push({ filePath: fileName, version: obj[key].split(searchString)[1], branch: branchName })
       }
