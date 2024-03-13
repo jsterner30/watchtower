@@ -40,9 +40,9 @@ export class NodeVersionUtils extends VersionUtils {
         if (ruleFile.contents.env?.node_version != null) {
           branchNodeFiles.push({ filePath: ruleFile.fileName, version: ruleFile.contents.env.node_version, branch: branchName })
         }
-      } else if (validTerraformFile.Check(ruleFile) && ruleFile.fileType === 'TERRAFORM') {
+      } else if (validTerraformFile.Check(ruleFile) && ruleFile.fileType === FileTypeEnum.TERRAFORM) {
         branchNodeFiles = [...branchNodeFiles, ...this.getTerraformLambdaRuntimeVersion(ruleFile, branchName, 'nodejs')]
-      } else if (validGHASourceFile.Check(ruleFile) && ruleFile.fileType === 'GITHUB_ACTION_SOURCE') {
+      } else if (validGHASourceFile.Check(ruleFile) && ruleFile.fileType === FileTypeEnum.GITHUB_ACTION_SOURCE) {
         if ((ruleFile.contents?.runs?.using as string)?.includes('node')) {
           const version = ruleFile.contents.runs.using.split('node')[1]
           branchNodeFiles.push({ filePath: ruleFile.fileName, version, branch: branchName })

@@ -1,6 +1,6 @@
 import {
   Grade, GradeEnum, HealthScore, validReadmeFile, ReadmeContentItem,
-  type Repo
+  type Repo, FileTypeEnum
 } from '../../../types'
 import { Writers } from '../../report'
 import { HeaderTitles, ReportWriter } from '../../../util'
@@ -26,7 +26,7 @@ export class ReadmeReport extends RepoReport<ReadmeReportData, ReadmeReportWrite
     let numMissingSections: number = Math.max(appSections.length, libSections.length)
 
     for (const ruleFile of repo.branches[repo.defaultBranch].ruleFiles) {
-      if (validReadmeFile.Check(ruleFile) && ruleFile.fileType === 'README') {
+      if (validReadmeFile.Check(ruleFile) && ruleFile.fileType === FileTypeEnum.README) {
         const readmeContent = ruleFile.contents
 
         if (readmeContent.length > 0) {

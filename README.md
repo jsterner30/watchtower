@@ -169,3 +169,5 @@ Step 2: Download Data
 12. parse tfvars files in terraform rule
 13. Kotlin/java version reports
 14. pom.xml dependency report
+15. If possible, move types/interfaces from the types file to closer to where those types are used. 
+16. 4/5 condensed dependency reports do not currently get actual dependency info, that should be added. 

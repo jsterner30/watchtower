@@ -558,3 +558,14 @@ export const CacheFileSchema = Type.Object({
 })
 export type CacheFile = Static<typeof CacheFileSchema>
 export const validCacheFile = TypeCompiler.Compile(CacheFileSchema)
+
+export interface Dependency {
+  dependencyName: string
+  dependencyEnvironment: string
+  lastModifiedDate: string
+  createdDate: string
+  description: string
+  maintainerCount: number
+  latestVersion: string
+  downloadCountLastWeek: number
+}

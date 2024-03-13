@@ -1,14 +1,20 @@
 import { Report, ReportData, Writers } from '../../report'
 import { errorHandler, HeaderTitles, ReportWriter } from '../../../util'
-import { Repo, RuleFile } from '../../../types'
+import { Dependency, Repo, RuleFile } from '../../../types'
 
-export interface DependencyCountReportData extends ReportData {
+export interface CondensedDependencyReportData extends ReportData {
   depName: string
   branchCount: number
   repoCount: number
+  lastModifiedDate: string
+  createdDate: string
+  description: string
+  maintainerCount: number
+  latestVersion: string
+  downloadCountLastWeek: number
 }
-export interface DependencyCountReportDataWriter extends Writers<DependencyCountReportData> {
-  dependencyCountReportDataWriter: ReportWriter<DependencyCountReportData>
+export interface CondensedDependencyReportDataWriter extends Writers<CondensedDependencyReportData> {
+  dependencyCountReportDataWriter: ReportWriter<CondensedDependencyReportData>
 }
 
 interface DependencyCounter {
@@ -16,18 +22,24 @@ interface DependencyCounter {
   repos: Set<string>
 }
 
-export abstract class DependencyCountReport extends Report<DependencyCountReportData, DependencyCountReportDataWriter, Repo> {
-  protected getHeaderTitles (): HeaderTitles<DependencyCountReportData> {
+export abstract class DependencyCondensedReport extends Report<CondensedDependencyReportData, CondensedDependencyReportDataWriter, Repo> {
+  protected getHeaderTitles (): HeaderTitles<CondensedDependencyReportData> {
     return {
       depName: 'Dependency Name',
       branchCount: 'Number of Branches with this Dependency',
-      repoCount: 'Number of Repos with this Dependency'
+      repoCount: 'Number of Repos with this Dependency',
+      lastModifiedDate: 'Last Modification Date of the Dependency',
+      createdDate: 'Creation Date of the Dependency',
+      description: 'Description',
+      maintainerCount: 'Maintainer Count',
+      latestVersion: 'Latest Version',
+      downloadCountLastWeek: 'Download Count Last Week'
     }
   }
 
-  protected getReportWriters (): DependencyCountReportDataWriter {
+  protected getReportWriters (): CondensedDependencyReportDataWriter {
     return {
-      dependencyCountReportDataWriter: new ReportWriter<DependencyCountReportData>(this.getHeaderTitles(), this.outputDir, this.outputDir) // these reports are written to a file with the same name as the output dir
+      dependencyCountReportDataWriter: new ReportWriter<CondensedDependencyReportData>(this.getHeaderTitles(), this.outputDir, this.outputDir) // these reports are written to a file with the same name as the output dir
     }
   }
 
@@ -59,10 +71,17 @@ export abstract class DependencyCountReport extends Report<DependencyCountReport
 
     const writer = this.getReportWriters().dependencyCountReportDataWriter
     for (const depName in overallDepCounts) {
+      const dependency: Dependency = await this.getDependencyInfo(depName)
       writer.addRow({
         depName,
         branchCount: overallDepCounts[depName].branches.size,
-        repoCount: overallDepCounts[depName].repos.size
+        repoCount: overallDepCounts[depName].repos.size,
+        lastModifiedDate: dependency.lastModifiedDate,
+        createdDate: dependency.createdDate,
+        description: dependency.description,
+        maintainerCount: dependency.maintainerCount,
+        latestVersion: dependency.latestVersion,
+        downloadCountLastWeek: dependency.downloadCountLastWeek
       })
     }
 
@@ -75,4 +94,5 @@ export abstract class DependencyCountReport extends Report<DependencyCountReport
 
   abstract get name (): string
   protected abstract getDepNames (ruleFile: RuleFile): string[]
+  protected abstract getDependencyInfo (packageName: string): Promise<Dependency>
 }

@@ -7,7 +7,7 @@ export class PythonVersionUtils extends VersionUtils {
     for (const ruleFile of repo.branches[branchName].ruleFiles) {
       if (validDockerfile.Check(ruleFile) && ruleFile.fileType === FileTypeEnum.DOCKERFILE) {
         branchPythonFiles = [...branchPythonFiles, ...this.getDockerfileImageVersion(ruleFile, branchName, 'python')]
-      } else if (validTerraformFile.Check(ruleFile) && ruleFile.fileType === 'TERRAFORM') {
+      } else if (validTerraformFile.Check(ruleFile) && ruleFile.fileType === FileTypeEnum.TERRAFORM) {
         branchPythonFiles = [...branchPythonFiles, ...this.getTerraformLambdaRuntimeVersion(ruleFile, branchName, 'python')]
       }
     }
