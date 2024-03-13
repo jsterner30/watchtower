@@ -45,9 +45,9 @@ export class NodeVersionUtils extends VersionUtils {
           // is node-version or node_version to get it even if they don't have it as an environment variable
           this.traverseObject(ruleFile, ['node-version', 'node_version'], null, branchNodeFiles, ruleFile.fileName, branchName)
         }
-      } else if (validTerraformFile.Check(ruleFile) && ruleFile.fileType === 'TERRAFORM') {
+      } else if (validTerraformFile.Check(ruleFile) && ruleFile.fileType === FileTypeEnum.TERRAFORM) {
         branchNodeFiles = [...branchNodeFiles, ...this.getTerraformLambdaRuntimeVersion(ruleFile, branchName, 'nodejs')]
-      } else if (validGHASourceFile.Check(ruleFile) && ruleFile.fileType === 'GITHUB_ACTION_SOURCE') {
+      } else if (validGHASourceFile.Check(ruleFile) && ruleFile.fileType === FileTypeEnum.GITHUB_ACTION_SOURCE) {
         if ((ruleFile.contents?.runs?.using as string)?.includes('node')) {
           const version = ruleFile.contents.runs.using.split('node')[1]
           branchNodeFiles.push({ filePath: ruleFile.fileName, version, branch: branchName })
