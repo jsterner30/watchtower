@@ -37,8 +37,13 @@ export class NodeVersionUtils extends VersionUtils {
       if (validDockerfile.Check(ruleFile) && ruleFile.fileType === FileTypeEnum.DOCKERFILE) {
         branchNodeFiles = [...branchNodeFiles, ...this.getDockerfileImageVersion(ruleFile, branchName, 'node')]
       } else if (validGHAFile.Check(ruleFile) && ruleFile.fileType === FileTypeEnum.GITHUB_ACTION) {
+        // get the node_version environment variable that most GHA files have in the top
         if (ruleFile.contents.env?.node_version != null) {
           branchNodeFiles.push({ filePath: ruleFile.fileName, version: ruleFile.contents.env.node_version, branch: branchName })
+        } else {
+          // if they don't have a node_version environment variable, traverse the file looking for key-values where the key
+          // is node-version or node_version to get it even if they don't have it as an environment variable
+          this.traverseObject(ruleFile, ['node-version', 'node_version'], null, branchNodeFiles, ruleFile.fileName, branchName)
         }
       } else if (validTerraformFile.Check(ruleFile) && ruleFile.fileType === 'TERRAFORM') {
         branchNodeFiles = [...branchNodeFiles, ...this.getTerraformLambdaRuntimeVersion(ruleFile, branchName, 'nodejs')]
