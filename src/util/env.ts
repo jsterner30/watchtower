@@ -39,7 +39,7 @@ export async function initializeEnv (): Promise<void> {
       runLimitedTest: env.get('RUN_LIMITED_TEST').default('false').asBool(),
       testRepoList: env.get('TEST_REPO_LIST').default([]).asArray(),
       filterArchived: env.get('FILTER_ARCHIVED').default('true').asBool(),
-      filterReportExceptions: env.get('FILTER_REPORT_EXCEPTIONS').default('false').asBool()
+      filterReportExceptions: env.get('FILTER_REPORT_EXCEPTIONS').required().asBool()
     }
   }
 }
