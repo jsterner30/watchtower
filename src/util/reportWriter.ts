@@ -3,11 +3,15 @@ import { Writer } from './writer'
 import { stringifyJSON } from './util'
 import { createObjectCsvStringifier } from 'csv-writer'
 import { logger } from './logger'
+import { getEnv } from './env'
 
 export interface Data extends Record<string, any> {}
 
-export type HeaderTitles<T> = {
+export type HeaderTitles<T extends Data> = {
   [P in keyof T]: string
+}
+export type Exception<T extends Data> = {
+  [P in keyof T]: RegExp
 }
 
 export class ReportWriter<T extends Data> {
@@ -16,13 +20,15 @@ export class ReportWriter<T extends Data> {
   private readonly _data: T[]
   private readonly _outputDir: string
   private readonly _fileName: string
+  private readonly _exceptions: Array<Exception<T>>
 
-  constructor (headerTitles: HeaderTitles<T>, outputDir: string, fileName: string) {
+  constructor (headerTitles: HeaderTitles<T>, outputDir: string, fileName: string, exceptions: Array<Exception<T>> = []) {
     this._headerTitles = headerTitles
     this._outputDir = outputDir
     this._fileName = fileName
     this._data = []
     this._headers = this.getHeader()
+    this._exceptions = exceptions
   }
 
   get data (): T[] {
@@ -36,11 +42,33 @@ export class ReportWriter<T extends Data> {
   }
 
   addRow (row: T): void {
+    let relevantException: Exception<T> | null
     if (!this.inputMatchesHeader(row)) {
       logger.error(`The row input does not match the expected header for report: ${this._fileName}, input: ${JSON.stringify(row)}`)
+    } else if (((getEnv().filterReportExceptions && this._exceptions.length > 0 && (relevantException = this.testRowAgainstExceptionsRegex(row)) != null))) {
+      logger.warn(`Omitting row for fileName: ${this._fileName}, row: ${stringifyJSON(row, this._fileName + ' row')} based on the following exception: ${stringifyJSON(relevantException, 'relevantException')}`)
     } else {
       this._data.push(row)
     }
+  }
+
+  private testRowAgainstExceptionsRegex (row: T): Exception<T> | null {
+    for (const exception of this._exceptions) {
+      let match = true
+      for (const key in row) {
+        const value = row[key].toString() // Convert value to string
+        if (key in exception) {
+          const regexPattern = exception[key]
+          if (!regexPattern.test(value)) {
+            match = false
+          }
+        }
+      }
+      if (match) {
+        return exception
+      }
+    }
+    return null // No values match regex
   }
 
   async writeOutput (writer: Writer): Promise<void> {

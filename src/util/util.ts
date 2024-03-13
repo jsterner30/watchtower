@@ -44,6 +44,11 @@ export function arrayToObject (arr: Array<Record<string, any>>): Record<string, 
   }, {})
 }
 
+// eslint-disable-next-line no-extend-native
+Object.defineProperty(RegExp.prototype, 'toJSON', { // https://stackoverflow.com/a/12075970/6901706
+  value: RegExp.prototype.toString
+})
+
 export function stringifyJSON (json: Record<string, any> | Array<Record<string, any>>, resourceName: string): string {
   try {
     return stringify(json, null, 2)

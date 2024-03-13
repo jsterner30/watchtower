@@ -1,4 +1,4 @@
-import { Data, errorHandler, HeaderTitles, ReportWriter } from '../util'
+import { Data, errorHandler, Exception, HeaderTitles, ReportWriter } from '../util'
 import { ReportType } from '../types'
 
 export interface ReportData extends Data {}
@@ -63,6 +63,10 @@ export abstract class Report<T extends ReportData, U extends Writers<T>, V exten
 
   get outputDir (): string {
     return this._outputDir
+  }
+
+  protected getExceptions (): Array<Exception<T>> {
+    return []
   }
 
   public abstract get name (): string

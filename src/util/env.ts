@@ -12,11 +12,19 @@ export interface Environment {
   runLimitedTest: boolean
   testRepoList: string[]
   filterArchived: boolean
+  filterReportExceptions: boolean
 }
 
 let params: Environment | null = null
 
-export async function getEnv (): Promise<Environment> {
+export function getEnv (): Environment {
+  if (params == null) {
+    throw new Error('Must run initializeEnv() before first use')
+  }
+  return params
+}
+
+export async function initializeEnv (): Promise<void> {
   if (params == null) {
     const env = await EnvSsm({ ssm: process.env.NODE_ENV !== 'production' })
     params = {
@@ -30,8 +38,8 @@ export async function getEnv (): Promise<Environment> {
       writeFilesLocally: env.get('WRITE_FILES_LOCALLY').default('false').asBool(),
       runLimitedTest: env.get('RUN_LIMITED_TEST').default('false').asBool(),
       testRepoList: env.get('TEST_REPO_LIST').default([]).asArray(),
-      filterArchived: env.get('FILTER_ARCHIVED').default('true').asBool()
+      filterArchived: env.get('FILTER_ARCHIVED').default('true').asBool(),
+      filterReportExceptions: env.get('FILTER_REPORT_EXCEPTIONS').default('false').asBool()
     }
   }
-  return params
 }

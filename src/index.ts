@@ -1,8 +1,9 @@
-import { getEnv, Cache, S3Writer, LocalWriter, Writer } from './util'
+import { getEnv, Cache, S3Writer, LocalWriter, Writer, initializeEnv } from './util'
 import { Engine } from './engine'
 
 async function run (): Promise<void> {
-  const env = await getEnv()
+  await initializeEnv()
+  const env = getEnv()
   let writer: Writer = new S3Writer(env.bucketName)
   if (env.writeFilesLocally) {
     writer = new LocalWriter()

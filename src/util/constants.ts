@@ -17,3 +17,4 @@ export const defaultCommit: Commit = {
 }
 
 export const date1970: string = '1970-01-01T00:00:00Z'
+export const anyStringRegex = /.*/

@@ -7,7 +7,7 @@ import {
 import { VersionReport } from './versionReport'
 import { RepoReportData } from '../repoReport'
 
-interface BranchVersionReportData extends RepoReportData {
+export interface BranchVersionReportData extends RepoReportData {
   repoName: string
   branchName: string
   lowestVersion: string
@@ -35,7 +35,7 @@ export abstract class BranchVersionReport extends VersionReport<BranchVersionRep
   protected getReportWriters (): BranchVersionReportWriters {
     return {
       defaultBranchVersionReportWriter: new ReportWriter<BranchVersionReportData>(this.getHeaderTitles(), this._outputDir, `${this.name}-DefaultBranches`),
-      allBranchesVersionReportWriter: new ReportWriter<BranchVersionReportData>(this.getHeaderTitles(), this._outputDir, `${this.name}-AllBranches`)
+      allBranchesVersionReportWriter: new ReportWriter<BranchVersionReportData>(this.getHeaderTitles(), this._outputDir, `${this.name}-AllBranches`, this.getExceptions())
     }
   }
 

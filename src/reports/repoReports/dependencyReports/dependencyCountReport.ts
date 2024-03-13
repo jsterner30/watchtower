@@ -46,7 +46,7 @@ export abstract class DependencyCountReport extends Report<DependencyCountReport
                     repos: new Set<string>()
                   }
                 }
-                overallDepCounts[depName].branches.add(branch.name)
+                overallDepCounts[depName].branches.add(repo.name + ':' + branch.name)
                 overallDepCounts[depName].repos.add(repo.name)
               }
             }

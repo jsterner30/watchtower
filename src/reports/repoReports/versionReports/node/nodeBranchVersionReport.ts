@@ -2,8 +2,9 @@ import type {
   Repo,
   ExtremeVersions
 } from '../../../../types'
-import { BranchVersionReport } from '../branchVersionReport'
+import { BranchVersionReport, BranchVersionReportData } from '../branchVersionReport'
 import { NodeVersionUtils } from './nodeVersionUtils'
+import { anyStringRegex, Exception } from '../../../../util'
 
 export class NodeBranchVersionReport extends BranchVersionReport {
   protected versionUtils = new NodeVersionUtils()
@@ -15,5 +16,18 @@ export class NodeBranchVersionReport extends BranchVersionReport {
 
   public get name (): string {
     return NodeBranchVersionReport.name
+  }
+
+  protected getExceptions (): Array<Exception<BranchVersionReportData>> {
+    return [
+      {
+        repoName: /.*github-action.*/,
+        branchName: /v1/,
+        lowestVersion: anyStringRegex,
+        lowestVersionPath: anyStringRegex,
+        highestVersion: anyStringRegex,
+        highestVersionPath: anyStringRegex
+      }
+    ]
   }
 }

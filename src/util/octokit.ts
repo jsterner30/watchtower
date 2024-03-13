@@ -9,7 +9,7 @@ export async function getOctokit (): Promise<Octokit> {
   if (octokit === null) {
     const MyOctokit = Octokit.plugin(throttling, retry)
     octokit = new MyOctokit({
-      auth: (await getEnv()).githubToken,
+      auth: getEnv().githubToken,
       // todo: retries seem to conflict with throttling
       // request: {
       //   retries: 5
