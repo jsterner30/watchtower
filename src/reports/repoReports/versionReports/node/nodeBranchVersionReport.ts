@@ -23,7 +23,7 @@ export class NodeBranchVersionReport extends BranchVersionReport {
       {
         repoName: /.*github-action.*/,
         branchName: /v1/,
-        lowestVersion: anyStringRegex,
+        lowestVersion: /^12.*/,
         lowestVersionPath: anyStringRegex,
         highestVersion: anyStringRegex,
         highestVersionPath: anyStringRegex

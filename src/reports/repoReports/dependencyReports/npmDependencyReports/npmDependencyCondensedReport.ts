@@ -26,6 +26,9 @@ export class NPMDependencyCondensedReport extends DependencyCondensedReport {
     name = name.replace('_', '/') // we removed slashes for file system reasons but need to add them back here
     try {
       const res: any = await fetch(`https://registry.npmjs.org/${name}`).then(async res => await res.json())
+      if (res.error != null) {
+        throw new Error(res.error)
+      }
       const versions: string[] = Object.keys(res.versions as Record<string, any>)
       return {
         dependencyName: name,
@@ -38,7 +41,11 @@ export class NPMDependencyCondensedReport extends DependencyCondensedReport {
         downloadCountLastWeek: await this.getNPMPackageDownloadsPerWeek(name)
       }
     } catch (error) {
-      console.error(`Error retrieving data from NPM registry api for package: ${name}, error: ${(error as Error).message}`)
+      if ((error as Error).message.toLowerCase().includes('not found')) {
+        console.warn(`Error retrieving data from NPM registry api for package: ${name}, error: ${(error as Error).message}`)
+      } else {
+        console.error(`Error retrieving data from NPM registry api for package: ${name}, error: ${(error as Error).message}`)
+      }
       return {
         dependencyName: name,
         dependencyEnvironment: 'npm',

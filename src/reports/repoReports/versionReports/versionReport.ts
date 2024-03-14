@@ -109,16 +109,15 @@ export abstract class VersionUtils {
     for (const key in obj) {
       if (typeof obj[key] === 'object' && obj[key] !== null) {
         this.traverseObject(obj[key], targetStrings, searchString, versions, fileName, branchName)
-      } else if (
+      } else if (searchString === null && targetStrings.includes(key)) {
         // if searchString is null, just check to see if targetStrings includes the key
-        (searchString === null && targetStrings.includes(key)) ||
-        // if searchString is a string, check that the value includes that searchString as well.
-        (searchString !== null &&
+        versions.push({ filePath: fileName, version: obj[key].toString(), branch: branchName })
+      } else if (searchString !== null &&
           targetStrings.includes(key) &&
           typeof obj[key] === 'string' &&
-          (obj[key] as string).includes(searchString))
-      ) {
-        versions.push({ filePath: fileName, version: obj[key].split(searchString)[1], branch: branchName })
+          (obj[key] as string).includes(searchString)) {
+        // if searchString is a string, check that the value includes that searchString, then split the version on the search string
+        versions.push({ filePath: fileName, version: obj[key].toString().split(searchString)[1], branch: branchName })
       }
     }
   }
