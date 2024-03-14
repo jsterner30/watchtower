@@ -117,7 +117,7 @@ export abstract class VersionUtils {
           typeof obj[key] === 'string' &&
           (obj[key] as string).includes(searchString)) {
         // if searchString is a string, check that the value includes that searchString, then split the version on the search string
-        versions.push({ filePath: fileName, version: obj[key].toString().split(searchString)[1], branch: branchName })
+        versions.push({ filePath: fileName, version: obj[key].split(searchString)[1], branch: branchName })
       }
     }
   }
