@@ -9,8 +9,8 @@ export interface DockerfileImageReportData extends DependencyReportData {
   repoName: string
   branchName: string
   image: string
-  version: string
   tag: string
+  version: string
   fileName: string
 }
 
@@ -23,15 +23,15 @@ export class DockerfileImageReport extends DependencyReport<DockerfileImageRepor
           if (imageParts != null) {
             const { image, version, tag } = imageParts
             if (writers[image] == null) {
-              writers[image] = new ReportWriter(this.getHeaderTitles(), this._outputDir, image)
+              writers[image] = new ReportWriter<DockerfileImageReportData>(this.getHeaderTitles(), this._outputDir, image)
             }
 
             writers[image].addRow({
               repoName: repo.name,
               branchName,
               image,
-              version,
               tag,
+              version,
               fileName: ruleFile.fileName
             })
           }
@@ -47,8 +47,8 @@ export class DockerfileImageReport extends DependencyReport<DockerfileImageRepor
       repoName: 'Repo',
       branchName: 'Branch',
       image: 'Image',
-      version: 'Version',
       tag: 'Tag',
+      version: 'Version',
       fileName: 'File Name'
     }
   }

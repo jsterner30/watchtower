@@ -35,7 +35,7 @@ export class LowFileRepoReport extends RepoReport<LowFileRepoReportData, LowFile
 
   protected getReportWriters (): LowFileRepoReportWriters {
     return {
-      lowFileRepoReportWriter: new ReportWriter(this.getHeaderTitles(), this._outputDir, this.name)
+      lowFileRepoReportWriter: new ReportWriter<LowFileRepoReportData>(this.getHeaderTitles(), this._outputDir, this.name)
     }
   }
 

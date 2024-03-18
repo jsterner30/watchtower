@@ -39,7 +39,7 @@ export abstract class RepoVersionReport extends VersionReport<RepoVersionReportD
 
   protected getReportWriters (): RepoVersionReportWriters {
     return {
-      allBranchesRepoWriter: new ReportWriter(this.getHeaderTitles(), this._outputDir, `${this.name}-Repos-AllBranches`)
+      allBranchesRepoWriter: new ReportWriter<RepoVersionReportData>(this.getHeaderTitles(), this._outputDir, `${this.name}-Repos-AllBranches`)
     }
   }
 

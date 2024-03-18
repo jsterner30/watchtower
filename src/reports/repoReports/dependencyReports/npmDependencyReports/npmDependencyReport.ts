@@ -20,7 +20,7 @@ export class NPMDependencyReport extends DependencyReport<NPMDependencyReportDat
           const depParts = getNPMDependencyPartsFromFile(ruleFile)
           for (const dep of depParts) {
             if (writers[dep.name] == null) {
-              writers[dep.name] = new ReportWriter(this.getHeaderTitles(), this._outputDir, dep.name)
+              writers[dep.name] = new ReportWriter<NPMDependencyReportData>(this.getHeaderTitles(), this._outputDir, dep.name)
             }
             writers[dep.name].addRow({
               repoName: repo.name,

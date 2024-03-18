@@ -34,7 +34,7 @@ export class ReposWithoutNewCommitsReport extends RepoReport<ReposWithoutNewComm
 
   protected getReportWriters (): ReposWithoutNewCommitsWriters {
     return {
-      reposWithoutNewCommitsWriter: new ReportWriter(this.getHeaderTitles(), this._outputDir, this.name)
+      reposWithoutNewCommitsWriter: new ReportWriter<ReposWithoutNewCommitsReportData>(this.getHeaderTitles(), this._outputDir, this.name)
     }
   }
 
