@@ -10,6 +10,7 @@ interface GHActionModuleReportData extends RepoReportData {
   repoName: string
   branchName: string
   version: string
+  fileName: string
 }
 
 export class GHActionModuleReport extends DependencyReport<GHActionModuleReportData> {
@@ -26,7 +27,8 @@ export class GHActionModuleReport extends DependencyReport<GHActionModuleReportD
             writers[module.name].addRow({
               repoName: repo.name,
               branchName,
-              version: module.version
+              version: module.version,
+              fileName: ruleFile.fileName
             })
           }
         }
@@ -40,7 +42,8 @@ export class GHActionModuleReport extends DependencyReport<GHActionModuleReportD
     return {
       repoName: 'Repo',
       branchName: 'Branch',
-      version: 'Version'
+      version: 'Version',
+      fileName: 'File Name'
     }
   }
 

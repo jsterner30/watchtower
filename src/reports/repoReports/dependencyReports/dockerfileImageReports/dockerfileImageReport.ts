@@ -2,16 +2,16 @@ import {
   type Repo
 } from '../../../../types'
 import { errorHandler, HeaderTitles, ReportWriter } from '../../../../util'
-import { DependencyReport, DependencyInstanceReportWriters } from './../dependencyReport'
-import { RepoReportData } from '../../repoReport'
+import { DependencyReport, DependencyInstanceReportWriters, DependencyReportData } from './../dependencyReport'
 import getImagePartsFromFile from './getImagePartsFromFile'
 
-export interface DockerfileImageReportData extends RepoReportData {
+export interface DockerfileImageReportData extends DependencyReportData {
   repoName: string
   branchName: string
   image: string
   version: string
   tag: string
+  fileName: string
 }
 
 export class DockerfileImageReport extends DependencyReport<DockerfileImageReportData> {
@@ -31,7 +31,8 @@ export class DockerfileImageReport extends DependencyReport<DockerfileImageRepor
               branchName,
               image,
               version,
-              tag
+              tag,
+              fileName: ruleFile.fileName
             })
           }
         }
@@ -47,7 +48,8 @@ export class DockerfileImageReport extends DependencyReport<DockerfileImageRepor
       branchName: 'Branch',
       image: 'Image',
       version: 'Version',
-      tag: 'Tag'
+      tag: 'Tag',
+      fileName: 'File Name'
     }
   }
 

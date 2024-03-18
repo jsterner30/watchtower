@@ -2,14 +2,14 @@ import {
   type Repo
 } from '../../../../types'
 import { errorHandler, HeaderTitles, ReportWriter } from '../../../../util'
-import { DependencyReport, DependencyInstanceReportWriters } from '../dependencyReport'
-import { RepoReportData } from '../../repoReport'
+import { DependencyReport, DependencyInstanceReportWriters, DependencyReportData } from '../dependencyReport'
 import getTerraformModulePartsFromFile from './getTerraformModulePartsFromFile'
 
-interface TerraformModuleReportData extends RepoReportData {
+interface TerraformModuleReportData extends DependencyReportData {
   repoName: string
   branchName: string
   version: string
+  fileName: string
 }
 
 export class TerraformModuleReport extends DependencyReport<TerraformModuleReportData> {
@@ -40,7 +40,8 @@ export class TerraformModuleReport extends DependencyReport<TerraformModuleRepor
     return {
       repoName: 'Repo',
       branchName: 'Branch',
-      version: 'Version'
+      version: 'Version',
+      fileName: 'File Name'
     }
   }
 

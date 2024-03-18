@@ -2,14 +2,14 @@ import {
   type Repo
 } from '../../../../types'
 import { errorHandler, HeaderTitles, ReportWriter } from '../../../../util'
-import { DependencyReport, DependencyInstanceReportWriters } from '../dependencyReport'
-import { RepoReportData } from '../../repoReport'
+import { DependencyReport, DependencyInstanceReportWriters, DependencyReportData } from '../dependencyReport'
 import getNPMDependencyPartsFromFile from './getNPMDependencyPartsFromFile'
 
-interface NPMDependencyReportData extends RepoReportData {
+interface NPMDependencyReportData extends DependencyReportData {
   repoName: string
   branchName: string
   version: string
+  fileName: string
 }
 
 export class NPMDependencyReport extends DependencyReport<NPMDependencyReportData> {
@@ -25,7 +25,8 @@ export class NPMDependencyReport extends DependencyReport<NPMDependencyReportDat
             writers[dep.name].addRow({
               repoName: repo.name,
               branchName,
-              version: dep.version
+              version: dep.version,
+              fileName: ruleFile.fileName
             })
           }
         }
@@ -39,7 +40,8 @@ export class NPMDependencyReport extends DependencyReport<NPMDependencyReportDat
     return {
       repoName: 'Repo',
       branchName: 'Branch',
-      version: 'Version'
+      version: 'Version',
+      fileName: 'File Name'
     }
   }
 

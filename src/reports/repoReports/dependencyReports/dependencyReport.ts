@@ -11,9 +11,16 @@ import { GradeEnum, HealthScore, Repo } from '../../../types'
 import { compare, validate } from 'compare-versions'
 import { RepoReport, RepoReportData } from '../repoReport'
 
-export interface DependencyInstanceReportWriters<T extends RepoReportData> extends Writers<T> {}
+export interface DependencyReportData extends RepoReportData {
+  repoName: string
+  branchName: string
+  fileName: string
+  version: string
+}
 
-export abstract class DependencyReport<T extends RepoReportData> extends RepoReport<T, DependencyInstanceReportWriters<T>> {
+export interface DependencyInstanceReportWriters<T extends DependencyReportData> extends Writers<T> {}
+
+export abstract class DependencyReport<T extends DependencyReportData> extends RepoReport<T, DependencyInstanceReportWriters<T>> {
   public async run (repos: Repo[]): Promise<void> {
     const writers: DependencyInstanceReportWriters<T> = this.getReportWriters()
     for (const repo of repos) {

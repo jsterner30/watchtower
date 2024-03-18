@@ -2,14 +2,14 @@ import {
   type Repo
 } from '../../../../types'
 import { errorHandler, HeaderTitles, ReportWriter } from '../../../../util'
-import { DependencyReport, DependencyInstanceReportWriters } from '../dependencyReport'
-import { RepoReportData } from '../../repoReport'
+import { DependencyReport, DependencyInstanceReportWriters, DependencyReportData } from '../dependencyReport'
 import getPIPDependencyPartsFromFile from './getPIPDependencyPartsFromFile'
 
-interface PIPDependencyReportData extends RepoReportData {
+interface PIPDependencyReportData extends DependencyReportData {
   repoName: string
   branchName: string
   version: string
+  fileName: string
 }
 
 export class PIPDependencyReport extends DependencyReport<PIPDependencyReportData> {
@@ -25,7 +25,8 @@ export class PIPDependencyReport extends DependencyReport<PIPDependencyReportDat
             writers[dep.name].addRow({
               repoName: repo.name,
               branchName,
-              version: dep.version
+              version: dep.version,
+              fileName: ruleFile.fileName
             })
           }
         }
@@ -39,7 +40,8 @@ export class PIPDependencyReport extends DependencyReport<PIPDependencyReportDat
     return {
       repoName: 'Repo',
       branchName: 'Branch',
-      version: 'Version'
+      version: 'Version',
+      fileName: 'File Name'
     }
   }
 
