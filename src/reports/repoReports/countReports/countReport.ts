@@ -41,7 +41,7 @@ export abstract class CountReport extends RepoReport<CountReportData, CountRepor
 
   protected getReportWriters (): CountReportWriters {
     return {
-      countReportWriter: new ReportWriter(this.getHeaderTitles(), this._outputDir, this.name)
+      countReportWriter: new ReportWriter<CountReportData>(this.getHeaderTitles(), this._outputDir, this.name)
     }
   }
 

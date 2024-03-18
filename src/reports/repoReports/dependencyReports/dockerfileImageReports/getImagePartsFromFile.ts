@@ -2,8 +2,8 @@ import { FileTypeEnum, RuleFile, validDockerfile } from '../../../../types'
 
 export interface DockerfileImageParts {
   image: string
-  version: string
   tag: string
+  version: string
 }
 
 export default function (ruleFile: RuleFile): DockerfileImageParts | null {
@@ -15,11 +15,12 @@ export default function (ruleFile: RuleFile): DockerfileImageParts | null {
     let tag = '?'
 
     if (imageArray[1] != null) {
-      const versionArray = imageArray[1].split('-')
-      version = versionArray[0]
-      if (versionArray[1] != null) {
-        tag = versionArray[1]
+      tag = imageArray[1]
+      const tagArray = tag.split('-')
+      if (tagArray.length !== 1) {
+        version = tagArray[0]
       }
+      // if split did not find any '-', don't record a version.
     }
 
     imageParts = {

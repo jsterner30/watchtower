@@ -1,6 +1,4 @@
-import {
-  type Repo
-} from '../../../../types'
+import { type Repo } from '../../../../types'
 import { errorHandler, HeaderTitles, ReportWriter } from '../../../../util'
 import { DependencyReport, DependencyInstanceReportWriters, DependencyReportData } from '../dependencyReport'
 import getTerraformModulePartsFromFile from './getTerraformModulePartsFromFile'
@@ -13,20 +11,21 @@ interface TerraformModuleReportData extends DependencyReportData {
 }
 
 export class TerraformModuleReport extends DependencyReport<TerraformModuleReportData> {
-  protected async runReport (repo: Repo, writers: DependencyInstanceReportWriters<any>): Promise<void> {
+  protected async runReport (repo: Repo, writers: DependencyInstanceReportWriters<TerraformModuleReportData>): Promise<void> {
     for (const branchName in repo.branches) {
       try {
         for (const ruleFile of repo.branches[branchName].ruleFiles) {
           const moduleParts = getTerraformModulePartsFromFile(ruleFile)
           for (const module of moduleParts) {
             if (writers[module.name] == null) {
-              writers[module.name] = new ReportWriter(this.getHeaderTitles(), this._outputDir, module.name)
+              writers[module.name] = new ReportWriter<TerraformModuleReportData>(this.getHeaderTitles(), this._outputDir, module.name)
             }
 
             writers[module.name].addRow({
               repoName: repo.name,
               branchName,
-              version: module.version
+              version: module.version,
+              fileName: ruleFile.fileName
             })
           }
         }

@@ -24,7 +24,7 @@ export class PrimaryLanguageReport extends RepoReport<PrimaryLanguageReportData,
 
   protected getReportWriters (): PrimaryLanguageReportWriters {
     return {
-      primaryLanguageReportWriter: new ReportWriter(this.getHeaderTitles(), this._outputDir, this.name)
+      primaryLanguageReportWriter: new ReportWriter<PrimaryLanguageReportData>(this.getHeaderTitles(), this._outputDir, this.name)
     }
   }
 
