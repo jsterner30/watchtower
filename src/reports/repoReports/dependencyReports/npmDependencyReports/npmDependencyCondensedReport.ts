@@ -42,9 +42,9 @@ export class NPMDependencyCondensedReport extends DependencyCondensedReport {
       }
     } catch (error) {
       if ((error as Error).message.toLowerCase().includes('not found')) {
-        console.warn(`Error retrieving data from NPM registry api for package: ${name}, error: ${(error as Error).message}`)
+        logger.warn(`Error retrieving data from NPM registry api for package: ${name}, error: ${(error as Error).message}`)
       } else {
-        console.error(`Error retrieving data from NPM registry api for package: ${name}, error: ${(error as Error).message}`)
+        logger.error(`Error retrieving data from NPM registry api for package: ${name}, error: ${(error as Error).message}`)
       }
       return {
         dependencyName: name,
@@ -64,7 +64,7 @@ export class NPMDependencyCondensedReport extends DependencyCondensedReport {
       const res: any = await fetch(`https://api.npmjs.org/downloads/point/last-week/${name}`).then(async res => await res.json())
       return res.downloads
     } catch (error) {
-      console.error(`Error retrieving download count from NPM registry api for package: ${name}, error: ${(error as Error).message}`)
+      logger.error(`Error retrieving download count from NPM registry api for package: ${name}, error: ${(error as Error).message}`)
       return -1
     }
   }
