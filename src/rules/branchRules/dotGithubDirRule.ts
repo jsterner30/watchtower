@@ -1,7 +1,7 @@
 import { FileTypeEnum, GHAFile, type Repo } from '../../types'
 import JSZip from 'jszip'
 import { load } from 'js-yaml'
-import { errorHandler } from '../../util'
+import { errorHandler, ParsingError } from '../../util'
 import { BranchRule } from '../rule'
 
 export class DotGithubDirRule extends BranchRule {
@@ -21,11 +21,15 @@ export class DotGithubDirRule extends BranchRule {
   }
 
   parseYmlGHA (ghFile: string, fileName: string): GHAFile {
-    return {
-      fileName,
-      fileType: FileTypeEnum.GITHUB_ACTION,
-      contents: load(ghFile) as Record<string, any>,
-      dependabot: fileName.endsWith('dependabot.yml')
+    try {
+      return {
+        fileName,
+        fileType: FileTypeEnum.GITHUB_ACTION,
+        contents: load(ghFile) as Record<string, any>,
+        dependabot: fileName.endsWith('dependabot.yml')
+      }
+    } catch (error) {
+      throw new ParsingError((error as Error).message)
     }
   }
 }

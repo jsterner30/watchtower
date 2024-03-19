@@ -173,3 +173,4 @@ Step 2: Download Data
 14. pom.xml dependency report
 15. If possible, move types/interfaces from the types file to closer to where those types are used.
 16. 4/5 condensed dependency reports do not currently get actual dependency info, that should be added.
+17. Make generic types be named better, instead of just T or U?

@@ -457,7 +457,9 @@ const RepoSchema = Type.Object({
   admins: Type.Array(Type.String()),
   healthScores: Type.Record(Type.String(), HealthScoreSchema),
   reportResults: RepoReportResultSchema,
-  customProperties: Type.Record(Type.String(), RepoCustomPropertySchema)
+  customProperties: Type.Record(Type.String(), RepoCustomPropertySchema),
+  size: Type.Number(),
+  empty: Type.Boolean()
 })
 export type Repo = Static<typeof RepoSchema>
 export const validRepo = TypeCompiler.Compile(RepoSchema)

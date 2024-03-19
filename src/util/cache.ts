@@ -1,7 +1,8 @@
 import { Writer } from './writer'
 import { CacheFile, Repo, validRepo, validCacheFile } from '../types'
 import { logger } from './logger'
-import { errorHandler, stringifyJSON } from './util'
+import { errorHandler } from './error'
+import { stringifyJSON } from './util'
 import { allReposCacheFileName, date1970, filteredWithBranchesCacheFileName, lastRunDateFileName } from './constants'
 
 export interface CacheInfo {

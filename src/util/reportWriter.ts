@@ -79,7 +79,7 @@ export class ReportWriter<T extends Data> {
 
   async writeOutput (writer: Writer): Promise<void> {
     if (this._data.size === 0) {
-      logger.error(`No data found for report file: ${this._fileName} skipping the writing of that report`)
+      logger.warn(`No data found for report file: ${this._fileName} skipping the writing of that report`)
     } else {
       await writer.writeFile('reports', 'json', `${this._outputDir}/${this._fileName}.json`, stringifyJSON(this.convertToCorrectJsonOutput(), this._fileName))
       await writer.writeFile('reports', 'csv', `${this._outputDir}/${this._fileName}.csv`, this.convertToCSV())

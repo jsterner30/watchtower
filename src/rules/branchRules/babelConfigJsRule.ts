@@ -1,7 +1,7 @@
 import { BabelConfigJs, FileTypeEnum, Repo } from '../../types'
-import { errorHandler } from '../../util'
 import { BranchRule } from '../rule'
 import JSZip from 'jszip'
+import { errorHandler, ParsingError } from '../../util/error'
 
 export class BabelConfigJsRule extends BranchRule {
   async run (repo: Repo, downloaded: JSZip, branchName: string, fileName: string): Promise<void> {
@@ -15,14 +15,18 @@ export class BabelConfigJsRule extends BranchRule {
   }
 
   parseBabelConfigJs (content: string, fileName: string): BabelConfigJs {
-    // hard to parse because the babel.config.js file exports something that can be just an exported object
-    // or an exported function. Easier to just leave as raw text and filter with regex later on.
-    const contents = content.split('\n')
+    try {
+      // hard to parse because the babel.config.js file exports something that can be just an exported object
+      // or an exported function. Easier to just leave as raw text and filter with regex later on.
+      const contents = content.split('\n')
 
-    return {
-      fileName,
-      fileType: FileTypeEnum.BABEL_CONFIG_JS,
-      contents
+      return {
+        fileName,
+        fileType: FileTypeEnum.BABEL_CONFIG_JS,
+        contents
+      }
+    } catch (error) {
+      throw new ParsingError((error as Error).message)
     }
   }
 }

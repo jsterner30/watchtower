@@ -77,7 +77,9 @@ export class Engine {
     await this.cache.update()
     const allReposFile = await this.getReposFunction(this.cache.cache.allRepos)
     await this.cache.writeFileToCache(allReposCacheFileName, allReposFile)
-    const filteredRepos = await this.filterArchived(allReposFile)
+    const unfilteredRepos: Repo[] = Object.entries(allReposFile.info).map(([_, value]) => value)
+    const nonEmptyRepos = this.filterEmpty(unfilteredRepos)
+    const filteredRepos = this.filterArchived(nonEmptyRepos)
     const filteredWithBranchesFile = await this.getReposWithBranchesCacheFile(filteredRepos, this.cache.cache.filteredWithBranches, this.progress)
     await this.cache.writeFileToCache(filteredWithBranchesCacheFileName, filteredWithBranchesFile)
     await this.runOrgRules(filteredWithBranchesFile)
@@ -135,18 +137,27 @@ export class Engine {
   }
 
   // this function will skip filtering the archived repos in the org if the
-  private async filterArchived (allReposFile: CacheFile): Promise<Repo[]> {
-    if (!this.env.filterArchived) {
-      // return list of repos that were passed in
-      Object.entries(allReposFile.info).map(([_, value]) => value)
-    }
+  private filterArchived (unfilteredRepos: Repo[]): Repo[] {
     const filteredRepos: Repo[] = []
-    for (const repoName of Object.keys(allReposFile.info)) {
-      const repo = allReposFile.info[repoName]
+    for (const repo of unfilteredRepos) {
       if (!repo.archived) {
         filteredRepos.push(repo)
       }
     }
+
+    return filteredRepos
+  }
+
+  private filterEmpty (unfilteredRepos: Repo[]): Repo[] {
+    const filteredRepos: Repo[] = []
+    for (const repo of unfilteredRepos) {
+      if (repo.empty) {
+        logger.warn(`Filtering empty repo: ${repo.name}`)
+      } else {
+        filteredRepos.push(repo)
+      }
+    }
+
     return filteredRepos
   }
 

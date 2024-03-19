@@ -1,6 +1,6 @@
 import JSZip from 'jszip'
 import { ReadmeFile, FileTypeEnum, type Repo } from '../../types'
-import { errorHandler } from '../../util'
+import { errorHandler, ParsingError } from '../../util'
 import MarkdownIt from 'markdown-it'
 import { BranchRule } from '../rule'
 
@@ -17,13 +17,17 @@ export class ReadmeRule extends BranchRule {
   }
 
   parseReadmeFile (readmeContent: string, fileName: string): ReadmeFile {
-    const md = new MarkdownIt()
-    const contents = md.parse(readmeContent, {})
+    try {
+      const md = new MarkdownIt()
+      const contents = md.parse(readmeContent, {})
 
-    return {
-      fileName,
-      fileType: FileTypeEnum.README,
-      contents
+      return {
+        fileName,
+        fileType: FileTypeEnum.README,
+        contents
+      }
+    } catch (error) {
+      throw new ParsingError((error as Error).message)
     }
   }
 }

@@ -1,5 +1,5 @@
 import { FileTypeEnum, PIPDependency, PIPRequirementsFile, Repo } from '../../types'
-import { errorHandler } from '../../util'
+import { errorHandler, ParsingError } from '../../util'
 import { BranchRule } from '../rule'
 import JSZip from 'jszip'
 
@@ -15,26 +15,30 @@ export class PIPRequirementsRule extends BranchRule {
   }
 
   parseRequirementsTXT (requirementsContent: string, fileName: string): PIPRequirementsFile {
-    const dependencies: Record<string, PIPDependency> = {}
-    const lines = requirementsContent.split('\n')
-    lines.forEach((line) => {
-      if (line.trim() !== '' && !line.trim().startsWith('#')) {
+    try {
+      const dependencies: Record<string, PIPDependency> = {}
+      const lines = requirementsContent.split('\n')
+      lines.forEach((line) => {
+        if (line.trim() !== '' && !line.trim().startsWith('#')) {
         // Find the index of the first character that represents the version comparator
-        const comparatorIndex = line.search(/[=<>~!]/)
-        if (comparatorIndex !== -1) {
-          const dependency = line.substring(0, comparatorIndex).trim()
-          const version = line.substring(comparatorIndex).trim()
-          dependencies[dependency] = { dependency, version }
-        } else {
+          const comparatorIndex = line.search(/[=<>~!]/)
+          if (comparatorIndex !== -1) {
+            const dependency = line.substring(0, comparatorIndex).trim()
+            const version = line.substring(comparatorIndex).trim()
+            dependencies[dependency] = { dependency, version }
+          } else {
           // If no version comparator is found, assume it's an exact match
-          dependencies[line.trim()] = { dependency: line.trim(), version: '' }
+            dependencies[line.trim()] = { dependency: line.trim(), version: '' }
+          }
         }
+      })
+      return {
+        fileName,
+        fileType: FileTypeEnum.PIP_REQUIREMENTS,
+        dependencies
       }
-    })
-    return {
-      fileName,
-      fileType: FileTypeEnum.PIP_REQUIREMENTS,
-      dependencies
+    } catch (error) {
+      throw new ParsingError((error as Error).message)
     }
   }
 }

@@ -1,7 +1,7 @@
 import JSZip from 'jszip'
 import { parse } from '@cdktf/hcl2json'
 import { FileTypeEnum, type Repo, TerraformFile } from '../../types'
-import { errorHandler } from '../../util'
+import { errorHandler, ParsingError } from '../../util'
 import { BranchRule } from '../rule'
 
 export class TerraformRule extends BranchRule {
@@ -19,10 +19,14 @@ export class TerraformRule extends BranchRule {
   }
 
   async parseTerraformFile (fileName: string, content: string): Promise<TerraformFile> {
-    return {
-      fileName,
-      fileType: FileTypeEnum.TERRAFORM,
-      contents: await parse(fileName, content)
+    try {
+      return {
+        fileName,
+        fileType: FileTypeEnum.TERRAFORM,
+        contents: await parse(fileName, content)
+      }
+    } catch (error) {
+      throw new ParsingError((error as Error).message)
     }
   }
 }

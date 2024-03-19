@@ -1,6 +1,7 @@
 export * from './constants'
 export * from './cache'
 export * from './env'
+export * from './error'
 export * from './extensionLanguageMap'
 export * from './fileSystemWrapper'
 export * from './github'

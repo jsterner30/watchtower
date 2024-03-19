@@ -1,8 +1,8 @@
 import { DockerComposeFile, FileTypeEnum, Repo } from '../../types'
 import { load } from 'js-yaml'
-import { errorHandler } from '../../util'
 import { BranchRule } from '../rule'
 import JSZip from 'jszip'
+import { errorHandler, ParsingError } from '../../util/error'
 
 export class DockerComposeRule extends BranchRule {
   async run (repo: Repo, downloaded: JSZip, branchName: string, fileName: string): Promise<void> {
@@ -17,12 +17,16 @@ export class DockerComposeRule extends BranchRule {
   }
 
   parseDockerCompose (dockerComposeContent: string, fileName: string): DockerComposeFile {
-    const parsedContent = load(dockerComposeContent) as Record<string, any>
-    return {
-      fileName,
-      fileType: FileTypeEnum.DOCKER_COMPOSE,
-      services: parsedContent.services ?? {},
-      version: parsedContent.version ?? 'unknown'
+    try {
+      const parsedContent = load(dockerComposeContent) as Record<string, any>
+      return {
+        fileName,
+        fileType: FileTypeEnum.DOCKER_COMPOSE,
+        services: parsedContent.services ?? {},
+        version: parsedContent.version ?? 'unknown'
+      }
+    } catch (error) {
+      throw new ParsingError((error as Error).message)
     }
   }
 }

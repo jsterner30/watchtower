@@ -1,5 +1,5 @@
 import { LicenseFile, FileTypeEnum, Repo } from '../../types'
-import { errorHandler } from '../../util'
+import { errorHandler, ParsingError } from '../../util'
 import { BranchRule } from '../rule'
 import JSZip from 'jszip'
 
@@ -16,10 +16,14 @@ export class LicenseFileRule extends BranchRule {
   }
 
   parseLicense (content: string, fileName: string): LicenseFile {
-    return {
-      fileName,
-      fileType: FileTypeEnum.LICENSE,
-      contents: content.split('\n')
+    try {
+      return {
+        fileName,
+        fileType: FileTypeEnum.LICENSE,
+        contents: content.split('\n')
+      }
+    } catch (error) {
+      throw new ParsingError((error as Error).message)
     }
   }
 }

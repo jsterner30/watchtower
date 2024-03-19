@@ -1,5 +1,5 @@
 import { FileTypeEnum, PackageJsonFile, Repo } from '../../types'
-import { errorHandler } from '../../util'
+import { errorHandler, ParsingError } from '../../util'
 import { BranchRule } from '../rule'
 import JSZip from 'jszip'
 
@@ -15,10 +15,14 @@ export class PackageJsonRule extends BranchRule {
   }
 
   parsePackageJson (packageJsonContent: string, fileName: string): PackageJsonFile {
-    return {
-      fileName,
-      fileType: FileTypeEnum.PACKAGE_JSON,
-      ...JSON.parse(packageJsonContent)
+    try {
+      return {
+        fileName,
+        fileType: FileTypeEnum.PACKAGE_JSON,
+        ...JSON.parse(packageJsonContent)
+      }
+    } catch (error) {
+      throw new ParsingError((error as Error).message)
     }
   }
 }

@@ -1,5 +1,5 @@
 import { FileTypeEnum, PomAsJson, PomXmlFile, Repo } from '../../types'
-import { errorHandler } from '../../util'
+import { errorHandler, ParsingError } from '../../util'
 import { BranchRule } from '../rule'
 import JSZip from 'jszip'
 import * as convert from 'xml-js'
@@ -16,10 +16,14 @@ export class PomXmlRule extends BranchRule {
   }
 
   parsePomXmlFile (pomFileContents: string, fileName: string): PomXmlFile {
-    return {
-      fileName,
-      fileType: FileTypeEnum.POM_XML,
-      ...convert.xml2js(pomFileContents) as PomAsJson
+    try {
+      return {
+        fileName,
+        fileType: FileTypeEnum.POM_XML,
+        ...convert.xml2js(pomFileContents) as PomAsJson
+      }
+    } catch (error) {
+      throw new ParsingError((error as Error).message)
     }
   }
 }

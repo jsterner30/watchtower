@@ -1,6 +1,6 @@
 import JSZip from 'jszip'
 import { FileTypeEnum, PackageLockFile, Repo } from '../../types'
-import { errorHandler } from '../../util'
+import { errorHandler, ParsingError } from '../../util'
 import { BranchRule } from '../rule'
 
 export class PackageLockRule extends BranchRule {
@@ -15,10 +15,14 @@ export class PackageLockRule extends BranchRule {
   }
 
   parsePackageLock (packageLockContent: string, fileName: string): PackageLockFile {
-    return {
-      fileName,
-      fileType: FileTypeEnum.PACKAGE_LOCK,
-      ...JSON.parse(packageLockContent)
+    try {
+      return {
+        fileName,
+        fileType: FileTypeEnum.PACKAGE_LOCK,
+        ...JSON.parse(packageLockContent)
+      }
+    } catch (error) {
+      throw new ParsingError((error as Error).message)
     }
   }
 }

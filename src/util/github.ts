@@ -86,7 +86,9 @@ function getRepoParser (): (repo: any) => Promise<Repo> {
         highPythonVersion: '??',
         followsDevPrdNamingScheme: false
       },
-      customProperties: customProps
+      customProperties: customProps,
+      size: repo.size,
+      empty: repo.size === 0
     }
   }
 }
