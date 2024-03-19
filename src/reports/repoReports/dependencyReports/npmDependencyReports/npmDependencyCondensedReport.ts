@@ -1,6 +1,7 @@
 import { DependencyCondensedReport } from '../dependencyCondensedReport'
 import { Dependency, RuleFile } from '../../../../types'
-import { errorHandler, logger } from '../../../../util'
+import { errorHandler } from '../../../../util'
+import { logger } from '../../../../util/logger'
 import getNPMDependencyPartsFromFile from './getNPMDependencyPartsFromFile'
 
 export class NPMDependencyCondensedReport extends DependencyCondensedReport {
