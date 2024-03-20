@@ -10,11 +10,11 @@ export function errorHandler (error: unknown, functionName: string, repoName: st
   const branchInfo = (branchName !== '') ? `, for branch: ${branchName}` : ''
   const fileInfo = (fileName !== '') ? `, for fileName: ${fileName}` : ''
 
-  const errorInfo = `Error in ${functionName}${repoInfo}${branchInfo}${fileInfo}, error: ${errorMessage}`
+  const errorInfo = ` in ${functionName}${repoInfo}${branchInfo}${fileInfo}, message: ${errorMessage}`
 
   if (error instanceof WarningError) {
-    logger.warn(errorInfo)
+    logger.warn('Problem' + errorInfo)
   } else {
-    logger.error(errorInfo)
+    logger.error('Problem' + errorInfo)
   }
 }

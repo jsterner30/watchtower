@@ -43,9 +43,9 @@ export class NPMDependencyCondensedReport extends DependencyCondensedReport {
       }
     } catch (error) {
       if ((error as Error).message.toLowerCase().includes('not found')) {
-        logger.warn(`Issue retrieving data from NPM registry api for package: ${name}, message: ${(error as Error).message}`)
+        logger.warn(`Problem retrieving data from NPM registry api for package: ${name}, message: ${(error as Error).message}`)
       } else {
-        logger.error(`Issue retrieving data from NPM registry api for package: ${name}, message: ${(error as Error).message}`)
+        logger.error(`Problem retrieving data from NPM registry api for package: ${name}, message: ${(error as Error).message}`)
       }
       return {
         dependencyName: name,
