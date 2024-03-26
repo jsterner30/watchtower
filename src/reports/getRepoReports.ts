@@ -15,6 +15,7 @@ import { NPMDependencyReport } from './repoReports/dependencyReports/npmDependen
 import { NPMDependencyCondensedReport } from './repoReports/dependencyReports/npmDependencyReports/npmDependencyCondensedReport'
 import { NodeBranchVersionReport } from './repoReports/versionReports/node/nodeBranchVersionReport'
 import { NodeRepoVersionReport } from './repoReports/versionReports/node/nodeRepoVersionReport'
+import { OpenAPIReport } from './repoReports/simpleReports/openAPIReport'
 import { PrimaryLanguageReport } from './repoReports/simpleReports/primaryLanguageReport'
 import { PublicAndInternalReport } from './repoReports/simpleReports/publicAndInternalReport'
 import { ReadmeReport } from './repoReports/simpleReports/readmeReport'
@@ -54,6 +55,7 @@ export interface RepoReports {
   npmDependencyCondensedReport: NPMDependencyCondensedReport
   nodeBranchVersionReport: NodeBranchVersionReport
   nodeRepoVersionReport: NodeRepoVersionReport
+  openAPIReport: OpenAPIReport
   pipDependencyReport: PIPDependencyReport
   pipDependencyCondensedReport: PIPDependencyCondensedReport
   primaryLanguageReport: PrimaryLanguageReport
@@ -92,6 +94,7 @@ export function getRepoReports (): RepoReports {
     npmDependencyReport: new NPMDependencyReport(3, 'NPMDependencyReport', 'Which repos use a given npm dependency.', '1 per npm dependency in the org', ReportType.DEPENDENCY),
     npmDependencyCondensedReport: new NPMDependencyCondensedReport(0, 'NPMDependencyCondensedReport', 'The condensed version of the NPMDependency dependency report', '1', ReportType.SIMPLE),
     nodeBranchVersionReport: new NodeBranchVersionReport(0, 'NodeVersionReport', 'Lowest and highest node versions on each branch in the org and the default branches of every repo in the org.', '2', ReportType.VERSION),
+    openAPIReport: new OpenAPIReport(0, 'OpenAPIReport', 'What repos have an OpenAPI file on their default branch', '1', ReportType.SIMPLE),
     pipDependencyReport: new PIPDependencyReport(3, 'PIPDependencyReport', 'Which repos use a given pip dependency.', '1 per pip dependency in the org', ReportType.DEPENDENCY),
     pipDependencyCondensedReport: new PIPDependencyCondensedReport(0, 'PIPDependencyCondensedReport', 'The condensed version of the PIPDependency report.', '1', ReportType.SIMPLE),
     nodeRepoVersionReport: new NodeRepoVersionReport(5, 'NodeVersionReport', 'Lowest and highest node versions on every repo in the org, considering every branch in the org.', '1', ReportType.VERSION),

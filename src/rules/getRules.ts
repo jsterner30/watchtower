@@ -7,6 +7,7 @@ import {
   GitignoreRule,
   GithubActionSourceFileRule,
   LicenseFileRule,
+  OpenAPIDocRule,
   PackageJsonRule,
   PackageLockRule,
   PIPRequirementsRule,
@@ -28,6 +29,7 @@ export interface BranchRules {
   githubActionFileRule: GithubActionSourceFileRule
   gitignoreRule: GitignoreRule
   licenseRule: LicenseFileRule
+  openAPIDocRule: OpenAPIDocRule
   packageJsonRule: PackageJsonRule
   packageLockRule: PackageLockRule
   pipRequirementsRule: PIPRequirementsRule
@@ -47,6 +49,7 @@ export function getBranchRules (): BranchRules {
     githubActionFileRule: new GithubActionSourceFileRule(),
     gitignoreRule: new GitignoreRule(),
     licenseRule: new LicenseFileRule(),
+    openAPIDocRule: new OpenAPIDocRule(),
     packageJsonRule: new PackageJsonRule(),
     packageLockRule: new PackageLockRule(),
     pipRequirementsRule: new PIPRequirementsRule(),

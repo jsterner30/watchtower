@@ -59,7 +59,8 @@ export enum FileTypeEnum {
   CODEOWNERS = 'CODEOWNERS',
   README = 'README',
   LICENSE = 'LICENSE',
-  BABEL_CONFIG_JS = 'BABEL_CONFIG_JS'
+  BABEL_CONFIG_JS = 'BABEL_CONFIG_JS',
+  OPEN_API = 'OPEN_API'
 }
 
 const FileTypeSchema = Type.Enum(FileTypeEnum)
@@ -136,6 +137,14 @@ export const GitignoreFileSchema = Type.Intersect([
 ])
 export type GitignoreFile = Static<typeof GitignoreFileSchema>
 export const validGitignoreFile = TypeCompiler.Compile(GitignoreFileSchema)
+
+export const OpenAPIFileSchema = Type.Intersect([
+  RuleFileSchema,
+  Type.Object({
+    contents: Type.Record(Type.String(), Type.Any()) // after we figure out if this is useful, parse more fully.
+  })
+])
+export type OpenAPIFile = Static<typeof OpenAPIFileSchema>
 
 const PIPDependencySchema = Type.Object({
   dependency: Type.String(),

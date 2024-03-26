@@ -232,7 +232,7 @@ export class Engine {
                 if (downloaded != null) {
                   for (const fileName of Object.keys(downloaded.files)) {
                     if (!downloaded.files[fileName].dir) { // only run rules on files, not dirs
-                      await this.runBranchRules(repo, downloaded, branchName, fileName)
+                      await this.runBranchRules(repo, downloaded, branchName, fileName.toLowerCase())
                     }
                   }
                   // these are rules that rely on the initial branch rules
