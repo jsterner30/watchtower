@@ -145,6 +145,7 @@ export const OpenAPIFileSchema = Type.Intersect([
   })
 ])
 export type OpenAPIFile = Static<typeof OpenAPIFileSchema>
+export const validOpenAPIFile = TypeCompiler.Compile(OpenAPIFileSchema)
 
 const PIPDependencySchema = Type.Object({
   dependency: Type.String(),

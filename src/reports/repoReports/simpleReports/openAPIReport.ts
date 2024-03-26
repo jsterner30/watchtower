@@ -1,4 +1,4 @@
-import { type Repo } from '../../../types'
+import { FileTypeEnum, type Repo, validOpenAPIFile } from '../../../types'
 import { HeaderTitles, ReportWriter } from '../../../util'
 import { Writers } from '../../report'
 import { RepoReport, RepoReportData } from '../repoReport'
@@ -15,10 +15,12 @@ interface OpenAPIReportWriter extends Writers<OpenAPIReportData> {
 export class OpenAPIReport extends RepoReport<OpenAPIReportData, OpenAPIReportWriter> {
   protected async runReport (repo: Repo, writers: Writers<OpenAPIReportData>): Promise<void> {
     for (const ruleFile of repo.branches[repo.defaultBranch].ruleFiles) {
-      writers.openAPIFileReport.addRow({
-        repoName: repo.name,
-        openAPIFilePath: ruleFile.fileName
-      })
+      if (validOpenAPIFile.Check(ruleFile) && ruleFile.fileType === FileTypeEnum.OPEN_API) {
+        writers.openAPIFileReport.addRow({
+          repoName: repo.name,
+          openAPIFilePath: ruleFile.fileName
+        })
+      }
     }
   }
 
