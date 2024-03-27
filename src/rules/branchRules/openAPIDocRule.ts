@@ -31,7 +31,7 @@ export class OpenAPIDocRule extends BranchRule {
         return {
           fileName,
           fileType: FileTypeEnum.OPEN_API,
-          contents: contentJSON
+          contents: {} // TODO: fix when memory is improved
         }
       }
       return null
