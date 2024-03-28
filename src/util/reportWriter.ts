@@ -50,7 +50,7 @@ export class ReportWriter<T extends Data> {
       logger.error(`The row input exactly matches another row already in the data for report file: ${this._fileName}, attempted to add row: ${stringifyJSON(row, 'rowData')}`)
     } else if (!this.inputMatchesHeader(row)) {
       logger.error(`The row input does not match the expected header for report: ${this._fileName}, input: ${JSON.stringify(row)}`)
-    } else if (((getEnv().filterReportExceptions && this._exceptions.length > 0 && (relevantException = this.testRowAgainstExceptionsRegex(row)) != null))) {
+    } else if (getEnv().filterReportExceptions && this._exceptions.length > 0 && ((relevantException = this.testRowAgainstExceptionsRegex(row)) != null)) {
       logger.warn(`Omitting row for fileName: ${this._fileName}, row: ${stringifyJSON(row, this._fileName + ' row')} based on the following exception: ${stringifyJSON(relevantException, 'relevantException')}`)
     } else {
       this._data.add(row)

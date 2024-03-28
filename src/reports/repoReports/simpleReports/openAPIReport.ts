@@ -26,7 +26,7 @@ export class OpenAPIReport extends RepoReport<OpenAPIReportData, OpenAPIReportWr
 
   protected getReportWriters (): OpenAPIReportWriter {
     return {
-      openAPIFileReport: new ReportWriter<OpenAPIReportData>(this.getHeaderTitles(), this._outputDir, this.name)
+      openAPIFileReport: new ReportWriter<OpenAPIReportData>(this.getHeaderTitles(), this._outputDir, this.name, this.getExceptions())
     }
   }
 
