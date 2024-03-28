@@ -1,5 +1,5 @@
 import { FileTypeEnum, type Repo, validOpenAPIFile } from '../../../types'
-import { HeaderTitles, ReportWriter } from '../../../util'
+import { anyStringRegex, Exception, HeaderTitles, ReportWriter } from '../../../util'
 import { Writers } from '../../report'
 import { RepoReport, RepoReportData } from '../repoReport'
 
@@ -35,6 +35,13 @@ export class OpenAPIReport extends RepoReport<OpenAPIReportData, OpenAPIReportWr
       repoName: 'Repo',
       openAPIFilePath: 'File Path of OpenAPI File on Default Branch'
     }
+  }
+
+  protected getExceptions (): Array<Exception<OpenAPIReportData>> {
+    return [{
+      repoName: /tyk-api-definitions/,
+      openAPIFilePath: anyStringRegex
+    }]
   }
 
   public get name (): string {
