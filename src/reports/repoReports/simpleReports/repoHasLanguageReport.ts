@@ -38,7 +38,7 @@ export class RepoHasLanguageReport extends RepoReport<RepoHasLanguageReportData,
   protected getReportWriters (): FileTypeWriters {
     const header = this.getHeaderTitles()
     return {
-      repoHasLanguageReportWriter: new ReportWriter<RepoHasLanguageReportData>(header, this._outputDir, this.name)
+      repoHasLanguageReportWriter: new ReportWriter<RepoHasLanguageReportData>(header, this._outputDir, this.name, this.getExceptions())
     }
   }
 

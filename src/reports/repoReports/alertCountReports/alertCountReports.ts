@@ -63,10 +63,10 @@ export abstract class AlertCountReport extends RepoReport<AlertCountReportData, 
   protected getReportWriters (): AlertCountReportWriters {
     const countReportHeaders = this.getHeaderTitles()
     return {
-      criticalCountWriter: new ReportWriter<AlertCountReportData>(countReportHeaders, this._outputDir, `${this.name}-Critical`),
-      highCountWriter: new ReportWriter<AlertCountReportData>(countReportHeaders, this._outputDir, `${this.name}-High`),
-      mediumCountWriter: new ReportWriter<AlertCountReportData>(countReportHeaders, this._outputDir, `${this.name}-Medium`),
-      lowCountWriter: new ReportWriter<AlertCountReportData>(countReportHeaders, this._outputDir, `${this.name}-Low`)
+      criticalCountWriter: new ReportWriter<AlertCountReportData>(countReportHeaders, this._outputDir, `${this.name}-Critical`, this.getExceptions()),
+      highCountWriter: new ReportWriter<AlertCountReportData>(countReportHeaders, this._outputDir, `${this.name}-High`, this.getExceptions()),
+      mediumCountWriter: new ReportWriter<AlertCountReportData>(countReportHeaders, this._outputDir, `${this.name}-Medium`, this.getExceptions()),
+      lowCountWriter: new ReportWriter<AlertCountReportData>(countReportHeaders, this._outputDir, `${this.name}-Low`, this.getExceptions())
     }
   }
 

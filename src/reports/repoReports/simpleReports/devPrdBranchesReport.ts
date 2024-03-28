@@ -43,7 +43,7 @@ export class DevPrdBranchesReport extends RepoReport<DevPrdBranchReportData, Dev
 
   protected getReportWriters (): DevPrdBranchReportWriters {
     return {
-      devPrdBranchesReportOutput: new ReportWriter<DevPrdBranchReportData>(this.getHeaderTitles(), this._outputDir, this.name)
+      devPrdBranchesReportOutput: new ReportWriter<DevPrdBranchReportData>(this.getHeaderTitles(), this._outputDir, this.name, this.getExceptions())
     }
   }
 

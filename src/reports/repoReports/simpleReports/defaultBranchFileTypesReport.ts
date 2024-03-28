@@ -45,7 +45,7 @@ export class DefaultBranchFileTypesReport extends RepoReport<FileTypesReportData
 
   protected getReportWriters (): FileTypeWriters {
     return {
-      defaultBranchFileTypesReport: new ReportWriter<FileTypesReportData>(this.getHeaderTitles(), this._outputDir, this.name)
+      defaultBranchFileTypesReport: new ReportWriter<FileTypesReportData>(this.getHeaderTitles(), this._outputDir, this.name, this.getExceptions())
     }
   }
 

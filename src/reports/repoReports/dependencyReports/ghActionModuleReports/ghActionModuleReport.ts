@@ -21,7 +21,7 @@ export class GHActionModuleReport extends DependencyReport<GHActionModuleReportD
           const moduleParts = getGhActionModulePartsFromFile(ruleFile)
           for (const module of moduleParts) {
             if (writers[module.name] == null) {
-              writers[module.name] = new ReportWriter<GHActionModuleReportData>(this.getHeaderTitles(), this._outputDir, module.name)
+              writers[module.name] = new ReportWriter<GHActionModuleReportData>(this.getHeaderTitles(), this._outputDir, module.name, this.getExceptions())
             }
 
             writers[module.name].addRow({

@@ -2,7 +2,7 @@ import {
   type Repo
 } from '../../../../types'
 import { errorHandler, HeaderTitles, ReportWriter } from '../../../../util'
-import { DependencyReport, DependencyInstanceReportWriters, DependencyReportData } from './../dependencyReport'
+import { DependencyReport, DependencyInstanceReportWriters, DependencyReportData } from '../dependencyReport'
 import getImagePartsFromFile from './getImagePartsFromFile'
 
 export interface DockerfileImageReportData extends DependencyReportData {
@@ -23,7 +23,7 @@ export class DockerfileImageReport extends DependencyReport<DockerfileImageRepor
           if (imageParts != null) {
             const { image, version, tag } = imageParts
             if (writers[image] == null) {
-              writers[image] = new ReportWriter<DockerfileImageReportData>(this.getHeaderTitles(), this._outputDir, image)
+              writers[image] = new ReportWriter<DockerfileImageReportData>(this.getHeaderTitles(), this._outputDir, image, this.getExceptions())
             }
 
             writers[image].addRow({

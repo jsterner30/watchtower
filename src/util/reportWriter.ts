@@ -24,7 +24,7 @@ export class ReportWriter<T extends Data> {
   private readonly _fileName: string
   private readonly _exceptions: Array<Exception<T>>
 
-  constructor (headerTitles: HeaderTitles<T>, outputDir: string, fileName: string, exceptions: Array<Exception<T>> = []) {
+  constructor (headerTitles: HeaderTitles<T>, outputDir: string, fileName: string, exceptions: Array<Exception<T>>) {
     this._headerTitles = headerTitles
     this._outputDir = outputDir
     this._fileName = fileName

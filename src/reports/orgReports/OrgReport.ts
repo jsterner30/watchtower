@@ -58,7 +58,7 @@ export class OrgReport extends Report<OrgReportData, OrgReportWriters, GithubOrg
 
   protected getReportWriters (): OrgReportWriters {
     return {
-      orgReportWriter: new ReportWriter<OrgReportData>(this.getHeaderTitles(), this._outputDir, 'OrganizationInfo')
+      orgReportWriter: new ReportWriter<OrgReportData>(this.getHeaderTitles(), this._outputDir, 'OrganizationInfo', this.getExceptions())
     }
   }
 

@@ -30,7 +30,7 @@ export class LowFileBranchReport extends RepoReport<LowFileBranchReportData, Low
 
   protected getReportWriters (): LowFileBranchReportWriters {
     return {
-      lowFileBranchReportWriter: new ReportWriter<LowFileBranchReportData>(this.getHeaderTitles(), this._outputDir, this.name)
+      lowFileBranchReportWriter: new ReportWriter<LowFileBranchReportData>(this.getHeaderTitles(), this._outputDir, this.name, this.getExceptions())
     }
   }
 

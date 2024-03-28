@@ -62,7 +62,7 @@ export class ReadmeReport extends RepoReport<ReadmeReportData, ReadmeReportWrite
 
   protected getReportWriters (): ReadmeReportWriters {
     return {
-      readmeReportWrite: new ReportWriter<ReadmeReportData>(this.getHeaderTitles(), this._outputDir, this.name)
+      readmeReportWrite: new ReportWriter<ReadmeReportData>(this.getHeaderTitles(), this._outputDir, this.name, this.getExceptions())
     }
   }
 

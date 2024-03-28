@@ -20,7 +20,7 @@ export class PIPDependencyReport extends DependencyReport<PIPDependencyReportDat
           const depParts = getPIPDependencyPartsFromFile(ruleFile)
           for (const dep of depParts) {
             if (writers[dep.name] == null) {
-              writers[dep.name] = new ReportWriter<PIPDependencyReportData>(this.getHeaderTitles(), this._outputDir, dep.name)
+              writers[dep.name] = new ReportWriter<PIPDependencyReportData>(this.getHeaderTitles(), this._outputDir, dep.name, this.getExceptions())
             }
             writers[dep.name].addRow({
               repoName: repo.name,

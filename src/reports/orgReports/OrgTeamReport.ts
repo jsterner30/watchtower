@@ -27,7 +27,7 @@ export class OrgTeamReport extends Report<OrgMemberReportData, OrgMemberReportWr
 
   protected getReportWriters (): OrgMemberReportWriters {
     return {
-      orgMemberReportWriter: new ReportWriter<OrgMemberReportData>(this.getHeaderTitles(), this._outputDir, 'OrganizationTeams')
+      orgMemberReportWriter: new ReportWriter<OrgMemberReportData>(this.getHeaderTitles(), this._outputDir, 'OrganizationTeams', this.getExceptions())
     }
   }
 

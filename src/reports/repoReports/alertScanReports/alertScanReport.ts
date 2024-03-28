@@ -17,10 +17,10 @@ export abstract class AlertScanReport<T extends RepoReportData> extends RepoRepo
   protected getReportWriters (): AlertReportWriters<T> {
     const alertReportHeader = this.getHeaderTitles()
     return {
-      criticalAlertWriter: new ReportWriter<T>(alertReportHeader, this._outputDir, `${this.name}-Critical`),
-      highAlertWriter: new ReportWriter<T>(alertReportHeader, this._outputDir, `${this.name}-High`),
-      mediumAlertWriter: new ReportWriter<T>(alertReportHeader, this._outputDir, `${this.name}-Medium`),
-      lowAlertWriter: new ReportWriter<T>(alertReportHeader, this._outputDir, `${this.name}-Low`)
+      criticalAlertWriter: new ReportWriter<T>(alertReportHeader, this._outputDir, `${this.name}-Critical`, this.getExceptions()),
+      highAlertWriter: new ReportWriter<T>(alertReportHeader, this._outputDir, `${this.name}-High`, this.getExceptions()),
+      mediumAlertWriter: new ReportWriter<T>(alertReportHeader, this._outputDir, `${this.name}-Medium`, this.getExceptions()),
+      lowAlertWriter: new ReportWriter<T>(alertReportHeader, this._outputDir, `${this.name}-Low`, this.getExceptions())
     }
   }
 

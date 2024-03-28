@@ -45,7 +45,7 @@ export class OverallHealthScoreReport extends RepoReport<OverallHealthScoreRepor
 
   protected getReportWriters (): OverallHealthScoreReportWriters {
     return {
-      overallHealthScoreReportWriter: new ReportWriter<OverallHealthScoreReportData>(this.getHeaderTitles(), this._outputDir, this.name)
+      overallHealthScoreReportWriter: new ReportWriter<OverallHealthScoreReportData>(this.getHeaderTitles(), this._outputDir, this.name, this.getExceptions())
     }
   }
 

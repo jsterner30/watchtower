@@ -18,7 +18,7 @@ export class TerraformModuleReport extends DependencyReport<TerraformModuleRepor
           const moduleParts = getTerraformModulePartsFromFile(ruleFile)
           for (const module of moduleParts) {
             if (writers[module.name] == null) {
-              writers[module.name] = new ReportWriter<TerraformModuleReportData>(this.getHeaderTitles(), this._outputDir, module.name)
+              writers[module.name] = new ReportWriter<TerraformModuleReportData>(this.getHeaderTitles(), this._outputDir, module.name, this.getExceptions())
             }
 
             writers[module.name].addRow({

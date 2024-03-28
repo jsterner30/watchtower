@@ -24,7 +24,7 @@ export class LicenseReport extends RepoReport<LicenseReportData, LicenseReportWr
 
   protected getReportWriters (): LicenseReportWriters {
     return {
-      licenseReportWriter: new ReportWriter<LicenseReportData>(this.getHeaderTitles(), this._outputDir, this.name)
+      licenseReportWriter: new ReportWriter<LicenseReportData>(this.getHeaderTitles(), this._outputDir, this.name, this.getExceptions())
     }
   }
 
