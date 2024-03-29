@@ -2,7 +2,7 @@ import {
   type Repo
 } from '../../../../types'
 import { errorHandler, HeaderTitles, ReportWriter } from '../../../../util'
-import { DependencyReport, DependencyInstanceReportWriters, DependencyReportData } from '../dependencyReport'
+import { DependencyReport, DependencyReportData } from '../dependencyReport'
 import getPIPDependencyPartsFromFile from './getPIPDependencyPartsFromFile'
 
 interface PIPDependencyReportData extends DependencyReportData {
@@ -13,16 +13,16 @@ interface PIPDependencyReportData extends DependencyReportData {
 }
 
 export class PIPDependencyReport extends DependencyReport<PIPDependencyReportData> {
-  protected async runReport (repo: Repo, writers: DependencyInstanceReportWriters<PIPDependencyReportData>): Promise<void> {
+  protected async runReport (repo: Repo): Promise<void> {
     for (const branchName in repo.branches) {
       try {
         for (const ruleFile of repo.branches[branchName].ruleFiles) {
           const depParts = getPIPDependencyPartsFromFile(ruleFile)
           for (const dep of depParts) {
-            if (writers[dep.name] == null) {
-              writers[dep.name] = new ReportWriter<PIPDependencyReportData>(this.getHeaderTitles(), this._outputDir, dep.name, this.getExceptions())
+            if (this._reportWriters[dep.name] == null) {
+              this._reportWriters[dep.name] = new ReportWriter<PIPDependencyReportData>(this.getHeaderTitles(), this._outputDir, dep.name, this.getExceptions())
             }
-            writers[dep.name].addRow({
+            this._reportWriters[dep.name].addRow({
               repoName: repo.name,
               branchName,
               version: dep.version,

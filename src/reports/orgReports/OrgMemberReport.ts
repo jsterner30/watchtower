@@ -8,8 +8,8 @@ export interface OrgMemberReportWriters extends Writers<OrgMemberReportData> {
 }
 
 export class OrgMemberReport extends Report<OrgMemberReportData, OrgMemberReportWriters, GithubMember> {
-  protected async runReport (item: GithubMember, writers: OrgMemberReportWriters): Promise<void> {
-    writers.orgMemberReportWriter.addRow(item)
+  protected async runReport (item: GithubMember): Promise<void> {
+    this._reportWriters.orgMemberReportWriter.addRow(item)
   }
 
   protected getHeaderTitles (): HeaderTitles<OrgMemberReportData> {

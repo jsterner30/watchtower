@@ -3,7 +3,7 @@ import type {
   SecretScanAlert
 } from '../../../types'
 import { HeaderTitles } from '../../../util'
-import { AlertScanReport, AlertReportWriters } from './alertScanReport'
+import { AlertScanReport } from './alertScanReport'
 import { RepoReportData } from '../repoReport'
 
 interface SecretAlertsReportData extends RepoReportData {
@@ -15,8 +15,8 @@ interface SecretAlertsReportData extends RepoReportData {
 }
 
 export class SecretScanAlertReport extends AlertScanReport<SecretAlertsReportData> {
-  protected async runReport (repo: Repo, writers: AlertReportWriters<SecretAlertsReportData>): Promise<void> {
-    writers.criticalAlertWriter.addRows(this.getData(repo.secretScanAlerts?.critical, repo.name))
+  protected async runReport (repo: Repo): Promise<void> {
+    this._reportWriters.criticalAlertWriter.addRows(this.getData(repo.secretScanAlerts?.critical, repo.name))
   }
 
   protected getHeaderTitles (): HeaderTitles<SecretAlertsReportData> {

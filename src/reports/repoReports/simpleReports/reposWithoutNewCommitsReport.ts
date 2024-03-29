@@ -18,11 +18,11 @@ export interface ReposWithoutNewCommitsWriters extends Writers<ReposWithoutNewCo
 }
 
 export class ReposWithoutNewCommitsReport extends RepoReport<ReposWithoutNewCommitsReportData, ReposWithoutNewCommitsWriters> {
-  protected async runReport (repo: Repo, writers: ReposWithoutNewCommitsWriters): Promise<void> {
+  protected async runReport (repo: Repo): Promise<void> {
     const currentDate = new Date()
     const twoYearsAgo = new Date(new Date().setDate(currentDate.getDate() - 731)) // two years ago
     if (new Date(repo.lastCommit.date) < twoYearsAgo) {
-      writers.reposWithoutNewCommitsWriter.addRow({
+      this._reportWriters.reposWithoutNewCommitsWriter.addRow({
         repoName: repo.name,
         lastCommitDate: repo.lastCommit.date,
         lastCommitUser: repo.lastCommit.author

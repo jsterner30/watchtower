@@ -3,7 +3,7 @@
 // The data can be gathered from an API call, by scanning the downloaded zip file of a branch, or by other means.
 // This data is then written to a JSON file to act as a cache.
 import JSZip from 'jszip'
-import { CacheFile, Repo } from '../types'
+import { Repo } from '../types'
 
 export abstract class Rule {
   abstract run (...args: any[]): Promise<void>
@@ -31,5 +31,5 @@ export abstract class RepoRule extends Rule {
 //  An OrgRule makes a single API call to the whole org, then maps the data to a repo.
 //  This saves us hundreds of API calls.
 export abstract class OrgRule extends Rule {
-  abstract run (cacheFile: CacheFile): Promise<void>
+  abstract run (repos: Record<string, Repo>): Promise<void>
 }

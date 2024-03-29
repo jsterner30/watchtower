@@ -2,7 +2,7 @@ import {
   type Repo
 } from '../../../../types'
 import { errorHandler, HeaderTitles, ReportWriter } from '../../../../util'
-import { DependencyReport, DependencyInstanceReportWriters, DependencyReportData } from '../dependencyReport'
+import { DependencyReport, DependencyReportData } from '../dependencyReport'
 import getImagePartsFromFile from './getImagePartsFromFile'
 
 export interface DockerfileImageReportData extends DependencyReportData {
@@ -15,18 +15,18 @@ export interface DockerfileImageReportData extends DependencyReportData {
 }
 
 export class DockerfileImageReport extends DependencyReport<DockerfileImageReportData> {
-  protected async runReport (repo: Repo, writers: DependencyInstanceReportWriters<DockerfileImageReportData>): Promise<void> {
+  protected async runReport (repo: Repo): Promise<void> {
     for (const branchName in repo.branches) {
       try {
         for (const ruleFile of repo.branches[branchName].ruleFiles) {
           const imageParts = getImagePartsFromFile(ruleFile)
           if (imageParts != null) {
             const { image, version, tag } = imageParts
-            if (writers[image] == null) {
-              writers[image] = new ReportWriter<DockerfileImageReportData>(this.getHeaderTitles(), this._outputDir, image, this.getExceptions())
+            if (this._reportWriters[image] == null) {
+              this._reportWriters[image] = new ReportWriter<DockerfileImageReportData>(this.getHeaderTitles(), this._outputDir, image, this.getExceptions())
             }
 
-            writers[image].addRow({
+            this._reportWriters[image].addRow({
               repoName: repo.name,
               branchName,
               image,

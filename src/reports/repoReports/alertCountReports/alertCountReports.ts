@@ -22,7 +22,7 @@ export interface AlertCountReportWriters extends Writers<AlertCountReportData> {
 }
 
 export abstract class AlertCountReport extends RepoReport<AlertCountReportData, AlertCountReportWriters> {
-  protected abstract runReport (repo: Repo, writers: AlertCountReportWriters): Promise<void>
+  protected abstract runReport (repo: Repo): Promise<void>
 
   protected async grade (input: ScanAlertBySeverityLevel): Promise<HealthScore> {
     const criticalScore: number = input.critical.length * 4

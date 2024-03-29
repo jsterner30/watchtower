@@ -20,7 +20,7 @@ interface ReadmeReportWriters extends Writers<ReadmeReportData> {
 }
 
 export class ReadmeReport extends RepoReport<ReadmeReportData, ReadmeReportWriters> {
-  protected async runReport (repo: Repo, writers: ReadmeReportWriters): Promise<void> {
+  protected async runReport (repo: Repo): Promise<void> {
     let hasReadme = false
     let hasTitleTemp = false
     let numMissingSections: number = Math.max(appSections.length, libSections.length)
@@ -41,7 +41,7 @@ export class ReadmeReport extends RepoReport<ReadmeReportData, ReadmeReportWrite
       }
     }
 
-    writers.readmeReportWrite.addRow({
+    this._reportWriters.readmeReportWrite.addRow({
       repoName: repo.name,
       hasReadme,
       hasTitle: hasTitleTemp,

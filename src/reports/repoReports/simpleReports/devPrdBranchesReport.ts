@@ -17,7 +17,7 @@ interface DevPrdBranchReportWriters extends Writers<DevPrdBranchReportData> {
 }
 
 export class DevPrdBranchesReport extends RepoReport<DevPrdBranchReportData, DevPrdBranchReportWriters> {
-  protected async runReport (repo: Repo, writers: Writers<DevPrdBranchReportData>): Promise<void> {
+  protected async runReport (repo: Repo): Promise<void> {
     let hasDev = false
     let hasPrd = false
     for (const branchName in repo.branches) {
@@ -32,7 +32,7 @@ export class DevPrdBranchesReport extends RepoReport<DevPrdBranchReportData, Dev
       }
     }
 
-    writers.devPrdBranchesReportOutput.addRow({
+    this._reportWriters.devPrdBranchesReportOutput.addRow({
       repoName: repo.name,
       hasDev,
       hasPrd,

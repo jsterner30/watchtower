@@ -39,7 +39,7 @@ export abstract class BranchVersionReport extends VersionReport<BranchVersionRep
     }
   }
 
-  protected async runReport (repo: Repo, writers: BranchVersionReportWriters): Promise<void> {
+  protected async runReport (repo: Repo): Promise<void> {
     const allBranchVersionExtremes = this.versionUtils.getBranchLowAndHighVersions(repo)
     if (Object.keys(allBranchVersionExtremes).length === 0) {
       return
@@ -48,7 +48,7 @@ export abstract class BranchVersionReport extends VersionReport<BranchVersionRep
     for (const branchName in allBranchVersionExtremes) {
       const branchExtremes = allBranchVersionExtremes[branchName]
       if (branchName === repo.defaultBranch) {
-        writers.defaultBranchVersionReportWriter.addRow({
+        this._reportWriters.defaultBranchVersionReportWriter.addRow({
           repoName: repo.name,
           branchName,
           lowestVersion: branchExtremes.lowestVersion,
@@ -57,7 +57,7 @@ export abstract class BranchVersionReport extends VersionReport<BranchVersionRep
           highestVersionPath: branchExtremes.highestVersionPath
         })
       }
-      writers.allBranchesVersionReportWriter.addRow({
+      this._reportWriters.allBranchesVersionReportWriter.addRow({
         repoName: repo.name,
         branchName,
         lowestVersion: branchExtremes.lowestVersion,

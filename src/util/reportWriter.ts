@@ -5,6 +5,7 @@ import { createObjectCsvStringifier } from 'csv-writer'
 import { logger } from './logger'
 import { getEnv } from './env'
 import { Set as ImmutableSet } from 'immutable'
+import { WriteableRegExp } from './writable'
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface Data {}
@@ -13,7 +14,10 @@ export type HeaderTitles<T extends Data> = {
   [P in keyof T]: string
 }
 export type Exception<T extends Data> = {
-  [P in keyof T]: RegExp
+  [P in keyof T]: WriteableRegExp
+}
+export type Query<T extends Data> = {
+  [P in keyof T]: WriteableRegExp
 }
 
 export class ReportWriter<T extends Data> {
@@ -49,7 +53,7 @@ export class ReportWriter<T extends Data> {
     if (this._data.has(row)) {
       logger.error(`The row input exactly matches another row already in the data for report file: ${this._fileName}, attempted to add row: ${stringifyJSON(row, 'rowData')}`)
     } else if (!this.inputMatchesHeader(row)) {
-      logger.error(`The row input does not match the expected header for report: ${this._fileName}, input: ${JSON.stringify(row)}`)
+      logger.error(`The row input does not match the expected header for report: ${this._fileName}, input: ${stringifyJSON(row, 'regex exception')}`)
     } else if (getEnv().filterReportExceptions && this._exceptions.length > 0 && ((relevantException = this.testRowAgainstExceptionsRegex(row)) != null)) {
       logger.warn(`Omitting row for fileName: ${this._fileName}, row: ${stringifyJSON(row, this._fileName + ' row')} based on the following exception: ${stringifyJSON(relevantException, 'relevantException')}`)
     } else {
@@ -57,20 +61,34 @@ export class ReportWriter<T extends Data> {
     }
   }
 
-  private testRowAgainstExceptionsRegex (row: T): Exception<T> | null {
-    for (const exception of this._exceptions) {
-      let match = true
-      for (const key in row) {
-        // eslint-disable-next-line @typescript-eslint/no-base-to-string
-        const value = (row[key] as Object).toString() // Convert value to string
-        if (key in exception) {
-          const regexPattern = exception[key]
-          if (!regexPattern.test(value)) {
-            match = false
-          }
+  getRows (query: Query<T>): T[] {
+    const rows: T[] = []
+    for (const row of this._data) {
+      if (this.matchQueryException(query, row)) {
+        rows.push(row)
+      }
+    }
+    return rows
+  }
+
+  private matchQueryException (queryOrException: Query<T> | Exception<T>, row: T): boolean {
+    let match = true
+    for (const key in row) {
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
+      const value = (row[key] as Object).toString() // Convert value to string
+      if (key in queryOrException) {
+        const regexPattern = queryOrException[key]
+        if (!regexPattern.test(value)) {
+          match = false
         }
       }
-      if (match) {
+    }
+    return match
+  }
+
+  private testRowAgainstExceptionsRegex (row: T): Exception<T> | null {
+    for (const exception of this._exceptions) {
+      if (this.matchQueryException(exception, row)) {
         return exception
       }
     }
@@ -81,7 +99,7 @@ export class ReportWriter<T extends Data> {
     if (this._data.size === 0) {
       logger.warn(`No data found for report file: ${this._fileName} skipping the writing of that report`)
     } else {
-      await writer.writeFile('reports', 'json', `${this._outputDir}/${this._fileName}.json`, stringifyJSON(this.convertToCorrectJsonOutput(), this._fileName))
+      await writer.writeFile('reports', 'json', `${this._outputDir}/${this._fileName}.json`, stringifyJSON(this.convertToJson(), this._fileName))
       await writer.writeFile('reports', 'csv', `${this._outputDir}/${this._fileName}.csv`, this.convertToCSV())
     }
   }
@@ -101,7 +119,7 @@ export class ReportWriter<T extends Data> {
     }
   }
 
-  private convertToCorrectJsonOutput (): ReportJSONOutput {
+  private convertToJson (): ReportJSONOutput {
     return {
       header: this._headers,
       report: this.data

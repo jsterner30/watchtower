@@ -5,6 +5,7 @@ import type {
 import { BranchVersionReport, BranchVersionReportData } from '../branchVersionReport'
 import { NodeVersionUtils } from './nodeVersionUtils'
 import { anyStringRegex, Exception } from '../../../../util'
+import { WriteableRegExp } from '../../../../util/writable'
 
 export class NodeBranchVersionReport extends BranchVersionReport {
   protected versionUtils = new NodeVersionUtils()
@@ -21,9 +22,9 @@ export class NodeBranchVersionReport extends BranchVersionReport {
   protected getExceptions (): Array<Exception<BranchVersionReportData>> {
     return [
       {
-        repoName: /.*github-action.*/,
-        branchName: /v1/,
-        lowestVersion: /^12.*/,
+        repoName: new WriteableRegExp(/.*github-action.*/),
+        branchName: new WriteableRegExp(/v1/),
+        lowestVersion: new WriteableRegExp(/^12.*/),
         lowestVersionPath: anyStringRegex,
         highestVersion: anyStringRegex,
         highestVersionPath: anyStringRegex

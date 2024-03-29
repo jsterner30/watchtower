@@ -1,114 +1,78 @@
 import { Writer } from './writer'
-import { CacheFile, Repo, validRepo, validCacheFile } from '../types'
+import { Repo, validRepo } from '../types'
 import { logger } from './logger'
-import { errorHandler } from './error'
 import { stringifyJSON } from './util'
-import { allReposCacheFileName, date1970, filteredWithBranchesCacheFileName, lastRunDateFileName } from './constants'
-
-export interface CacheInfo {
-  lastRunDate: string
-  allRepos: CacheFile | null
-  filteredWithBranches: CacheFile | null
-  repos: Repo[]
-}
 
 export class Cache {
   private readonly _writer: Writer
-  private readonly _useCache: boolean
-  private readonly _cache: CacheInfo
+  private _repoList: string[] | null
 
-  constructor (writer: Writer, useCache: boolean) {
+  constructor (writer: Writer) {
     this._writer = writer
-    this._useCache = useCache
-    this._cache = {
-      lastRunDate: date1970,
-      allRepos: null,
-      filteredWithBranches: null,
-      repos: []
+    this._repoList = []
+  }
+
+  async setup (): Promise<void> {
+    await this.initRepoList()
+  }
+
+  get repoList (): string[] {
+    if (this._repoList == null) {
+      throw new Error('Cache repoList has not been initialized. Run cache.setup()')
     }
+    return this._repoList
   }
 
-  async update (): Promise<void> {
-    try {
-      if (this._useCache) {
-        this._cache.lastRunDate = await this.getLastRunDate()
-        this._cache.allRepos = await this.getCacheFile(allReposCacheFileName)
-        this._cache.filteredWithBranches = await this.getCacheFile(filteredWithBranchesCacheFileName)
-      }
-      // these get updated no matter what so that we can use them after running all the rules
-      this._cache.repos = await this.getRepoInfoCacheFiles('repos')
-    } catch (e: any) {
-      logger.error(`Error parsing setting up cache (this error is not fatal), error: ${e as string}`)
+  private async initRepoList (): Promise<void> {
+    this._repoList = []
+    const repoFilesName = await this._writer.listAllFilesInDirectory('cache', 'json', 'repos')
+    for (const repoFileName of repoFilesName) {
+      this._repoList.push(repoFileName.split('.json')[0])
     }
+
+    this._repoList.sort()
   }
 
-  get cache (): CacheInfo {
-    return this._cache
-  }
-
-  async getLastRunDate (): Promise<string> {
-    const dateString = await this._writer.readFile('cache', 'json', lastRunDateFileName)
-    const date = dateString == null ? null : JSON.parse(dateString)
-
-    if (date == null) {
-      const date = { lastRunDate: date1970 }
-      await this._writer.writeFile('cache', 'json', lastRunDateFileName, stringifyJSON(date, lastRunDateFileName))
-      return date.lastRunDate
-    }
-    return date.lastRunDate
-  }
-
-  async setLastRunDate (currentDate: Date): Promise<void> {
-    try {
-      const fourHoursAgo = new Date(currentDate.setHours(currentDate.getHours() - 4))
-      await this._writer.writeFile('cache', 'json', lastRunDateFileName, stringifyJSON({ lastRunDate: fourHoursAgo.toISOString() }, lastRunDateFileName))
-    } catch (error) {
-      errorHandler(error, this.setLastRunDate.name)
-    }
-  }
-
-  async getCacheFile (fileName: string): Promise<CacheFile | null> {
-    try {
-      const fileString = await this._writer.readFile('cache', 'json', fileName)
-      if (fileString != null) {
-        const file = JSON.parse(fileString)
-        if (validCacheFile.Check(file)) {
-          return file
+  async getRepo (repoName: string): Promise<Repo | null> {
+    const repoInfoFile = `${repoName}.json`
+    const repoString = await this._writer.readFile('cache', 'json', `repos/${repoInfoFile}`)
+    if (repoString != null) {
+      try {
+        const repoInfo = JSON.parse(repoString)
+        if (validRepo.Check(repoInfo)) {
+          return repoInfo
+        } else {
+          logger.error(`Invalid RepoInfo found for ${repoInfoFile}`)
+          return null
         }
-        logger.error(`Invalid CacheFile found for ${fileName}.json`)
-      }
-      return null
-    } catch (e: any) {
-      logger.error(`Error parsing CacheFile: ${fileName}, error: ${e as string}`)
-      return null
-    }
-  }
-
-  async getRepoInfoCacheFiles (directoryName: string): Promise<Repo[]> {
-    const repoInfoCacheFiles = await this._writer.readAllFilesInDirectory('cache', 'json', directoryName)
-    const repos: Repo[] = []
-    if (repoInfoCacheFiles != null) {
-      for (const repoInfoFile in repoInfoCacheFiles) {
-        const repoInfoString = repoInfoCacheFiles[repoInfoFile]
-        if (repoInfoString != null) {
-          try {
-            const repoInfo = JSON.parse(repoInfoString)
-            if (validRepo.Check(repoInfo)) {
-              repos.push(repoInfo)
-            } else {
-              logger.error(`Invalid RepoInfo found for ${repoInfoFile}`)
-            }
-          } catch (e: any) {
-            logger.error(`Error parsing RepoInfo file: ${repoInfoFile}, error: ${e as string}`)
-          }
-        }
+      } catch (error) {
+        logger.error(`Error parsing RepoInfo file: ${repoInfoFile}, error: ${(error as Error).message}`)
+        return null
       }
     }
-    return repos
+    return null
   }
 
-  async writeFileToCache (filePath: string, body: CacheFile | Repo): Promise<void> {
-    logger.info(`Writing file to cache: ${filePath}`)
-    await this._writer.writeFile('cache', 'json', filePath, stringifyJSON(body, filePath))
+  async writeReposToCache (repos: Record<string, Repo>): Promise<void> {
+    // get rid of the current cache repos
+    await this.deleteAllFilesInCache()
+    for (const repo of Object.values(repos)) {
+      await this.writeRepoToCache(repo)
+    }
+    await this.initRepoList()
+  }
+
+  async deleteAllFilesInCache (): Promise<void> {
+    await this._writer.deleteAllFilesInDirectory('cache', 'json', '')
+  }
+
+  async writeFileToCache (dataType: string, filePath: string, body: string): Promise<void> {
+    await this._writer.writeFile('cache', dataType, filePath, body)
+  }
+
+  async writeRepoToCache (repo: Repo): Promise<void> {
+    const filePath = `repos/${repo.name}.json`
+    logger.info(`Writing file to cache: ${repo.name}`)
+    await this._writer.writeFile('cache', 'json', filePath, stringifyJSON(repo, filePath))
   }
 }

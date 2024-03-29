@@ -16,7 +16,7 @@ interface LowFileRepoReportWriters extends Writers<LowFileRepoReportData> {
 }
 
 export class LowFileRepoReport extends RepoReport<LowFileRepoReportData, LowFileRepoReportWriters> {
-  protected async runReport (repo: Repo, writers: LowFileRepoReportWriters): Promise<void> {
+  protected async runReport (repo: Repo): Promise<void> {
     let someBranchHasFiles = false
     for (const branchName in repo.branches) {
       if (repo.branches[branchName].fileCount > 5 && !repo.branches[branchName].dependabot) {
@@ -24,7 +24,7 @@ export class LowFileRepoReport extends RepoReport<LowFileRepoReportData, LowFile
       }
     }
     if (!someBranchHasFiles && Object.keys(repo.branches).length !== 0) {
-      writers.lowFileRepoReportWriter.addRow({
+      this._reportWriters.lowFileRepoReportWriter.addRow({
         repoName: repo.name,
         fileCount: repo.branches[repo.defaultBranch].fileCount
       })

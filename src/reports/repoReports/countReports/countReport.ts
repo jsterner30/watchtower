@@ -53,5 +53,5 @@ export abstract class CountReport extends RepoReport<CountReportData, CountRepor
   }
 
   abstract get name (): string
-  protected abstract runReport (repo: Repo, writers: CountReportWriters): Promise<void>
+  protected abstract runReport (repo: Repo): Promise<void>
 }

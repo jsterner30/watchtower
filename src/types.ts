@@ -570,17 +570,6 @@ export interface OctokitOptions {
   affiliation?: string
 }
 
-export const CacheFileSchema = Type.Object({
-  metadata: Type.Object({
-    repoCount: Type.Number(),
-    branchCount: Type.Number(),
-    lastRunDate: Type.String()
-  }),
-  info: Type.Record(Type.String(), RepoSchema)
-})
-export type CacheFile = Static<typeof CacheFileSchema>
-export const validCacheFile = TypeCompiler.Compile(CacheFileSchema)
-
 export interface Dependency {
   dependencyName: string
   dependencyEnvironment: string

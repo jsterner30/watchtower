@@ -4,17 +4,18 @@ import {
 import { HeaderTitles, ReportWriter } from '../../../util'
 import { Writers } from '../../report'
 import { RepoReport, RepoReportData } from '../repoReport'
+import { WriteableMap } from '../../../util/writable'
 
-interface FileTypesReportData extends RepoReportData {
+interface DefaultBranchFileTypesReportData extends RepoReportData {
   repoName: string
-  percentageList: string
+  percentageList: WriteableMap<number>
 }
-interface FileTypeWriters extends Writers<FileTypesReportData> {
-  defaultBranchFileTypesReport: ReportWriter<FileTypesReportData>
+interface DefaultBranchFileTypeWriters extends Writers<DefaultBranchFileTypesReportData> {
+  defaultBranchFileTypesReport: ReportWriter<DefaultBranchFileTypesReportData>
 }
 
-export class DefaultBranchFileTypesReport extends RepoReport<FileTypesReportData, FileTypeWriters> {
-  protected async runReport (repo: Repo, writers: FileTypeWriters): Promise<void> {
+export class DefaultBranchFileTypesReport extends RepoReport<DefaultBranchFileTypesReportData, DefaultBranchFileTypeWriters> {
+  protected async runReport (repo: Repo): Promise<void> {
     for (const branchName in repo.branches) {
       if (repo.branches[branchName].defaultBranch) {
         const fileTypes = repo.branches[branchName].fileTypes
@@ -22,30 +23,29 @@ export class DefaultBranchFileTypesReport extends RepoReport<FileTypesReportData
         // Calculate total files
         const totalFiles = Object.values(fileTypes).reduce((acc, count) => acc + count, 0)
 
-        // Create CSV-formatted string from percentage JSON
-        const csvString = Object.entries(fileTypes)
-          .map(([extension, count]) => `${extension}:${count / totalFiles}`)
-          .join(',')
+        const map = new WriteableMap<number>()
+        for (const fileType in fileTypes) {
+          map.set(fileType, fileTypes[fileType] / totalFiles)
+        }
 
-        // Create a report row
-        writers.defaultBranchFileTypesReport.addRow({
+        this._reportWriters.defaultBranchFileTypesReport.addRow({
           repoName: repo.name,
-          percentageList: csvString
+          percentageList: map
         })
       }
     }
   }
 
-  protected getHeaderTitles (): HeaderTitles<FileTypesReportData> {
+  protected getHeaderTitles (): HeaderTitles<DefaultBranchFileTypesReportData> {
     return {
       repoName: 'Repo',
       percentageList: 'Percentage List'
     }
   }
 
-  protected getReportWriters (): FileTypeWriters {
+  protected getReportWriters (): DefaultBranchFileTypeWriters {
     return {
-      defaultBranchFileTypesReport: new ReportWriter<FileTypesReportData>(this.getHeaderTitles(), this._outputDir, this.name, this.getExceptions())
+      defaultBranchFileTypesReport: new ReportWriter<DefaultBranchFileTypesReportData>(this.getHeaderTitles(), this._outputDir, this.name, this.getExceptions())
     }
   }
 

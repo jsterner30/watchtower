@@ -1,12 +1,11 @@
 import { errorHandler, getOpenOrgCodeScanAlerts } from '../../util'
-import type { CacheFile } from '../../types'
 import { OrgRule } from '../rule'
+import { Repo } from '../../types'
 
 export class CodeScanAlertsRule extends OrgRule {
-  async run (cacheFile: CacheFile): Promise<void> {
+  async run (repos: Record<string, Repo>): Promise<void> {
     try {
       const alerts = await getOpenOrgCodeScanAlerts()
-      const repos = cacheFile.info
       for (const alert of alerts) {
         if (repos[alert.repoName] != null) {
           const securitySeverity = alert.rule.securitySeverityLevel

@@ -20,13 +20,12 @@ export class FileTypesRules extends BranchRule {
     }
   }
 
-  getFileTypeFromPath (fileName: string): string | null {
+  getFileTypeFromPath (filePath: string): string | null {
     try {
       let fileType: string | null = null
-      const extensions = fileName.split('.').filter(Boolean)
-      if (extensions.length === 1) { // this is a filetype with no extension like Dockerfile
-        fileType = (extensions[0].split('/')).pop() ?? null
-      } else {
+      const fileName = filePath.split('/').pop()
+      if (fileName != null) {
+        const extensions = fileName.split('.').filter(Boolean)
         fileType = extensions[extensions.length - 1]
       }
       return fileType

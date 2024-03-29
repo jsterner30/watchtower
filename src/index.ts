@@ -4,13 +4,24 @@ import { Engine } from './engine'
 async function run (): Promise<void> {
   await initializeEnv()
   const env = getEnv()
-  let writer: Writer = new S3Writer(env.bucketName)
-  if (env.writeFilesLocally) {
-    writer = new LocalWriter()
+  let reportWriter: Writer = new S3Writer(env.bucketName)
+  let cacheWriter: Writer = new S3Writer(env.bucketName)
+  if (env.writeReportsLocally) {
+    reportWriter = new LocalWriter()
   }
-  const cache = new Cache(writer, env.useCache)
-  const engine = new Engine(env, cache, writer)
-  await engine.run()
+  if (env.writeCacheLocally) {
+    cacheWriter = new LocalWriter()
+  }
+
+  const cache = new Cache(cacheWriter)
+  await cache.setup()
+  const engine = new Engine(cache, reportWriter)
+
+  if (getEnv().useCache) {
+    await engine.runWithCache()
+  } else {
+    await engine.run()
+  }
 }
 
 void run()
