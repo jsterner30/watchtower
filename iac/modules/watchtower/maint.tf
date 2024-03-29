@@ -43,14 +43,15 @@ module "watchtower" {
     name  = local.app_name
     image = "${data.aws_ecr_repository.api_repo.repository_url}:${var.image_tag}"
     environment_variables = {
-      AWS_REGION            = "us-west-2"
-      BUCKET_NAME           = aws_s3_bucket.my_s3_bucket.bucket
-      GITHUB_ORG            = "byu-oit"
-      SHOW_PROGRESS         = "false"
-      STALE_DAYS_THRESHOLD  = 30
-      USE_CACHE             = "false"
-      WRITE_CACHE_LOCALLY   = var.write_cache_locally
-      WRITE_REPORTS_LOCALLY = "false"
+      AWS_REGION               = "us-west-2"
+      BUCKET_NAME              = aws_s3_bucket.my_s3_bucket.bucket
+      GITHUB_ORG               = "byu-oit"
+      SHOW_PROGRESS            = "false"
+      STALE_DAYS_THRESHOLD     = 30
+      USE_CACHE                = "false"
+      WRITE_CACHE_LOCALLY      = var.write_cache_locally
+      WRITE_REPORTS_LOCALLY    = "false"
+      FILTER_REPORT_EXCEPTIONS = "true"
     }
     secrets = {
       GITHUB_TOKEN = "${local.parameter_store_prefix}/GITHUB_TOKEN"
