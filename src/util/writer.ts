@@ -29,6 +29,8 @@ export abstract class Writer {
   abstract readFile (fileUsage: string, dataType: string, filePath: string): Promise<string | null>
   abstract readAllFilesInDirectory (fileUsage: string, dataType: string, directoryPath: string): Promise<Record<string, string | null> | null>
   abstract deleteAllFilesInDirectory (fileUsage: string, dataType: string, directoryPath: string): Promise<void>
+  abstract listAllFilesInDirectory (fileUsage: string, dataType: string, directoryPath: string): Promise<string[]>
+  abstract getFullDirectoryPath (fileUsage: string, dataType: string, directoryPath: string): string
 
   ensureDataTypeMatchesFileType (dataType: string, filePath: string): boolean {
     const fileType = path.extname(filePath).slice(1)
@@ -74,7 +76,8 @@ export class LocalWriter extends Writer {
 
   async readAllFilesInDirectory (fileUsage: string, dataType: string, directoryPath: string): Promise<Record<string, string | null> | null> {
     try {
-      const files = await this.fileSystemWrapper.readdir(path.resolve('data', fileUsage, dataType, directoryPath))
+      const fullPath = this.getFullDirectoryPath(fileUsage, dataType, directoryPath)
+      const files = await this.listAllFilesInDirectory(fullPath)
       const fileObject: Record<string, string | null> = {}
       for (const file of files) {
         const fileContents = await this.readFile(fileUsage, dataType, path.join(directoryPath, file))
@@ -91,10 +94,10 @@ export class LocalWriter extends Writer {
 
   async deleteAllFilesInDirectory (fileUsage: string, dataType: string, directoryPath: string): Promise<void> {
     try {
-      const directoryFullPath = path.resolve('data', fileUsage, dataType, directoryPath)
+      const fullPath = this.getFullDirectoryPath(fileUsage, dataType, directoryPath)
       // Remove the directory and its contents
-      await this.fileSystemWrapper.rm(directoryFullPath)
-      logger.info(`Successfully deleted the directory and its contents: ${directoryFullPath}`)
+      await this.fileSystemWrapper.rm(fullPath)
+      logger.info(`Successfully deleted the directory and its contents: ${fullPath}`)
     } catch (error: any) {
       logger.error(`Error deleting directory and its contents: ${(error as Error).message}`)
     }
@@ -109,6 +112,20 @@ export class LocalWriter extends Writer {
       // If not, create the directory recursively
       await this.fileSystemWrapper.mkdir(dirPath)
     }
+  }
+
+  async listAllFilesInDirectory (fileUsage: string, dataType: string = '', directoryPath: string = ''): Promise<string[]> {
+    try {
+      const fullPath = this.getFullDirectoryPath(fileUsage, dataType, directoryPath)
+      return await this.fileSystemWrapper.readdir(fullPath)
+    } catch (error) {
+      logger.error(`Issue listing all files in directory: ${this.getFullDirectoryPath(fileUsage, dataType, directoryPath)}, ${(error as Error).message}`)
+      return []
+    }
+  }
+
+  getFullDirectoryPath (fileUsage: string, dataType: string = '', directoryPath: string = ''): string {
+    return path.resolve('data', fileUsage, dataType, directoryPath)
   }
 }
 
@@ -127,38 +144,44 @@ export class S3Writer extends Writer {
     await this.s3Wrapper.writeFile(`data/${fileUsage}/${dataType}/${filePath}`, body)
   }
 
-  async readAllFilesInDirectory (fileUsage: string, dataType: string, directoryPath: string): Promise<Record<string, string | null> | null> {
-    logger.info(`Reading all files in directory: ${fileUsage}/${dataType}/${directoryPath}`)
-    const data = await this.s3Wrapper.listObjects(`data/${fileUsage}/${dataType}/${directoryPath}/`)
+  async readAllFilesInDirectory (fileUsage: string, dataType: string = '', directoryPath: string = ''): Promise<Record<string, string | null> | null> {
+    logger.info(`Reading all files in directory: ${this.getFullDirectoryPath(fileUsage, dataType, directoryPath)}`)
+    const files = await this.listAllFilesInDirectory(fileUsage, dataType, directoryPath)
 
-    if (data != null) {
-      const fileObject: Record<string, string | null> = {}
-      for (const file of data) {
-        const filePath = file.split('json/')[1]
-        fileObject[file] = await this.readFile('cache', 'json', filePath)
-      }
-      return fileObject
-    } else {
-      logger.error(`No s3 files found in the directory: ${directoryPath}`)
-      return null
+    const fileObject: Record<string, string | null> = {}
+    for (const file of files) {
+      const filePath = file.split('json/')[1]
+      fileObject[file] = await this.readFile('cache', 'json', filePath)
     }
+    return fileObject
   }
 
   async deleteAllFilesInDirectory (fileUsage: string, dataType: string = '', directoryPath: string = ''): Promise<void> {
-    let finalPath: string = `data/${fileUsage}/`
-    if (dataType !== '') {
-      finalPath = `${finalPath}${dataType}/`
-      if (directoryPath !== '') {
-        finalPath = `${finalPath}${directoryPath}/`
-      }
+    const files = await this.listAllFilesInDirectory(fileUsage, dataType, directoryPath)
+    for (const file of files) {
+      await this.s3Wrapper.deleteObject(file)
     }
+    logger.info(`Successfully deleted all files in the directory: ${this.getFullDirectoryPath(fileUsage, dataType, directoryPath)}`)
+  }
 
-    const data = await this.s3Wrapper.listObjects(finalPath)
-    if (data != null) {
-      for (const file of data) {
-        await this.s3Wrapper.deleteObject(file)
-      }
-      logger.info(`Successfully deleted all files in the directory: ${finalPath}`)
+  async listAllFilesInDirectory (fileUsage: string, dataType: string = '', directoryPath: string = ''): Promise<string[]> {
+    const fullPath = this.getFullDirectoryPath(fileUsage, dataType, directoryPath)
+    const data = await this.s3Wrapper.listObjects(fullPath)
+    if (data == null) {
+      logger.error(`No s3 files found in the directory: ${fullPath}`)
+      return []
     }
+    return data
+  }
+
+  getFullDirectoryPath (fileUsage: string, dataType: string = '', directoryPath: string = ''): string {
+    let fullPath: string = `data/${fileUsage}/`
+    if (dataType !== '') {
+      fullPath = `${fullPath}${dataType}/`
+      if (directoryPath !== '') {
+        fullPath = `${fullPath}${directoryPath}/`
+      }
+    }
+    return fullPath
   }
 }

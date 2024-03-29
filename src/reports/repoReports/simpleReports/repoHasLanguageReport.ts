@@ -4,10 +4,11 @@ import {
 import { extensionLanguageMap, HeaderTitles, ReportWriter } from '../../../util'
 import { Writers } from '../../report'
 import { RepoReport, RepoReportData } from '../repoReport'
+import { WritableSet } from '../../../util/writable'
 
 interface RepoHasLanguageReportData extends RepoReportData {
   repoName: string
-  languages: string[]
+  languages: WritableSet<string>
 }
 interface FileTypeWriters extends Writers<RepoHasLanguageReportData> {
   repoHasLanguageReportWriter: ReportWriter<RepoHasLanguageReportData>
@@ -16,8 +17,8 @@ interface FileTypeWriters extends Writers<RepoHasLanguageReportData> {
 export class RepoHasLanguageReport extends RepoReport<RepoHasLanguageReportData, FileTypeWriters> {
   private readonly fileExtensionMap = extensionLanguageMap()
 
-  protected async runReport (repo: Repo, writers: FileTypeWriters): Promise<void> {
-    const repoLanguageList = new Set<string>()
+  protected async runReport (repo: Repo): Promise<void> {
+    const repoLanguageList = new WritableSet<string>()
     for (const branchName in repo.branches) {
       for (const extension in repo.branches[branchName].fileTypes) {
         if (this.fileExtensionMap[extension] != null) {
@@ -25,7 +26,7 @@ export class RepoHasLanguageReport extends RepoReport<RepoHasLanguageReportData,
         }
       }
     }
-    writers.repoHasLanguageReportWriter.addRow({ repoName: repo.name, languages: Array.from(repoLanguageList) })
+    this._reportWriters.repoHasLanguageReportWriter.addRow({ repoName: repo.name, languages: repoLanguageList })
   }
 
   protected getHeaderTitles (): HeaderTitles<RepoHasLanguageReportData> {

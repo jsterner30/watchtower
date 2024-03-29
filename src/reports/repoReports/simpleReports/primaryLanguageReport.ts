@@ -15,8 +15,8 @@ interface PrimaryLanguageReportWriters extends Writers<PrimaryLanguageReportData
 }
 
 export class PrimaryLanguageReport extends RepoReport<PrimaryLanguageReportData, PrimaryLanguageReportWriters> {
-  protected async runReport (repo: Repo, writers: Writers<PrimaryLanguageReportData>): Promise<void> {
-    writers.primaryLanguageReportWriter.addRow({
+  protected async runReport (repo: Repo): Promise<void> {
+    this._reportWriters.primaryLanguageReportWriter.addRow({
       repoName: repo.name,
       language: repo.language
     })

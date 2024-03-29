@@ -14,8 +14,8 @@ interface LicenseReportWriters extends Writers<LicenseReportData> {
 }
 
 export class LicenseReport extends RepoReport<LicenseReportData, LicenseReportWriters> {
-  protected async runReport (repo: Repo, writers: Writers<LicenseReportData>): Promise<void> {
-    writers.licenseReportWriter.addRow({
+  protected async runReport (repo: Repo): Promise<void> {
+    this._reportWriters.licenseReportWriter.addRow({
       repoName: repo.name,
       hasLicense: repo.licenseData.key !== 'none',
       licenseType: repo.licenseData.name

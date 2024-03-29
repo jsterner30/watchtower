@@ -25,7 +25,7 @@ export abstract class AlertScanReport<T extends RepoReportData> extends RepoRepo
   }
 
   protected abstract getHeaderTitles (): HeaderTitles<T>
-  protected abstract runReport (repo: Repo, writers: AlertReportWriters<T>): Promise<void>
+  protected abstract runReport (repo: Repo): Promise<void>
   protected abstract getData (alerts: ScanAlert[], repoName: string): T[]
   public abstract get name (): string
 }

@@ -2,10 +2,10 @@ import {
   type Repo
 } from '../../../types'
 import { errorHandler } from '../../../util'
-import { CountReport, CountReportWriters } from './countReport'
+import { CountReport } from './countReport'
 
 export class DependabotBranchReport extends CountReport {
-  protected async runReport (repo: Repo, writers: CountReportWriters): Promise<void> {
+  protected async runReport (repo: Repo): Promise<void> {
     let count = 0
     for (const branchName in repo.branches) {
       try {
@@ -17,7 +17,7 @@ export class DependabotBranchReport extends CountReport {
       }
     }
 
-    writers.countReportWriter.addRow({
+    this._reportWriters.countReportWriter.addRow({
       repoName: repo.name,
       count
     })

@@ -3,7 +3,7 @@ import {
   type Repo
 } from '../../../types'
 import { HeaderTitles } from '../../../util'
-import { AlertScanReport, AlertReportWriters } from './alertScanReport'
+import { AlertScanReport } from './alertScanReport'
 import { RepoReportData } from '../repoReport'
 
 interface DependabotAlertReportData extends RepoReportData {
@@ -16,11 +16,11 @@ interface DependabotAlertReportData extends RepoReportData {
 }
 
 export class DependabotAlertReport extends AlertScanReport<DependabotAlertReportData> {
-  protected async runReport (repo: Repo, writers: AlertReportWriters<DependabotAlertReportData>): Promise<void> {
-    writers.criticalAlertWriter.addRows(this.getData(repo.dependabotScanAlerts?.critical, repo.name))
-    writers.highAlertWriter.addRows(this.getData(repo.dependabotScanAlerts?.high, repo.name))
-    writers.mediumAlertWriter.addRows(this.getData(repo.dependabotScanAlerts?.medium, repo.name))
-    writers.lowAlertWriter.addRows(this.getData(repo.dependabotScanAlerts?.low, repo.name))
+  protected async runReport (repo: Repo): Promise<void> {
+    this._reportWriters.criticalAlertWriter.addRows(this.getData(repo.dependabotScanAlerts?.critical, repo.name))
+    this._reportWriters.highAlertWriter.addRows(this.getData(repo.dependabotScanAlerts?.high, repo.name))
+    this._reportWriters.mediumAlertWriter.addRows(this.getData(repo.dependabotScanAlerts?.medium, repo.name))
+    this._reportWriters.lowAlertWriter.addRows(this.getData(repo.dependabotScanAlerts?.low, repo.name))
   }
 
   protected getHeaderTitles (): HeaderTitles<DependabotAlertReportData> {

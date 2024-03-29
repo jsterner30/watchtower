@@ -21,7 +21,7 @@ terraform {
 locals {
   env                 = "dev"
   name                = "watchtower"
-  schedule_expression = "cron(0 7 31 12 ? 2099)" // never runs, just meant to be triggered for testing
+  schedule_expression = "cron(0 12 ? * SUN *)" // runs every sunday at 12 so that we can have a usable cache in dev
 }
 
 variable "image_tag" {
@@ -45,4 +45,5 @@ module "watchtower" {
   name                = local.name
   schedule_expression = local.schedule_expression
   image_tag           = var.image_tag
+  write_cache_locally = "false"
 }

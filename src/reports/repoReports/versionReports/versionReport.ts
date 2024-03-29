@@ -11,7 +11,7 @@ import { compare, validate } from 'compare-versions'
 export abstract class VersionReport<T extends RepoReportData, U extends Writers<T>> extends RepoReport<T, U> {
   protected abstract readonly versionUtils: VersionUtils
   abstract get name (): string
-  protected abstract runReport (repo: Repo, writers: U): Promise<void>
+  protected abstract runReport (repo: Repo): Promise<void>
   protected abstract getReportWriters (): U
   protected abstract getHeaderTitles (): HeaderTitles<T>
 }

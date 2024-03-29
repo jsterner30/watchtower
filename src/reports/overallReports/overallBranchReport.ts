@@ -29,7 +29,7 @@ interface OverallBranchReportWriters extends Writers<OverallBranchReportData> {
 }
 
 export class OverallBranchReport extends RepoReport<OverallBranchReportData, OverallBranchReportWriters> {
-  protected async runReport (repo: Repo, writers: OverallBranchReportWriters): Promise<void> {
+  protected async runReport (repo: Repo): Promise<void> {
     for (const branchName in repo.branches) {
       const branch = repo.branches[branchName]
       const pushActions = branch.actionRuns.filter(obj => obj.event === 'push')
@@ -58,7 +58,7 @@ export class OverallBranchReport extends RepoReport<OverallBranchReportData, Ove
           lastSuccessfulPushActionRunDate: successfulPushActions[0] != null ? successfulPushActions[0].created_at : 'none'
         }
 
-        writers.overallBranchReportWriter.addRow(reportRow)
+        this._reportWriters.overallBranchReportWriter.addRow(reportRow)
       }
     }
   }

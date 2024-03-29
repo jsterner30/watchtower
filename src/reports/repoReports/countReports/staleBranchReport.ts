@@ -1,10 +1,10 @@
 import {
   type Repo
 } from '../../../types'
-import { CountReport, CountReportWriters } from './countReport'
+import { CountReport } from './countReport'
 
 export class StaleBranchReport extends CountReport {
-  protected async runReport (repo: Repo, writers: CountReportWriters): Promise<void> {
+  protected async runReport (repo: Repo): Promise<void> {
     let count = 0
     for (const branchName in repo.branches) {
       if (repo.branches[branchName].staleBranch) {
@@ -12,7 +12,7 @@ export class StaleBranchReport extends CountReport {
       }
     }
 
-    writers.countReportWriter.addRow({
+    this._reportWriters.countReportWriter.addRow({
       repoName: repo.name,
       count
     })

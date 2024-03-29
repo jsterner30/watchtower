@@ -3,7 +3,7 @@ import {
   type Repo
 } from '../../../types'
 import { HeaderTitles } from '../../../util'
-import { AlertScanReport, AlertReportWriters } from './alertScanReport'
+import { AlertScanReport } from './alertScanReport'
 import { RepoReportData } from '../repoReport'
 
 interface CodeScanReportData extends RepoReportData {
@@ -15,11 +15,11 @@ interface CodeScanReportData extends RepoReportData {
 }
 
 export class CodeScanAlertReport extends AlertScanReport<CodeScanReportData> {
-  protected async runReport (repo: Repo, writers: AlertReportWriters<CodeScanReportData>): Promise<void> {
-    if (repo.codeScanAlerts?.critical.length > 0) writers.criticalAlertWriter.addRows(this.getData(repo.codeScanAlerts?.critical, repo.name))
-    if (repo.codeScanAlerts?.high.length > 0) writers.highAlertWriter.addRows(this.getData(repo.codeScanAlerts?.high, repo.name))
-    if (repo.codeScanAlerts?.medium.length > 0) writers.mediumAlertWriter.addRows(this.getData(repo.codeScanAlerts?.medium, repo.name))
-    if (repo.codeScanAlerts?.low.length > 0) writers.lowAlertWriter.addRows(this.getData(repo.codeScanAlerts?.low, repo.name))
+  protected async runReport (repo: Repo): Promise<void> {
+    if (repo.codeScanAlerts?.critical.length > 0) this._reportWriters.criticalAlertWriter.addRows(this.getData(repo.codeScanAlerts?.critical, repo.name))
+    if (repo.codeScanAlerts?.high.length > 0) this._reportWriters.highAlertWriter.addRows(this.getData(repo.codeScanAlerts?.high, repo.name))
+    if (repo.codeScanAlerts?.medium.length > 0) this._reportWriters.mediumAlertWriter.addRows(this.getData(repo.codeScanAlerts?.medium, repo.name))
+    if (repo.codeScanAlerts?.low.length > 0) this._reportWriters.lowAlertWriter.addRows(this.getData(repo.codeScanAlerts?.low, repo.name))
   }
 
   protected getHeaderTitles (): HeaderTitles<CodeScanReportData> {

@@ -18,7 +18,7 @@ interface OverallHealthScoreReportWriters extends Writers<OverallHealthScoreRepo
 }
 
 export class OverallHealthScoreReport extends RepoReport<OverallHealthScoreReportData, OverallHealthScoreReportWriters> {
-  protected async runReport (repo: Repo, writers: OverallHealthScoreReportWriters): Promise<void> {
+  protected async runReport (repo: Repo): Promise<void> {
     const repoReports: RepoReports = getRepoReports()
     const overallScore = getOverallGPAScore(repo.healthScores)
     const reportRow: OverallHealthScoreReportData = {
@@ -40,7 +40,7 @@ export class OverallHealthScoreReport extends RepoReport<OverallHealthScoreRepor
       }
     }
 
-    writers.overallHealthScoreReportWriter.addRow(reportRow)
+    this._reportWriters.overallHealthScoreReportWriter.addRow(reportRow)
   }
 
   protected getReportWriters (): OverallHealthScoreReportWriters {

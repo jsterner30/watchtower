@@ -15,9 +15,9 @@ interface TeamlessRepoReportWriters extends Writers<TeamlessRepoReportData> {
 }
 
 export class TeamlessRepoReport extends RepoReport<TeamlessRepoReportData, TeamlessRepoReportWriters> {
-  protected async runReport (repo: Repo, writers: TeamlessRepoReportWriters): Promise<void> {
+  protected async runReport (repo: Repo): Promise<void> {
     if (repo.teams.length === 0) {
-      writers.teamlessReportWriter.addRow({
+      this._reportWriters.teamlessReportWriter.addRow({
         repoName: repo.name,
         admins: repo.admins
       })

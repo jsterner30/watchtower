@@ -16,9 +16,9 @@ interface PublicAndInternalReportWriters extends Writers<PublicAndInternalReport
 }
 
 export class PublicAndInternalReport extends RepoReport<PublicAndInternalReportData, PublicAndInternalReportWriters> {
-  protected async runReport (repo: Repo, writers: PublicAndInternalReportWriters): Promise<void> {
+  protected async runReport (repo: Repo): Promise<void> {
     if (repo.visibility !== 'private') {
-      writers.publicAndInternalWriter.addRow({
+      this._reportWriters.publicAndInternalWriter.addRow({
         repoName: repo.name,
         visibility: repo.visibility
       })

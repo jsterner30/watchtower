@@ -47,11 +47,11 @@ interface OverallRepoReportWriters extends Writers<OverallRepoReportData> {
 }
 
 export class OverallRepoReport extends RepoReport<OverallRepoReportData, OverallRepoReportWriters> {
-  protected async runReport (repo: Repo, writers: OverallRepoReportWriters): Promise<void> {
+  protected async runReport (repo: Repo): Promise<void> {
     const pushActions = repo.branches[repo.defaultBranch].actionRuns.filter(obj => obj.event === 'push')
     const successfulPushActions = pushActions.filter(obj => obj.conclusion === 'success')
 
-    writers.overallRepoReportWriter.addRow({
+    this._reportWriters.overallRepoReportWriter.addRow({
       repoName: repo.name,
       teams: repo.teams,
       admins: repo.admins,

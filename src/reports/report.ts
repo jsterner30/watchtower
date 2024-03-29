@@ -12,7 +12,7 @@ export interface NamedItem {
 export abstract class Report<T extends ReportData, U extends Writers<T>, V extends NamedItem> {
   protected _weight: number
   protected _outputDir: string
-  protected _reportOutputDataWriters: Array<ReportWriter<T>>
+  protected _reportWriters: Record<string, ReportWriter<T>>
   protected _description: string
   protected _numberOfFilesOutputDescription: string
   protected _type: ReportType
@@ -20,24 +20,17 @@ export abstract class Report<T extends ReportData, U extends Writers<T>, V exten
   constructor (weight: number, outputDir: string, description: string, numberOfFilesOutputDescription: string, type: ReportType) {
     this._weight = weight
     this._outputDir = outputDir
-    this._reportOutputDataWriters = []
+    this._reportWriters = this.getReportWriters()
     this._description = description
     this._numberOfFilesOutputDescription = numberOfFilesOutputDescription
     this._type = type
   }
 
-  public async run (items: V[]): Promise<void> {
-    const writers: U = this.getReportWriters()
-    for (const item of items) {
-      try {
-        await this.runReport(item, writers)
-      } catch (error) {
-        errorHandler(error, this.name, item.name)
-      }
-    }
-
-    for (const writer in writers) {
-      this._reportOutputDataWriters.push(writers[writer])
+  public async run (item: V): Promise<void> {
+    try {
+      await this.runReport(item)
+    } catch (error) {
+      errorHandler(error, this.name, item.name)
     }
   }
 
@@ -45,8 +38,8 @@ export abstract class Report<T extends ReportData, U extends Writers<T>, V exten
     return this._weight
   }
 
-  public get reportOutputDataWriters (): Array<ReportWriter<T>> {
-    return this._reportOutputDataWriters
+  public get reportWriters (): Array<ReportWriter<T>> {
+    return Object.values(this._reportWriters)
   }
 
   get description (): string {
@@ -72,5 +65,5 @@ export abstract class Report<T extends ReportData, U extends Writers<T>, V exten
   public abstract get name (): string
   protected abstract getHeaderTitles (): HeaderTitles<T>
   protected abstract getReportWriters (): U
-  protected abstract runReport (item: V, writers: U): Promise<void>
+  protected abstract runReport (item: V): Promise<void>
 }

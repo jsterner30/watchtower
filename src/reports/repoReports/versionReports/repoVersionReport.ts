@@ -66,7 +66,7 @@ export abstract class RepoVersionReport extends VersionReport<RepoVersionReportD
     }
   }
 
-  protected async runReport (repo: Repo, writers: RepoVersionReportWriters): Promise<void> {
+  protected async runReport (repo: Repo): Promise<void> {
     // we add each most extreme version on every branch to these arrays, then use them to get the highest and lowest versions in the whole repo
     const allBranchVersionExtremes = this.versionUtils.getBranchLowAndHighVersions(repo)
     if (Object.keys(allBranchVersionExtremes).length === 0) {
@@ -87,7 +87,7 @@ export abstract class RepoVersionReport extends VersionReport<RepoVersionReportD
       })
     }
     const overallRepoExtremes = this.versionUtils.getExtremeVersions(branchVersionLocations)
-    writers.allBranchesRepoWriter.addRow({ ...{ repoName: repo.name }, ...overallRepoExtremes })
+    this._reportWriters.allBranchesRepoWriter.addRow({ ...{ repoName: repo.name }, ...overallRepoExtremes })
     repo.healthScores[this.name] = await this.grade(overallRepoExtremes.lowestVersion)
     this.modifyReportRepoResults(overallRepoExtremes, repo)
   }

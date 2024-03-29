@@ -1,6 +1,7 @@
 import { Report, ReportData, Writers } from '../../report'
-import { errorHandler, HeaderTitles, ReportWriter } from '../../../util'
+import { anyStringRegex, HeaderTitles, Query, ReportWriter, stringToExactRegex } from '../../../util'
 import { Dependency, Repo, RuleFile } from '../../../types'
+import { WritableSet } from '../../../util/writable'
 
 export interface CondensedDependencyReportData extends ReportData {
   depName: string
@@ -12,14 +13,11 @@ export interface CondensedDependencyReportData extends ReportData {
   maintainerCount: number
   latestVersion: string
   downloadCountLastWeek: number
+  repoList: WritableSet<string>
+  branchList: WritableSet<string>
 }
 export interface CondensedDependencyReportDataWriter extends Writers<CondensedDependencyReportData> {
   dependencyCountReportDataWriter: ReportWriter<CondensedDependencyReportData>
-}
-
-interface DependencyCounter {
-  branches: Set<string>
-  repos: Set<string>
 }
 
 export abstract class DependencyCondensedReport extends Report<CondensedDependencyReportData, CondensedDependencyReportDataWriter, Repo> {
@@ -33,7 +31,9 @@ export abstract class DependencyCondensedReport extends Report<CondensedDependen
       description: 'Description',
       maintainerCount: 'Maintainer Count',
       latestVersion: 'Latest Version',
-      downloadCountLastWeek: 'Download Count Last Week'
+      downloadCountLastWeek: 'Download Count Last Week',
+      repoList: 'List of repos that use this dep',
+      branchList: 'List of repo branches that use this dep'
     }
   }
 
@@ -43,53 +43,57 @@ export abstract class DependencyCondensedReport extends Report<CondensedDependen
     }
   }
 
-  public async run (repos: Repo[]): Promise<void> {
-    const overallDepCounts: Record<string, DependencyCounter> = {}
-    for (const repo of repos) {
-      for (const branch of Object.values(repo.branches)) {
-        try {
-          for (const ruleFile of branch.ruleFiles) {
-            const depNames = this.getDepNames(ruleFile)
-            if (depNames.length > 0) {
-              for (const depName of depNames) {
-                if (overallDepCounts[depName] == null) {
-                  overallDepCounts[depName] = {
-                    branches: new Set<string>(),
-                    repos: new Set<string>()
-                  }
-                }
-                overallDepCounts[depName].branches.add(repo.name + ':' + branch.name)
-                overallDepCounts[depName].repos.add(repo.name)
-              }
+  public async runReport (repo: Repo): Promise<void> {
+    for (const branch of Object.values(repo.branches)) {
+      for (const ruleFile of branch.ruleFiles) {
+        const depNames = this.getDepNames(ruleFile)
+        if (depNames.length > 0) {
+          for (const depName of depNames) {
+            const depRows: CondensedDependencyReportData[] = this._reportWriters.dependencyCountReportDataWriter.getRows(this.getDepRowsQuery(depName))
+
+            if (depRows.length > 1) {
+              throw new Error('Multiple rows in report writer contain the same depName')
+            } else if (depRows.length === 0) {
+              const dependency: Dependency = await this.getDependencyInfo(depName)
+              this._reportWriters.dependencyCountReportDataWriter.addRow({
+                depName,
+                branchCount: 0,
+                repoCount: 0,
+                lastModifiedDate: dependency.lastModifiedDate,
+                createdDate: dependency.createdDate,
+                description: dependency.description,
+                maintainerCount: dependency.maintainerCount,
+                latestVersion: dependency.latestVersion,
+                downloadCountLastWeek: dependency.downloadCountLastWeek,
+                repoList: new WritableSet<string>(),
+                branchList: new WritableSet<string>()
+              })
+            } else {
+              depRows[0].repoList.add(repo.name)
+              depRows[0].branchList.add(repo.name + ':' + branch.name)
+              depRows[0].repoCount = depRows[0].repoList.size
+              depRows[0].branchCount = depRows[0].branchList.size
             }
           }
-        } catch (error) {
-          errorHandler(error, this.name, repo.name, branch.name)
         }
       }
     }
-
-    const writer = this.getReportWriters().dependencyCountReportDataWriter
-    for (const depName in overallDepCounts) {
-      const dependency: Dependency = await this.getDependencyInfo(depName)
-      writer.addRow({
-        depName,
-        branchCount: overallDepCounts[depName].branches.size,
-        repoCount: overallDepCounts[depName].repos.size,
-        lastModifiedDate: dependency.lastModifiedDate,
-        createdDate: dependency.createdDate,
-        description: dependency.description,
-        maintainerCount: dependency.maintainerCount,
-        latestVersion: dependency.latestVersion,
-        downloadCountLastWeek: dependency.downloadCountLastWeek
-      })
-    }
-
-    this._reportOutputDataWriters.push(writer)
   }
 
-  protected async runReport (): Promise<void> {
-    throw new Error(`Not implemented in class ${this.name}`)
+  private getDepRowsQuery (depName: string): Query<CondensedDependencyReportData> {
+    return {
+      depName: stringToExactRegex(depName),
+      branchCount: anyStringRegex,
+      repoCount: anyStringRegex,
+      lastModifiedDate: anyStringRegex,
+      createdDate: anyStringRegex,
+      description: anyStringRegex,
+      maintainerCount: anyStringRegex,
+      latestVersion: anyStringRegex,
+      downloadCountLastWeek: anyStringRegex,
+      repoList: anyStringRegex,
+      branchList: anyStringRegex
+    }
   }
 
   abstract get name (): string

@@ -1,5 +1,5 @@
 import { GradeEnum, HealthScore, Repo } from '../../types'
-import { HeaderTitles, ReportWriter } from '../../util'
+import { HeaderTitles } from '../../util'
 import { logger } from '../../util/logger'
 import { Report, ReportData, Writers } from '../report'
 
@@ -18,12 +18,8 @@ export abstract class RepoReport<T extends RepoReportData, U extends Writers<T>>
     }
   }
 
-  public get reportOutputDataWriters (): Array<ReportWriter<T>> {
-    return this._reportOutputDataWriters
-  }
-
   public abstract get name (): string
   protected abstract getHeaderTitles (): HeaderTitles<T>
   protected abstract getReportWriters (): U
-  protected abstract runReport (repo: Repo, writers: U): Promise<void>
+  protected abstract runReport (repo: Repo): Promise<void>
 }

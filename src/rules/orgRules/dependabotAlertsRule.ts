@@ -1,12 +1,11 @@
 import { errorHandler, getOpenOrgDependabotScanAlerts } from '../../util'
-import type { CacheFile } from '../../types'
+import type { Repo } from '../../types'
 import { OrgRule } from '../rule'
 
 export class DependabotAlertsRule extends OrgRule {
-  async run (cacheFile: CacheFile): Promise<void> {
+  async run (repos: Record<string, Repo>): Promise<void> {
     try {
       const alerts = await getOpenOrgDependabotScanAlerts()
-      const repos = cacheFile.info
       for (const alert of alerts) {
         if (repos[alert.repoName] != null) {
           const securitySeverity = alert.severity

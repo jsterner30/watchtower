@@ -2,6 +2,7 @@ import { FileTypeEnum, type Repo, validOpenAPIFile } from '../../../types'
 import { anyStringRegex, Exception, HeaderTitles, ReportWriter } from '../../../util'
 import { Writers } from '../../report'
 import { RepoReport, RepoReportData } from '../repoReport'
+import { WriteableRegExp } from '../../../util/writable'
 
 interface OpenAPIReportData extends RepoReportData {
   repoName: string
@@ -13,10 +14,10 @@ interface OpenAPIReportWriter extends Writers<OpenAPIReportData> {
 }
 
 export class OpenAPIReport extends RepoReport<OpenAPIReportData, OpenAPIReportWriter> {
-  protected async runReport (repo: Repo, writers: Writers<OpenAPIReportData>): Promise<void> {
+  protected async runReport (repo: Repo): Promise<void> {
     for (const ruleFile of repo.branches[repo.defaultBranch].ruleFiles) {
       if (validOpenAPIFile.Check(ruleFile) && ruleFile.fileType === FileTypeEnum.OPEN_API) {
-        writers.openAPIFileReport.addRow({
+        this._reportWriters.openAPIFileReport.addRow({
           repoName: repo.name,
           openAPIFilePath: ruleFile.fileName
         })
@@ -39,7 +40,7 @@ export class OpenAPIReport extends RepoReport<OpenAPIReportData, OpenAPIReportWr
 
   protected getExceptions (): Array<Exception<OpenAPIReportData>> {
     return [{
-      repoName: /tyk-api-definitions/,
+      repoName: new WriteableRegExp(/tyk-api-definitions/),
       openAPIFilePath: anyStringRegex
     }]
   }

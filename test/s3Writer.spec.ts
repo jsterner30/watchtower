@@ -59,11 +59,11 @@ test.serial('readFile() should return the string returned by s3Wrapper.readFile(
 /**
  * readAllFilesInDirectory() tests
  */
-test.serial('readAllFilesInDirectory() should return null if s3Wrapper.listObjects() returns null', async t => {
+test.serial('readAllFilesInDirectory() should return empty object if s3Wrapper.listObjects() returns null', async t => {
   when(mocks3Wrapper.listObjects(expectedDirPath)).thenResolve(null)
   const files = await s3Writer.readAllFilesInDirectory(fileUsage, dataType, directoryPath)
   verify(mocks3Wrapper.listObjects(expectedDirPath)).times(1)
-  t.deepEqual(files, null)
+  t.deepEqual(files, {})
 })
 
 test.serial('readAllFilesInDirectory() should return an array of objects with null values when readFile returns null', async t => {
