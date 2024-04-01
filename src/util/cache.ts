@@ -27,7 +27,8 @@ export class Cache {
     this._repoList = []
     const repoFilesName = await this._writer.listAllFilesInDirectory('cache', 'json', 'repos')
     for (const repoFileName of repoFilesName) {
-      this._repoList.push(repoFileName.split('.json')[0])
+      const pathRemoved = (repoFileName.split('/'))[repoFileName.split('/').length - 1]
+      this._repoList.push(pathRemoved.split('.json')[0])
     }
 
     this._repoList.sort()
