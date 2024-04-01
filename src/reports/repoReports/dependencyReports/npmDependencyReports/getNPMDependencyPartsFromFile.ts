@@ -11,10 +11,12 @@ export default function (ruleFile: RuleFile): NPMDependencyParts[] {
   if (validPackageJsonFile.Check(ruleFile) && ruleFile.fileType === FileTypeEnum.PACKAGE_JSON) {
     for (const name in ruleFile.dependencies) {
       const dependencyName = name.replace(/\//g, '_') // slashes in dep name will mess with file structure
-      parts.push({
-        name: dependencyName,
-        version: removeComparatorsInVersion(ruleFile.dependencies[name])
-      })
+      if (!(ruleFile.dependencies[name] as string).includes('file:')) { // we don't care about intra-repo dependencies
+        parts.push({
+          name: dependencyName,
+          version: removeComparatorsInVersion(ruleFile.dependencies[name])
+        })
+      }
     }
   }
   return parts

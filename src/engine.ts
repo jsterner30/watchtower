@@ -98,7 +98,7 @@ export class Engine {
     await this.cache.writeFileToCache('json', 'apiCallCounter.json', stringifyJSON(apiCallCounter, 'apiCallCounter'))
   }
 
-  async runWithCache (): Promise<void> {
+  async runWithCacheOnly (): Promise<void> {
     this.progress.reset(this.cache.repoList.length, 'Running watchtower on repos', [{ displayName: 'Current Repo', token: 'currentRepo' }])
     this.progress.start()
     for (const repoName of this.cache.repoList) {

@@ -18,7 +18,7 @@ async function run (): Promise<void> {
   const engine = new Engine(cache, reportWriter)
 
   if (getEnv().useCache) {
-    await engine.runWithCache()
+    await engine.runWithCacheOnly()
   } else {
     await engine.run()
   }
