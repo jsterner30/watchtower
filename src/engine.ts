@@ -93,7 +93,6 @@ export class Engine {
     }
     await this.runOrgReports()
 
-    await this.cache.deleteAllFilesInCache()
     await this.reportWriter.deleteAllFilesInDirectory('reports', '', '')
     await this.writeReports()
     await this.cache.writeFileToCache('json', 'apiCallCounter.json', stringifyJSON(apiCallCounter, 'apiCallCounter'))
