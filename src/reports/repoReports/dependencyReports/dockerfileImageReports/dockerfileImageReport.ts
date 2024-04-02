@@ -24,7 +24,7 @@ export class DockerfileImageReport extends DependencyReport<DockerfileImageRepor
           if (imageParts != null) {
             const { image, version, tag } = imageParts
 
-            this.getReportWriters().dependencyReportWriter.addRow({
+            this._reportWriters.dependencyReportWriter.addRow({
               depName: image,
               repoName: repo.name,
               branchName,

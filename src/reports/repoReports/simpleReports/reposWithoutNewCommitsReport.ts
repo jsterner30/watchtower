@@ -32,7 +32,7 @@ export class ReposWithoutNewCommitsReport extends RepoReport<ReposWithoutNewComm
     repo.healthScores[ReposWithoutNewCommitsReport.name] = await this.grade(repo.lastCommit.date)
   }
 
-  protected getReportWriters (): ReposWithoutNewCommitsWriters {
+  protected initReportWriters (): ReposWithoutNewCommitsWriters {
     return {
       reposWithoutNewCommitsWriter: new ReportWriter<ReposWithoutNewCommitsReportData>(this.getHeaderTitles(), this._outputDir, this.name, this.getExceptions())
     }

@@ -41,7 +41,7 @@ export class DevPrdBranchesReport extends RepoReport<DevPrdBranchReportData, Dev
     repo.reportResults.followsDevPrdNamingScheme = hasDev && hasPrd && repo.defaultBranch === 'dev'
   }
 
-  protected getReportWriters (): DevPrdBranchReportWriters {
+  protected initReportWriters (): DevPrdBranchReportWriters {
     return {
       devPrdBranchesReportOutput: new ReportWriter<DevPrdBranchReportData>(this.getHeaderTitles(), this._outputDir, this.name, this.getExceptions())
     }

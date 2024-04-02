@@ -33,7 +33,7 @@ export class LowFileRepoReport extends RepoReport<LowFileRepoReportData, LowFile
     repo.healthScores[LowFileRepoReport.name] = await this.grade({ someBranchHasFiles, numberBranches: Object.keys(repo.branches).length })
   }
 
-  protected getReportWriters (): LowFileRepoReportWriters {
+  protected initReportWriters (): LowFileRepoReportWriters {
     return {
       lowFileRepoReportWriter: new ReportWriter<LowFileRepoReportData>(this.getHeaderTitles(), this._outputDir, this.name, this.getExceptions())
     }

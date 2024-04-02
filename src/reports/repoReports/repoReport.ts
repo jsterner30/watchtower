@@ -20,6 +20,6 @@ export abstract class RepoReport<T extends RepoReportData, U extends Writers<T>>
 
   public abstract get name (): string
   protected abstract getHeaderTitles (): HeaderTitles<T>
-  protected abstract getReportWriters (): U
+  protected abstract initReportWriters (): U
   protected abstract runReport (repo: Repo): Promise<void>
 }

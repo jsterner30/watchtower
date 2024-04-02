@@ -16,7 +16,7 @@ export interface DependencyInstanceReportWriters<T extends DependencyReportData>
 }
 
 export abstract class DependencyReport<T extends DependencyReportData> extends RepoReport<T, DependencyInstanceReportWriters<T>> {
-  protected getReportWriters (): DependencyInstanceReportWriters<T> {
+  protected initReportWriters (): DependencyInstanceReportWriters<T> {
     return {
       dependencyReportWriter: new ReportWriter<T>(this.getHeaderTitles(), this.outputDir, this.name, this.getExceptions())
     }

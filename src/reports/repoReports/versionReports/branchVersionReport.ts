@@ -32,7 +32,7 @@ export abstract class BranchVersionReport extends VersionReport<BranchVersionRep
     }
   }
 
-  protected getReportWriters (): BranchVersionReportWriters {
+  protected initReportWriters (): BranchVersionReportWriters {
     return {
       defaultBranchVersionReportWriter: new ReportWriter<BranchVersionReportData>(this.getHeaderTitles(), this._outputDir, `${this.name}-DefaultBranches`, this.getExceptions()),
       allBranchesVersionReportWriter: new ReportWriter<BranchVersionReportData>(this.getHeaderTitles(), this._outputDir, `${this.name}-AllBranches`, this.getExceptions())

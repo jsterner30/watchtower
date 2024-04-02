@@ -20,7 +20,7 @@ export abstract class Report<T extends ReportData, U extends Writers<T>, V exten
   constructor (weight: number, outputDir: string, description: string, numberOfFilesOutputDescription: string, type: ReportType) {
     this._weight = weight
     this._outputDir = outputDir
-    this._reportWriters = this.getReportWriters()
+    this._reportWriters = this.initReportWriters()
     this._description = description
     this._numberOfFilesOutputDescription = numberOfFilesOutputDescription
     this._type = type
@@ -38,7 +38,11 @@ export abstract class Report<T extends ReportData, U extends Writers<T>, V exten
     return this._weight
   }
 
-  public get reportWriters (): Array<ReportWriter<T>> {
+  public get reportWriters (): Record<string, ReportWriter<T>> {
+    return this._reportWriters
+  }
+
+  public get reportWritersArray (): Array<ReportWriter<T>> {
     return Object.values(this._reportWriters)
   }
 
@@ -64,6 +68,6 @@ export abstract class Report<T extends ReportData, U extends Writers<T>, V exten
 
   public abstract get name (): string
   protected abstract getHeaderTitles (): HeaderTitles<T>
-  protected abstract getReportWriters (): U
+  protected abstract initReportWriters (): U
   protected abstract runReport (item: V): Promise<void>
 }

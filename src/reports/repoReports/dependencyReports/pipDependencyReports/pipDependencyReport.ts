@@ -20,7 +20,7 @@ export class PIPDependencyReport extends DependencyReport<PIPDependencyReportDat
         for (const ruleFile of repo.branches[branchName].ruleFiles) {
           const depParts = getPIPDependencyPartsFromFile(ruleFile)
           for (const dep of depParts) {
-            this.getReportWriters().dependencyReportWriter.addRow({
+            this._reportWriters.dependencyReportWriter.addRow({
               depName: dep.name,
               repoName: repo.name,
               branchName,

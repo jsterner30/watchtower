@@ -63,7 +63,7 @@ export class OverallBranchReport extends RepoReport<OverallBranchReportData, Ove
     }
   }
 
-  protected getReportWriters (): OverallBranchReportWriters {
+  protected initReportWriters (): OverallBranchReportWriters {
     return {
       overallBranchReportWriter: new ReportWriter<OverallBranchReportData>(this.getHeaderTitles(), this._outputDir, this.name, this.getExceptions())
     }

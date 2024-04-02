@@ -37,7 +37,7 @@ export abstract class DependencyCondensedReport extends Report<CondensedDependen
     }
   }
 
-  protected getReportWriters (): CondensedDependencyReportDataWriter {
+  protected initReportWriters (): CondensedDependencyReportDataWriter {
     return {
       dependencyCountReportDataWriter: new ReportWriter<CondensedDependencyReportData>(this.getHeaderTitles(), this.outputDir, this.outputDir, this.getExceptions()) // these reports are written to a file with the same name as the output dir
     }

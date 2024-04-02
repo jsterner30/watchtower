@@ -18,7 +18,7 @@ export class TerraformModuleReport extends DependencyReport<TerraformModuleRepor
         for (const ruleFile of repo.branches[branchName].ruleFiles) {
           const moduleParts = getTerraformModulePartsFromFile(ruleFile)
           for (const module of moduleParts) {
-            this.getReportWriters().dependencyReportWriter.addRow({
+            this._reportWriters.dependencyReportWriter.addRow({
               depName: module.name,
               repoName: repo.name,
               branchName,

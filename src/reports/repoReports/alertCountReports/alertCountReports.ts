@@ -60,7 +60,7 @@ export abstract class AlertCountReport extends RepoReport<AlertCountReportData, 
     }
   }
 
-  protected getReportWriters (): AlertCountReportWriters {
+  protected initReportWriters (): AlertCountReportWriters {
     const countReportHeaders = this.getHeaderTitles()
     return {
       criticalCountWriter: new ReportWriter<AlertCountReportData>(countReportHeaders, this._outputDir, `${this.name}-Critical`, this.getExceptions()),

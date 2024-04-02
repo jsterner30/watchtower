@@ -33,7 +33,7 @@ export class PublicAndInternalReport extends RepoReport<PublicAndInternalReportD
     }
   }
 
-  protected getReportWriters (): PublicAndInternalReportWriters {
+  protected initReportWriters (): PublicAndInternalReportWriters {
     return {
       publicAndInternalWriter: new ReportWriter<PublicAndInternalReportData>(this.getHeaderTitles(), this._outputDir, this.name, this.getExceptions())
     }

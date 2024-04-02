@@ -39,7 +39,7 @@ export abstract class CountReport extends RepoReport<CountReportData, CountRepor
     }
   }
 
-  protected getReportWriters (): CountReportWriters {
+  protected initReportWriters (): CountReportWriters {
     return {
       countReportWriter: new ReportWriter<CountReportData>(this.getHeaderTitles(), this._outputDir, this.name, this.getExceptions())
     }

@@ -20,7 +20,7 @@ export class GHActionModuleReport extends DependencyReport<GHActionModuleReportD
         for (const ruleFile of repo.branches[branchName].ruleFiles) {
           const moduleParts = getGhActionModulePartsFromFile(ruleFile)
           for (const module of moduleParts) {
-            this.getReportWriters().dependencyReportWriter.addRow({
+            this._reportWriters.dependencyReportWriter.addRow({
               depName: module.name,
               repoName: repo.name,
               branchName,

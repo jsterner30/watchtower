@@ -33,7 +33,7 @@ export class TeamlessRepoReport extends RepoReport<TeamlessRepoReportData, Teaml
     }
   }
 
-  protected getReportWriters (): TeamlessRepoReportWriters {
+  protected initReportWriters (): TeamlessRepoReportWriters {
     return {
       teamlessReportWriter: new ReportWriter<TeamlessRepoReportData>(this.getHeaderTitles(), this._outputDir, this.name, this.getExceptions())
     }

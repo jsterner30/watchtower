@@ -14,7 +14,7 @@ export interface AlertReportWriters<T extends RepoReportData> extends Writers<T>
 }
 
 export abstract class AlertScanReport<T extends RepoReportData> extends RepoReport<T, AlertReportWriters<T>> {
-  protected getReportWriters (): AlertReportWriters<T> {
+  protected initReportWriters (): AlertReportWriters<T> {
     const alertReportHeader = this.getHeaderTitles()
     return {
       criticalAlertWriter: new ReportWriter<T>(alertReportHeader, this._outputDir, `${this.name}-Critical`, this.getExceptions()),

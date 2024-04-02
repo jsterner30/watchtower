@@ -92,7 +92,7 @@ export class OverallRepoReport extends RepoReport<OverallRepoReportData, Overall
     })
   }
 
-  protected getReportWriters (): OverallRepoReportWriters {
+  protected initReportWriters (): OverallRepoReportWriters {
     return {
       overallRepoReportWriter: new ReportWriter<OverallRepoReportData>(this.getHeaderTitles(), this._outputDir, this.name, this.getExceptions())
     }

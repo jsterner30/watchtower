@@ -12,7 +12,7 @@ export abstract class VersionReport<T extends RepoReportData, U extends Writers<
   protected abstract readonly versionUtils: VersionUtils
   abstract get name (): string
   protected abstract runReport (repo: Repo): Promise<void>
-  protected abstract getReportWriters (): U
+  protected abstract initReportWriters (): U
   protected abstract getHeaderTitles (): HeaderTitles<T>
 }
 

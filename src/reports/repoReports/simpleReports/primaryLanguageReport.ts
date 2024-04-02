@@ -22,7 +22,7 @@ export class PrimaryLanguageReport extends RepoReport<PrimaryLanguageReportData,
     })
   }
 
-  protected getReportWriters (): PrimaryLanguageReportWriters {
+  protected initReportWriters (): PrimaryLanguageReportWriters {
     return {
       primaryLanguageReportWriter: new ReportWriter<PrimaryLanguageReportData>(this.getHeaderTitles(), this._outputDir, this.name, this.getExceptions())
     }

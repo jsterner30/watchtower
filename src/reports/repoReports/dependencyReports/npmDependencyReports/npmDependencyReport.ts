@@ -20,7 +20,7 @@ export class NPMDependencyReport extends DependencyReport<NPMDependencyReportDat
         for (const ruleFile of repo.branches[branchName].ruleFiles) {
           const depParts = getNPMDependencyPartsFromFile(ruleFile)
           for (const dep of depParts) {
-            this.getReportWriters().dependencyReportWriter.addRow({
+            this._reportWriters.dependencyReportWriter.addRow({
               depName: dep.name,
               repoName: repo.name,
               branchName,

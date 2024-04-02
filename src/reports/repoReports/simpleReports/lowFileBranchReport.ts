@@ -28,7 +28,7 @@ export class LowFileBranchReport extends RepoReport<LowFileBranchReportData, Low
     }
   }
 
-  protected getReportWriters (): LowFileBranchReportWriters {
+  protected initReportWriters (): LowFileBranchReportWriters {
     return {
       lowFileBranchReportWriter: new ReportWriter<LowFileBranchReportData>(this.getHeaderTitles(), this._outputDir, this.name, this.getExceptions())
     }
