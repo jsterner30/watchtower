@@ -71,7 +71,7 @@ export class Engine {
     const allRepos = await this.getReposFunction()
     const nonEmptyRepos = this.filterEmpty(allRepos)
     const filteredRepos = this.filterArchived(nonEmptyRepos)
-    // await this.runOrgRules(filteredRepos)
+    await this.runOrgRules(filteredRepos)
     await this.cache.writeReposToCache(filteredRepos)
 
     this.progress.reset(this.cache.repoList.length, 'Running watchtower on repos', [{ displayName: 'Current Repo', token: 'currentRepo' }])
@@ -85,13 +85,13 @@ export class Engine {
         await this.runRepoRules(repo)
         await this.downloadAndRunBranchRules(repo)
         await this.runRepoReports(repo)
-        // await this.runOverallReportsOnRepo(repo)
+        await this.runOverallReportsOnRepo(repo)
         await this.cache.writeRepoToCache(repo)
       } else {
         logger.error(`Null repo returned for repo: ${repoName}`)
       }
     }
-    // await this.runOrgReports()
+    await this.runOrgReports()
 
     await this.reportWriter.deleteAllFilesInDirectory('reports', '', '')
     await this.writeReports()
