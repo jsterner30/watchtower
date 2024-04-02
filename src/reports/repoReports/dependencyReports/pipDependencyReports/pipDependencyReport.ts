@@ -1,11 +1,12 @@
 import {
   type Repo
 } from '../../../../types'
-import { errorHandler, HeaderTitles, ReportWriter } from '../../../../util'
+import { errorHandler, HeaderTitles } from '../../../../util'
 import { DependencyReport, DependencyReportData } from '../dependencyReport'
 import getPIPDependencyPartsFromFile from './getPIPDependencyPartsFromFile'
 
 interface PIPDependencyReportData extends DependencyReportData {
+  depName: string
   repoName: string
   branchName: string
   version: string
@@ -19,10 +20,8 @@ export class PIPDependencyReport extends DependencyReport<PIPDependencyReportDat
         for (const ruleFile of repo.branches[branchName].ruleFiles) {
           const depParts = getPIPDependencyPartsFromFile(ruleFile)
           for (const dep of depParts) {
-            if (this._reportWriters[dep.name] == null) {
-              this._reportWriters[dep.name] = new ReportWriter<PIPDependencyReportData>(this.getHeaderTitles(), this._outputDir, dep.name, this.getExceptions())
-            }
-            this._reportWriters[dep.name].addRow({
+            this.getReportWriters().dependencyReportWriter.addRow({
+              depName: dep.name,
               repoName: repo.name,
               branchName,
               version: dep.version,
@@ -38,6 +37,7 @@ export class PIPDependencyReport extends DependencyReport<PIPDependencyReportDat
 
   protected getHeaderTitles (): HeaderTitles<PIPDependencyReportData> {
     return {
+      depName: 'Dependency Name',
       repoName: 'Repo',
       branchName: 'Branch',
       version: 'Version',

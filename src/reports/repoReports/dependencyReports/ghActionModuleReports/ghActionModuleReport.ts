@@ -1,12 +1,12 @@
 import {
   type Repo
 } from '../../../../types'
-import { errorHandler, HeaderTitles, ReportWriter } from '../../../../util'
-import { DependencyReport } from '../dependencyReport'
-import { RepoReportData } from '../../repoReport'
+import { errorHandler, HeaderTitles } from '../../../../util'
+import { DependencyReport, DependencyReportData } from '../dependencyReport'
 import getGhActionModulePartsFromFile from './getGhActionModulePartsFromFile'
 
-interface GHActionModuleReportData extends RepoReportData {
+interface GHActionModuleReportData extends DependencyReportData {
+  depName: string
   repoName: string
   branchName: string
   version: string
@@ -20,11 +20,8 @@ export class GHActionModuleReport extends DependencyReport<GHActionModuleReportD
         for (const ruleFile of repo.branches[branchName].ruleFiles) {
           const moduleParts = getGhActionModulePartsFromFile(ruleFile)
           for (const module of moduleParts) {
-            if (this._reportWriters[module.name] == null) {
-              this._reportWriters[module.name] = new ReportWriter<GHActionModuleReportData>(this.getHeaderTitles(), this._outputDir, module.name, this.getExceptions())
-            }
-
-            this._reportWriters[module.name].addRow({
+            this.getReportWriters().dependencyReportWriter.addRow({
+              depName: module.name,
               repoName: repo.name,
               branchName,
               version: module.version,
@@ -40,6 +37,7 @@ export class GHActionModuleReport extends DependencyReport<GHActionModuleReportD
 
   protected getHeaderTitles (): HeaderTitles<GHActionModuleReportData> {
     return {
+      depName: 'Module Name',
       repoName: 'Repo',
       branchName: 'Branch',
       version: 'Version',

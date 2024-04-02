@@ -68,15 +68,11 @@ If you add a report to the list of reports retrieved by the engine, the reports 
 
 Many reports contribute to an overall heath score for each repo. These scores are calculated like GPA, where each contributing report has a weight and a letter grade associated with it.
 
-Each report calculates its own grade. Reports that do not apply to a repo do not affect the repo's overall score. The three report types generally calculate a grade in the following ways:
+Each report calculates its own grade. Reports that do not apply to a repo do not affect the repo's overall score. The two report types generally calculate a grade in the following ways:
 
 - Simple: simple report graded are calculated by comparing the actual value to an optimal value.
 
 - Version: we use the lowest version on any branch of a repo and compare it to an optimal version to find a grade.
-
-- Dependency Reports: these are more difficult to grade. Theoretically we could try to find the most recent version of every dependency, but this could be difficult. Instead, we use a relative grading scheme. We look at the version of a given dependency on a branch of some repo, and then compare it to the highest and lowest of that dependency in the org. This comparison gives us a letter grade by finding the spread between the overall highest and lowest versions and grading on a scale between that spread. Unique dependencies used by a single repo are graded as a C.
-  Each of these dependency grades contributes to the overall grade for the dependency environment for a repo, so that each npm dependency would contribute to the overall npm grade.
-
 
 ## Running Locally
 

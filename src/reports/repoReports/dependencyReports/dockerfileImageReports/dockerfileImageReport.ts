@@ -1,11 +1,12 @@
 import {
   type Repo
 } from '../../../../types'
-import { errorHandler, HeaderTitles, ReportWriter } from '../../../../util'
+import { errorHandler, HeaderTitles } from '../../../../util'
 import { DependencyReport, DependencyReportData } from '../dependencyReport'
 import getImagePartsFromFile from './getImagePartsFromFile'
 
 export interface DockerfileImageReportData extends DependencyReportData {
+  depName: string
   repoName: string
   branchName: string
   image: string
@@ -22,11 +23,9 @@ export class DockerfileImageReport extends DependencyReport<DockerfileImageRepor
           const imageParts = getImagePartsFromFile(ruleFile)
           if (imageParts != null) {
             const { image, version, tag } = imageParts
-            if (this._reportWriters[image] == null) {
-              this._reportWriters[image] = new ReportWriter<DockerfileImageReportData>(this.getHeaderTitles(), this._outputDir, image, this.getExceptions())
-            }
 
-            this._reportWriters[image].addRow({
+            this.getReportWriters().dependencyReportWriter.addRow({
+              depName: image,
               repoName: repo.name,
               branchName,
               image,
@@ -44,6 +43,7 @@ export class DockerfileImageReport extends DependencyReport<DockerfileImageRepor
 
   protected getHeaderTitles (): HeaderTitles<DockerfileImageReportData> {
     return {
+      depName: 'Image Name',
       repoName: 'Repo',
       branchName: 'Branch',
       image: 'Image',

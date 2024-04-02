@@ -1,9 +1,10 @@
 import { type Repo } from '../../../../types'
-import { errorHandler, HeaderTitles, ReportWriter } from '../../../../util'
+import { errorHandler, HeaderTitles } from '../../../../util'
 import { DependencyReport, DependencyReportData } from '../dependencyReport'
 import getTerraformModulePartsFromFile from './getTerraformModulePartsFromFile'
 
 interface TerraformModuleReportData extends DependencyReportData {
+  depName: string
   repoName: string
   branchName: string
   version: string
@@ -17,11 +18,8 @@ export class TerraformModuleReport extends DependencyReport<TerraformModuleRepor
         for (const ruleFile of repo.branches[branchName].ruleFiles) {
           const moduleParts = getTerraformModulePartsFromFile(ruleFile)
           for (const module of moduleParts) {
-            if (this._reportWriters[module.name] == null) {
-              this._reportWriters[module.name] = new ReportWriter<TerraformModuleReportData>(this.getHeaderTitles(), this._outputDir, module.name, this.getExceptions())
-            }
-
-            this._reportWriters[module.name].addRow({
+            this.getReportWriters().dependencyReportWriter.addRow({
+              depName: module.name,
               repoName: repo.name,
               branchName,
               version: module.version,
@@ -35,8 +33,9 @@ export class TerraformModuleReport extends DependencyReport<TerraformModuleRepor
     }
   }
 
-  protected getHeaderTitles (): HeaderTitles<any> {
+  protected getHeaderTitles (): HeaderTitles<TerraformModuleReportData> {
     return {
+      depName: 'Module Name',
       repoName: 'Repo',
       branchName: 'Branch',
       version: 'Version',
