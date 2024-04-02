@@ -2,6 +2,7 @@ import { Report, ReportData, Writers } from '../../report'
 import { anyStringRegex, HeaderTitles, Query, ReportWriter, stringToExactRegex } from '../../../util'
 import { Dependency, Repo, RuleFile } from '../../../types'
 import { WritableSet } from '../../../util/writable'
+import { logger } from '../../../util/logger'
 
 export interface CondensedDependencyReportData extends ReportData {
   depName: string
@@ -49,30 +50,34 @@ export abstract class DependencyCondensedReport extends Report<CondensedDependen
         const depNames = this.getDepNames(ruleFile)
         if (depNames.length > 0) {
           for (const depName of depNames) {
-            const depRows: CondensedDependencyReportData[] = this._reportWriters.dependencyCountReportDataWriter.getRows(this.getDepRowsQuery(depName))
+            try {
+              const depRows: CondensedDependencyReportData[] = this._reportWriters.dependencyCountReportDataWriter.getRows(this.getDepRowsQuery(depName))
 
-            if (depRows.length > 1) {
-              throw new Error('Multiple rows in report writer contain the same depName')
-            } else if (depRows.length === 0) {
-              const dependency: Dependency = await this.getDependencyInfo(depName)
-              this._reportWriters.dependencyCountReportDataWriter.addRow({
-                depName,
-                branchCount: 1,
-                repoCount: 1,
-                lastPublishedDate: dependency.lastPublishedDate,
-                createdDate: dependency.createdDate,
-                description: dependency.description,
-                maintainerCount: dependency.maintainerCount,
-                latestVersion: dependency.latestVersion,
-                downloadCountLastWeek: dependency.downloadCountLastWeek,
-                repoList: new WritableSet<string>().add(repo.name),
-                branchList: new WritableSet<string>().add(repo.name + ':' + branch.name)
-              })
-            } else {
-              depRows[0].repoList.add(repo.name)
-              depRows[0].branchList.add(repo.name + ':' + branch.name)
-              depRows[0].repoCount = depRows[0].repoList.size
-              depRows[0].branchCount = depRows[0].branchList.size
+              if (depRows.length > 1) {
+                throw new Error('Multiple rows in report writer contain the same depName')
+              } else if (depRows.length === 0) {
+                const dependency: Dependency = await this.getDependencyInfo(depName)
+                this._reportWriters.dependencyCountReportDataWriter.addRow({
+                  depName,
+                  branchCount: 1,
+                  repoCount: 1,
+                  lastPublishedDate: dependency.lastPublishedDate,
+                  createdDate: dependency.createdDate,
+                  description: dependency.description,
+                  maintainerCount: dependency.maintainerCount,
+                  latestVersion: dependency.latestVersion,
+                  downloadCountLastWeek: dependency.downloadCountLastWeek,
+                  repoList: new WritableSet<string>().add(repo.name),
+                  branchList: new WritableSet<string>().add(repo.name + ':' + branch.name)
+                })
+              } else {
+                depRows[0].repoList.add(repo.name)
+                depRows[0].branchList.add(repo.name + ':' + branch.name)
+                depRows[0].repoCount = depRows[0].repoList.size
+                depRows[0].branchCount = depRows[0].branchList.size
+              }
+            } catch (error) {
+              logger.error(`Error writing report: ${this.name}, with dep: ${depName}, ${(error as Error).message}`)
             }
           }
         }

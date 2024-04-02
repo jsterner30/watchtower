@@ -35,7 +35,7 @@ export class NPMDependencyCondensedReport extends DependencyCondensedReport {
       return {
         dependencyName: name,
         dependencyEnvironment: 'npm',
-        lastPublishedDate: res.time[res.time[latest]],
+        lastPublishedDate: res.time[latest],
         createdDate: res.time.created,
         description: res.description,
         maintainerCount: res.maintainers.length,

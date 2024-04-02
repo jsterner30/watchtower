@@ -25,7 +25,7 @@ export function stringToExactRegex (str: string): WriteableRegExp {
   return new WriteableRegExp('^' + escapedStr + '$')
 }
 
-export function stringifyJSON (json: Record<string, any> | Array<Record<string, any>>, resourceName: string): string {
+export function stringifyJSON (json: Record<string, any> | Array<Record<string, any>>, resourceName: string = ''): string {
   try {
     return stringify(json, null, 2)
   } catch (error) {

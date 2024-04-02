@@ -73,17 +73,22 @@ export class ReportWriter<T extends Data> {
 
   private matchQueryException (queryOrException: Query<T> | Exception<T>, row: T): boolean {
     let match = true
-    for (const key in row) {
-      // eslint-disable-next-line @typescript-eslint/no-base-to-string
-      const value = (row[key] as Object).toString() // Convert value to string
-      if (key in queryOrException) {
-        const regexPattern = queryOrException[key]
-        if (!regexPattern.test(value)) {
-          match = false
+    try {
+      for (const key in row) {
+        // eslint-disable-next-line @typescript-eslint/no-base-to-string
+        const value = (row[key] as Object).toString() // Convert value to string
+        if (key in queryOrException) {
+          const regexPattern = queryOrException[key]
+          if (!regexPattern.test(value)) {
+            match = false
+          }
         }
       }
+      return match
+    } catch (error) {
+      logger.error(`Error matching query or exception in reportWriter with query/exception: ${stringifyJSON(queryOrException)}, row: ${stringifyJSON(row)}`)
+      return false
     }
-    return match
   }
 
   private testRowAgainstExceptionsRegex (row: T): Exception<T> | null {
