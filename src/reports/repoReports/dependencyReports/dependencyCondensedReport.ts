@@ -57,16 +57,16 @@ export abstract class DependencyCondensedReport extends Report<CondensedDependen
               const dependency: Dependency = await this.getDependencyInfo(depName)
               this._reportWriters.dependencyCountReportDataWriter.addRow({
                 depName,
-                branchCount: 0,
-                repoCount: 0,
+                branchCount: 1,
+                repoCount: 1,
                 lastModifiedDate: dependency.lastModifiedDate,
                 createdDate: dependency.createdDate,
                 description: dependency.description,
                 maintainerCount: dependency.maintainerCount,
                 latestVersion: dependency.latestVersion,
                 downloadCountLastWeek: dependency.downloadCountLastWeek,
-                repoList: new WritableSet<string>(),
-                branchList: new WritableSet<string>()
+                repoList: new WritableSet<string>().add(repo.name),
+                branchList: new WritableSet<string>(repo.name + ':' + branch.name)
               })
             } else {
               depRows[0].repoList.add(repo.name)
