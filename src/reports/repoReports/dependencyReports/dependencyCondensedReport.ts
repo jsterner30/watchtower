@@ -66,7 +66,7 @@ export abstract class DependencyCondensedReport extends Report<CondensedDependen
                 latestVersion: dependency.latestVersion,
                 downloadCountLastWeek: dependency.downloadCountLastWeek,
                 repoList: new WritableSet<string>().add(repo.name),
-                branchList: new WritableSet<string>(repo.name + ':' + branch.name)
+                branchList: new WritableSet<string>().add(repo.name + ':' + branch.name)
               })
             } else {
               depRows[0].repoList.add(repo.name)
