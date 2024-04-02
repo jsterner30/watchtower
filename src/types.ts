@@ -197,7 +197,8 @@ const PackageJsonFileSchema = Type.Intersect([
     main: Type.Optional(Type.String()),
     scripts: Type.Optional(Type.Record(Type.String(), Type.String())),
     dependencies: Type.Optional(Type.Record(Type.String(), Type.Any())),
-    devDependencies: Type.Optional(Type.Record(Type.String(), Type.String()))
+    devDependencies: Type.Optional(Type.Record(Type.String(), Type.String())),
+    peerDependencies: Type.Optional(Type.Record(Type.String(), Type.String()))
   })
 ])
 export type PackageJsonFile = Static<typeof PackageJsonFileSchema>

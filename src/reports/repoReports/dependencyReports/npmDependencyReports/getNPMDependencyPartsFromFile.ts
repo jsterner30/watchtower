@@ -1,4 +1,4 @@
-import { FileTypeEnum, RuleFile, validPackageJsonFile } from '../../../../types'
+import { FileTypeEnum, PackageJsonFile, RuleFile, validPackageJsonFile } from '../../../../types'
 import { removeComparatorsInVersion } from '../../../../util'
 
 export interface NPMDependencyParts {
@@ -9,15 +9,31 @@ export interface NPMDependencyParts {
 export default function (ruleFile: RuleFile): NPMDependencyParts[] {
   const parts: NPMDependencyParts[] = []
   if (validPackageJsonFile.Check(ruleFile) && ruleFile.fileType === FileTypeEnum.PACKAGE_JSON) {
-    for (const name in ruleFile.dependencies) {
+    const allDeps: Record<string, string> = combineDeps(ruleFile)
+
+    for (const name in allDeps) {
       const dependencyName = name.replace(/\//g, '_') // slashes in dep name will mess with file structure
-      if (!(ruleFile.dependencies[name] as string).includes('file:')) { // we don't care about intra-repo dependencies
+      if (!(allDeps[name]).includes('file:')) { // we don't care about intra-repo dependencies
         parts.push({
           name: dependencyName,
-          version: removeComparatorsInVersion(ruleFile.dependencies[name])
+          version: removeComparatorsInVersion(allDeps[name])
         })
       }
     }
   }
   return parts
+}
+
+function combineDeps (ruleFile: PackageJsonFile): Record<string, string> {
+  let allDeps: Record<string, string> = {}
+  if (ruleFile.dependencies != null) {
+    allDeps = { ...allDeps, ...ruleFile.dependencies }
+  }
+  if (ruleFile.peerDependencies != null) {
+    allDeps = { ...allDeps, ...ruleFile.peerDependencies }
+  }
+  if (ruleFile.peerDependencies != null) {
+    allDeps = { ...allDeps, ...ruleFile.devDependencies }
+  }
+  return allDeps
 }
