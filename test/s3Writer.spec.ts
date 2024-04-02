@@ -1,6 +1,6 @@
 import test from 'ava'
 import { S3Wrapper, S3Writer } from '../src/util'
-import { instance, mock, reset, verify, when } from 'ts-mockito'
+import { anything, instance, mock, reset, verify, when } from 'ts-mockito'
 import * as sinon from 'sinon'
 
 let s3Writer: S3Writer
@@ -31,11 +31,11 @@ test.serial('s3.ensureDataTypeMatchesFileType() should return true if the filePa
 /**
  * deleteAllFilesInDirectory() tests
  */
-test.serial('deleteAllFilesInDirectory() should attempt to call s3Wrapper.listObjects(<directoryPath> and s3Wrapper.deleteObject() for each file returned by listObjects())', async t => {
+test.serial('deleteAllFilesInDirectory() should attempt to call s3Wrapper.listObjects(<directoryPath>) and s3Wrapper.deleteObjects())', async t => {
   when(mocks3Wrapper.listObjects(expectedDirPath)).thenResolve([expectedFilePath, expectedFilePath])
   await s3Writer.deleteAllFilesInDirectory(fileUsage, dataType, directoryPath)
   verify(mocks3Wrapper.listObjects(expectedDirPath)).times(1)
-  verify(mocks3Wrapper.deleteObject(expectedFilePath)).times(2)
+  verify(mocks3Wrapper.deleteObjects(anything())).called()
 })
 
 /**

@@ -25,15 +25,12 @@ export default function (ruleFile: RuleFile): NPMDependencyParts[] {
 }
 
 function combineDeps (ruleFile: PackageJsonFile): Record<string, string> {
+  const depKeys: Array<keyof PackageJsonFile> = ['peerDependencies', 'devDependencies', 'dependencies']
   let allDeps: Record<string, string> = {}
-  if (ruleFile.dependencies != null) {
-    allDeps = { ...allDeps, ...ruleFile.dependencies }
-  }
-  if (ruleFile.peerDependencies != null) {
-    allDeps = { ...allDeps, ...ruleFile.peerDependencies }
-  }
-  if (ruleFile.peerDependencies != null) {
-    allDeps = { ...allDeps, ...ruleFile.devDependencies }
+  for (const depKey of depKeys) {
+    if (ruleFile[depKey] != null) {
+      allDeps = { ...allDeps, ...ruleFile[depKey] as Record<string, string> }
+    }
   }
   return allDeps
 }

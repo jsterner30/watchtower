@@ -158,9 +158,15 @@ export class S3Writer extends Writer {
 
   async deleteAllFilesInDirectory (fileUsage: string, dataType: string = '', directoryPath: string = ''): Promise<void> {
     const files = await this.listAllFilesInDirectory(fileUsage, dataType, directoryPath)
+    let keys: string[] = []
     for (const file of files) {
-      await this.s3Wrapper.deleteObject(file)
+      keys.push(file)
+      if (keys.length > 997) {
+        await this.s3Wrapper.deleteObjects(keys)
+        keys = []
+      }
     }
+    await this.s3Wrapper.deleteObjects(keys)
     logger.info(`Successfully deleted all files in the directory: ${this.getFullDirectoryPath(fileUsage, dataType, directoryPath)}`)
   }
 

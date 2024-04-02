@@ -1,4 +1,12 @@
-import { S3Client, GetObjectCommand, PutObjectCommand, ListObjectsCommand, DeleteObjectCommand } from '@aws-sdk/client-s3'
+import {
+  S3Client,
+  GetObjectCommand,
+  PutObjectCommand,
+  ListObjectsCommand,
+  DeleteObjectCommand,
+  DeleteObjectsCommand,
+  DeleteObjectsCommandInput
+} from '@aws-sdk/client-s3'
 import { logger } from './logger'
 
 export class S3Wrapper {
@@ -60,6 +68,30 @@ export class S3Wrapper {
     try {
       const params = { Bucket: this.bucketName, Key: key }
       await this.client.send(new DeleteObjectCommand(params))
+    } catch (error) {
+      logger.error(`Error deleting object from S3: ${(error as Error).message}`)
+    }
+  }
+
+  async deleteObjects (keys: string[]): Promise<void> {
+    try {
+      if (keys.length > 999) {
+        throw new Error('attempting to delete objects in s3 with key list length > 999')
+      }
+      const params = {
+        Bucket: this.bucketName,
+        Delete: {
+          Objects: [] as Array<Record<string, string>>
+        }
+      }
+
+      for (const key of keys) {
+        params.Delete.Objects.push({
+          Key: key
+        })
+      }
+
+      await this.client.send(new DeleteObjectsCommand(params as unknown as DeleteObjectsCommandInput))
     } catch (error) {
       logger.error(`Error deleting object from S3: ${(error as Error).message}`)
     }
