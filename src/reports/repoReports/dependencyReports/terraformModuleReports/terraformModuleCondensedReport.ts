@@ -27,7 +27,7 @@ export class TerraformModuleCondensedReport extends DependencyCondensedReport {
     return {
       dependencyName: packageName,
       dependencyEnvironment: 'terraform',
-      lastModifiedDate: '',
+      lastPublishedDate: '',
       createdDate: '',
       description: '',
       maintainerCount: -1,

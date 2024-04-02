@@ -27,7 +27,7 @@ export class GHActionModuleCondensedReport extends DependencyCondensedReport {
     return {
       dependencyName: packageName,
       dependencyEnvironment: 'gha',
-      lastModifiedDate: '',
+      lastPublishedDate: '',
       createdDate: '',
       description: '',
       maintainerCount: -1,

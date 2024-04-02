@@ -31,14 +31,15 @@ export class NPMDependencyCondensedReport extends DependencyCondensedReport {
         throw new Error(res.error)
       }
       const versions: string[] = Object.keys(res.versions as Record<string, any>)
+      const latest = versions[versions.length - 1]
       return {
         dependencyName: name,
         dependencyEnvironment: 'npm',
-        lastModifiedDate: res.time.modified,
+        lastPublishedDate: res.time[res.time[latest]],
         createdDate: res.time.created,
         description: res.description,
         maintainerCount: res.maintainers.length,
-        latestVersion: versions[versions.length - 1],
+        latestVersion: latest,
         downloadCountLastWeek: await this.getNPMPackageDownloadsPerWeek(name)
       }
     } catch (error) {
@@ -50,7 +51,7 @@ export class NPMDependencyCondensedReport extends DependencyCondensedReport {
       return {
         dependencyName: name,
         dependencyEnvironment: 'npm',
-        lastModifiedDate: '',
+        lastPublishedDate: '',
         createdDate: '',
         description: '',
         maintainerCount: -1,

@@ -27,7 +27,7 @@ export class DockerfileImageCondensedReport extends DependencyCondensedReport {
     return {
       dependencyName: packageName,
       dependencyEnvironment: 'docker',
-      lastModifiedDate: '',
+      lastPublishedDate: '',
       createdDate: '',
       description: '',
       maintainerCount: -1,

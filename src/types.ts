@@ -574,7 +574,7 @@ export interface OctokitOptions {
 export interface Dependency {
   dependencyName: string
   dependencyEnvironment: string
-  lastModifiedDate: string
+  lastPublishedDate: string
   createdDate: string
   description: string
   maintainerCount: number
