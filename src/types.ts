@@ -576,7 +576,6 @@ export interface Dependency {
   dependencyEnvironment: string
   lastPublishedDate: string
   createdDate: string
-  description: string
   maintainerCount: number
   latestVersion: string
   downloadCountLastWeek: number

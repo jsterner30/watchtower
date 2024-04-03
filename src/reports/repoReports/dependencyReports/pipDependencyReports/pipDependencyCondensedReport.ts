@@ -29,7 +29,6 @@ export class PIPDependencyCondensedReport extends DependencyCondensedReport {
       dependencyEnvironment: 'pip',
       lastPublishedDate: '',
       createdDate: '',
-      description: '',
       maintainerCount: -1,
       latestVersion: '',
       downloadCountLastWeek: -1

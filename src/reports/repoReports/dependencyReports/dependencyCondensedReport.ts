@@ -10,7 +10,6 @@ export interface CondensedDependencyReportData extends ReportData {
   repoCount: number
   lastPublishedDate: string
   createdDate: string
-  description: string
   maintainerCount: number
   latestVersion: string
   downloadCountLastWeek: number
@@ -29,7 +28,6 @@ export abstract class DependencyCondensedReport extends Report<CondensedDependen
       repoCount: 'Number of Repos with this Dependency',
       lastPublishedDate: 'Last Modification Date of the Dependency',
       createdDate: 'Creation Date of the Dependency',
-      description: 'Description',
       maintainerCount: 'Maintainer Count',
       latestVersion: 'Latest Version',
       downloadCountLastWeek: 'Download Count Last Week',
@@ -63,7 +61,6 @@ export abstract class DependencyCondensedReport extends Report<CondensedDependen
                   repoCount: 1,
                   lastPublishedDate: dependency.lastPublishedDate,
                   createdDate: dependency.createdDate,
-                  description: dependency.description,
                   maintainerCount: dependency.maintainerCount,
                   latestVersion: dependency.latestVersion,
                   downloadCountLastWeek: dependency.downloadCountLastWeek,
@@ -92,7 +89,6 @@ export abstract class DependencyCondensedReport extends Report<CondensedDependen
       repoCount: anyStringRegex,
       lastPublishedDate: anyStringRegex,
       createdDate: anyStringRegex,
-      description: anyStringRegex,
       maintainerCount: anyStringRegex,
       latestVersion: anyStringRegex,
       downloadCountLastWeek: anyStringRegex,

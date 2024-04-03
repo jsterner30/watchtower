@@ -29,7 +29,6 @@ export class TerraformModuleCondensedReport extends DependencyCondensedReport {
       dependencyEnvironment: 'terraform',
       lastPublishedDate: '',
       createdDate: '',
-      description: '',
       maintainerCount: -1,
       latestVersion: '',
       downloadCountLastWeek: -1

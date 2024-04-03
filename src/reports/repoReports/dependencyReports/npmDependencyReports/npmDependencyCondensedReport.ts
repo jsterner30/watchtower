@@ -35,11 +35,10 @@ export class NPMDependencyCondensedReport extends DependencyCondensedReport {
       return {
         dependencyName: name,
         dependencyEnvironment: 'npm',
-        lastPublishedDate: res.time[latest],
-        createdDate: res.time.created,
-        description: res.description,
-        maintainerCount: res.maintainers.length,
-        latestVersion: latest,
+        lastPublishedDate: res.time[latest] ?? '',
+        createdDate: res.time.created ?? '',
+        maintainerCount: res.maintainers.length ?? -1,
+        latestVersion: latest ?? '',
         downloadCountLastWeek: await this.getNPMPackageDownloadsPerWeek(name)
       }
     } catch (error) {
@@ -53,7 +52,6 @@ export class NPMDependencyCondensedReport extends DependencyCondensedReport {
         dependencyEnvironment: 'npm',
         lastPublishedDate: '',
         createdDate: '',
-        description: '',
         maintainerCount: -1,
         latestVersion: '',
         downloadCountLastWeek: -1
