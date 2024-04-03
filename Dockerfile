@@ -4,7 +4,7 @@ WORKDIR /usr/app
 COPY package*.json tsconfig*.json ./
 COPY src ./src/
 RUN npm ci --ignore-scripts \
-&& npm run build \
+&& npm run build
 
 ENV TZ="America/Denver"
 ENV NODE_ENV='production'
