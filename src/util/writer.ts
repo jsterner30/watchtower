@@ -70,7 +70,7 @@ export class LocalWriter extends Writer {
       await this.fileSystemWrapper.writeFile(fullPath, body)
       logger.info(`JSON data successfully written to ${filePath}`)
     } catch (error) {
-      logger.error('Error occurred while writing JSON data to file:', error)
+      logger.error(`Error occurred while writing JSON data to file: ${(error as Error).message}`)
     }
   }
 
