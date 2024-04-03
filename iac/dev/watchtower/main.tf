@@ -45,5 +45,5 @@ module "watchtower" {
   name                = local.name
   schedule_expression = local.schedule_expression
   image_tag           = var.image_tag
-  write_cache_locally = "true"
+  write_cache_locally = "false"
 }
