@@ -1,13 +1,13 @@
 import { DependencyCondensedReport } from '../dependencyCondensedReport'
 import { Dependency, RuleFile } from '../../../../types'
 import { errorHandler } from '../../../../util'
-import getNPMDependencyPartsFromFile from '../npmDependencyReports/getNPMDependencyPartsFromFile'
+import getPIPDependencyPartsFromFile from './getPIPDependencyPartsFromFile'
 
 export class PIPDependencyCondensedReport extends DependencyCondensedReport {
   protected getDepNames (ruleFile: RuleFile): string[] {
     const depNames = []
     try {
-      const depParts = getNPMDependencyPartsFromFile(ruleFile)
+      const depParts = getPIPDependencyPartsFromFile(ruleFile)
       for (const dep of depParts) {
         depNames.push(dep.name)
       }
