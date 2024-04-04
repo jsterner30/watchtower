@@ -15,7 +15,7 @@ export default function (ruleFile: RuleFile): GHActionModuleParts[] {
             if (step.uses != null) {
               const moduleString = step.uses.split('@')
               if (moduleString[1] != null) {
-                const moduleName: string = moduleString[0].replace(/\//g, '_') // slashes in action name will mess with file structure
+                const moduleName: string = moduleString[0]
                 const version = moduleString[1]
                 parts.push({
                   name: moduleName,

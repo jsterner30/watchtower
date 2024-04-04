@@ -24,7 +24,6 @@ export class NPMDependencyCondensedReport extends DependencyCondensedReport {
   }
 
   async getNPMPackageInfo (name: string): Promise<Dependency> {
-    name = name.replace('_', '/') // we removed slashes for file system reasons but need to add them back here
     try {
       const res: any = await fetch(`https://registry.npmjs.org/${name}`).then(async res => await res.json())
       if (res.error != null) {

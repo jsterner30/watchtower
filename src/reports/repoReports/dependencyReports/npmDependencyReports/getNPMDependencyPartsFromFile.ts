@@ -12,7 +12,7 @@ export default function (ruleFile: RuleFile): NPMDependencyParts[] {
     const allDeps: Record<string, string> = combineDeps(ruleFile)
 
     for (const name in allDeps) {
-      const dependencyName = name.replace(/\//g, '_') // slashes in dep name will mess with file structure
+      const dependencyName = name
       if (!(allDeps[name]).includes('file:')) { // we don't care about intra-repo dependencies
         parts.push({
           name: dependencyName,

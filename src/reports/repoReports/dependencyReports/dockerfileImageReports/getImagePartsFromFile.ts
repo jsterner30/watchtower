@@ -10,7 +10,7 @@ export default function (ruleFile: RuleFile): DockerfileImageParts | null {
   let imageParts: DockerfileImageParts | null = null
   if (validDockerfile.Check(ruleFile) && ruleFile.fileType === FileTypeEnum.DOCKERFILE) {
     const imageArray = ruleFile.image.split(':')
-    const image = imageArray[0].replace(/\//g, '_') // slashes in image name will mess with file structure
+    const image = imageArray[0]
     let version = '?'
     let tag = '?'
 
