@@ -11,7 +11,7 @@ export default function (ruleFile: RuleFile): PIPDependencyParts[] {
   if (validPIPRequirementsFile.Check(ruleFile) && ruleFile.fileType === FileTypeEnum.PIP_REQUIREMENTS) {
     for (const name in ruleFile.dependencies) {
       parts.push({
-        name: name,
+        name,
         version: removeComparatorsInVersion(ruleFile.dependencies[name].version)
       })
     }
