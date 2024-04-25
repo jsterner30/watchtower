@@ -28,7 +28,7 @@
     "@byu-oit/env-ssm": "^3.4.0",
     "@byu-oit/logger": "^0.4.2",
     "@cdktf/hcl2json": "^0.20.5",
-    "@octokit/plugin-retry": "^6.0.1",
+    "@octokit/plugin-retry": "^7.1.1",
     "@octokit/plugin-throttling": "^8.1.2",
     "@octokit/request-error": "^5.0.1",
     "@octokit/rest": "^20.0.2",
